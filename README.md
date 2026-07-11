@@ -1,12 +1,12 @@
-# Dabble Novelist Studio - Guide d'Utilisation (README)
+# Ecriture - Guide d'Utilisation (README)
 
-Ce guide vous explique l'objectif, les librairies utilisées, l'installation et l'utilisation de l'application **Dabble Novelist Studio**, un outil d'aide à la rédaction de romans en Python inspiré de Dabble Writer.
+Ce guide vous explique l'objectif, les librairies utilisées, l'installation et l'utilisation de l'application **Ecriture**, un outil d'aide à la rédaction de romans en Python inspiré de Dabble Writer.
 
 ---
 
 ## 1. Objectif
 
-L'objectif de **Dabble Novelist Studio** est de fournir aux romanciers et écrivains un environnement de travail moderne, intuitif et sans distraction pour planifier, structurer et rédiger leurs œuvres littéraires.
+L'objectif de **Ecriture** est de fournir aux romanciers et écrivains un environnement de travail moderne, intuitif et sans distraction pour planifier, structurer et rédiger leurs œuvres littéraires.
 
 Le logiciel propose :
 * **Un éditeur de texte épuré** : Un focus absolu sur les mots avec une police élégante (Georgia) et des marges optimales.

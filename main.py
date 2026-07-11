@@ -20,7 +20,7 @@ class DabbleNovelistApp(ctk.CTk):
         super().__init__()
 
         # Setup standard app configurations
-        self.title("Dabble Novelist Studio")
+        self.title("Ecriture")
         self.geometry("1100x700")
 
         # Core active project
@@ -378,7 +378,7 @@ class DabbleNovelistApp(ctk.CTk):
             messagebox.showerror("Export Failed", f"Could not export: {e}")
 
     def _show_about(self):
-        messagebox.showinfo("About Dabble Novelist", "Dabble Novelist Studio v1.0\nA beautiful distraction-free story writing & planning platform inspired by Dabble.")
+        messagebox.showinfo("About Ecriture", "Ecriture v1.0\nA beautiful distraction-free story writing & planning platform inspired by Dabble.")
 
 if __name__ == "__main__":
     app = DabbleNovelistApp()
