@@ -1,4 +1,4 @@
-# Dabble Novelist Studio - Guide d'Utilisation (HOWTO)
+# Dabble Novelist Studio - Guide d'Utilisation (README)
 
 Ce guide vous explique l'objectif, les librairies utilisées, l'installation et l'utilisation de l'application **Dabble Novelist Studio**, un outil d'aide à la rédaction de romans en Python inspiré de Dabble Writer.
 
