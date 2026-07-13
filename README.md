@@ -34,8 +34,34 @@ Pour exécuter l'application sur votre machine, suivez ces étapes simples :
 ### Prérequis
 * **Python 3.8** ou supérieur installé sur votre système.
 
-### Étape 1 : Installer CustomTkinter
-Exécutez la commande suivante dans votre terminal pour installer la bibliothèque d'interface moderne :
+### Étape 1 : Créer et activer un environnement virtuel (Recommandé)
+Il est fortement recommandé d'utiliser un environnement virtuel pour isoler les dépendances du projet.
+
+Sur **macOS / Linux** :
+```bash
+# Créer l'environnement virtuel
+python3 -m venv venv
+
+# Activer l'environnement virtuel
+source venv/bin/activate
+```
+
+Sur **Windows** :
+```cmd
+# Créer l'environnement virtuel
+python -m venv venv
+
+# Activer l'environnement virtuel (Command Prompt)
+venv\Scripts\activate.bat
+
+# Activer l'environnement virtuel (PowerShell)
+venv\Scripts\Activate.ps1
+```
+
+Une fois l'environnement virtuel activé, votre terminal affichera le préfixe `(venv)`.
+
+### Étape 2 : Installer CustomTkinter
+Exécutez la commande suivante dans votre terminal actif pour installer la bibliothèque d'interface moderne :
 ```bash
 pip install customtkinter
 ```
