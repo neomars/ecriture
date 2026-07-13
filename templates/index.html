@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Écriture - Studio d'Écriture de Romans</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Georgia font for premium, distraction-free writing */
+        .font-georgia {
+            font-family: Georgia, Cambria, "Times New Roman", Times, serif;
+        }
+        /* Custom scrollbar styles */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="h-full overflow-hidden flex flex-col font-sans text-slate-800">
+
+    <!-- TOP HEADER -->
+    <header class="bg-white border-b border-slate-200 h-14 flex items-center justify-between px-6 z-10 shrink-0">
+        <div class="flex items-center space-x-3">
+            <!-- App Logo / Icon -->
+            <span class="text-2xl">✒️</span>
+            <h1 class="text-xl font-bold tracking-tight text-indigo-600" data-i18n="app_title">Écriture</h1>
+        </div>
+
+        <div class="flex items-center space-x-4">
+            <!-- Language Selector -->
+            <div class="flex items-center space-x-2">
+                <span class="text-sm text-slate-500" data-i18n="select_language">Langue</span>
+                <select id="lang-select" onchange="changeLanguage(this.value)" class="bg-slate-100 border border-slate-300 text-slate-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 p-1">
+                    <option value="fr">Français</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+
+            <!-- Export as TXT -->
+            <button onclick="exportDraft()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm font-semibold shadow-sm transition-all flex items-center space-x-1">
+                <span>📥</span>
+                <span data-i18n="export_draft">Exporter en .txt</span>
+            </button>
+
+            <!-- Project Settings -->
+            <button onclick="openSettingsModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all">
+                ⚙️ <span data-i18n="project_settings">Paramètres</span>
+            </button>
+
+            <!-- About Button -->
+            <button onclick="openAboutModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
+                ❓
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN BODY CONTAINER -->
+    <div class="flex flex-1 overflow-hidden">
+
+        <!-- LEFT SIDEBAR: MANUSCRIPT TREE & SEARCH -->
+        <aside class="w-64 bg-slate-100 border-r border-slate-200 flex flex-col shrink-0">
+            <!-- Search Bar -->
+            <div class="p-3 border-b border-slate-200">
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-2.5 pointer-events-none text-slate-400 text-sm">🔍</span>
+                    <input type="text" id="search-input" oninput="filterTree(this.value)" data-i18n-placeholder="search_placeholder" placeholder="Rechercher..." class="w-full bg-white border border-slate-300 rounded-lg py-1.5 pl-8 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+            </div>
+
+            <!-- Project Title Display -->
+            <div class="px-4 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider" id="project-title-display">
+                Mon Roman
+            </div>
+
+            <!-- Scrollable Tree Structure -->
+            <div class="flex-1 overflow-y-auto px-2 py-3 space-y-4" id="sidebar-tree">
+                <!-- Collapsible manuscript tree container -->
+                <div>
+                    <div class="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider px-2 py-1 select-none">
+                        <span data-i18n="manuscript">Manuscrit</span>
+                    </div>
+                    <div id="manuscript-nodes-list" class="space-y-1 mt-1">
+                        <!-- Dynamic Chapters and Scenes -->
+                    </div>
+                </div>
+
+                <!-- Plot Grid Toggle Button -->
+                <div onclick="selectPlotGrid()" id="plot-grid-menu-item" class="flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-200 hover:text-slate-900 cursor-pointer transition-all">
+                    <span>📊</span>
+                    <span data-i18n="plot_grid">Grille d'intrigue</span>
+                </div>
+
+                <!-- Characters Group -->
+                <div>
+                    <div class="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider px-2 py-1 select-none">
+                        <span data-i18n="characters">Personnages</span>
+                    </div>
+                    <div id="characters-list" class="space-y-1 mt-1">
+                        <!-- Dynamic Characters -->
+                    </div>
+                </div>
+
+                <!-- Story Notes Group -->
+                <div>
+                    <div class="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider px-2 py-1 select-none">
+                        <span data-i18n="story_notes">Notes de récit</span>
+                    </div>
+                    <div id="notes-list" class="space-y-1 mt-1">
+                        <!-- Dynamic Notes -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- QUICK ACTIONS FOOTER -->
+            <div class="p-3 bg-slate-50 border-t border-slate-200 grid grid-cols-3 gap-1 shrink-0">
+                <button onclick="addNewChapter()" class="bg-blue-500 hover:bg-blue-600 text-white py-1.5 px-1 rounded text-xs font-bold shadow-sm transition-all" data-i18n="add_chapter">+ Chapitre</button>
+                <button onclick="addNewScene()" class="bg-emerald-500 hover:bg-emerald-600 text-white py-1.5 px-1 rounded text-xs font-bold shadow-sm transition-all" data-i18n="add_scene">+ Scène</button>
+                <button onclick="showAssetMenu()" class="bg-purple-500 hover:bg-purple-600 text-white py-1.5 px-1 rounded text-xs font-bold shadow-sm transition-all relative">
+                    <span data-i18n="add_asset">+ Ressource</span>
+                    <!-- Dropdown for Asset creation -->
+                    <div id="asset-menu-dropdown" class="hidden absolute bottom-10 left-0 w-36 bg-white border border-slate-200 rounded-lg shadow-xl py-1 text-slate-700 z-20 text-left">
+                        <button onclick="addNewCharacter()" class="w-full px-3 py-1.5 hover:bg-slate-100 text-xs font-semibold flex items-center space-x-1.5">
+                            <span>👤</span> <span data-i18n="add_character">Ajouter personnage</span>
+                        </button>
+                        <button onclick="addNewNote()" class="w-full px-3 py-1.5 hover:bg-slate-100 text-xs font-semibold flex items-center space-x-1.5">
+                            <span>📌</span> <span data-i18n="add_note">Ajouter note</span>
+                        </button>
+                    </div>
+                </button>
+            </div>
+        </aside>
+
+        <!-- CENTRAL WORKSPACE -->
+        <main class="flex-1 bg-white flex flex-col overflow-hidden relative">
+
+            <!-- EDITOR VIEW -->
+            <div id="editor-view" class="flex-1 flex flex-col overflow-hidden">
+                <!-- Centered distraction-free layout -->
+                <div class="flex-1 overflow-y-auto px-12 py-10 flex flex-col items-center">
+                    <div class="w-full max-w-2xl flex-1 flex flex-col">
+                        <!-- Chapter or Scene title input -->
+                        <input type="text" id="editor-title" oninput="onEditorInput('title', this.value)" placeholder="Titre..." class="w-full text-3xl font-bold font-georgia border-none outline-none focus:ring-0 text-slate-900 placeholder-slate-300 pb-4 mb-6 border-b border-slate-100">
+
+                        <!-- Rich text-area drafting canvas -->
+                        <textarea id="editor-content" oninput="onEditorInput('content', this.value)" data-i18n-placeholder="editor_placeholder" placeholder="Commencez votre écriture ici..." class="w-full flex-1 resize-none font-georgia text-lg leading-relaxed text-slate-800 border-none outline-none focus:ring-0 placeholder-slate-300 bg-transparent min-h-[400px]"></textarea>
+                    </div>
+                </div>
+
+                <!-- Word counter footer bar -->
+                <footer class="h-10 bg-slate-50 border-t border-slate-100 flex items-center justify-end px-6 text-xs text-slate-400 space-x-4 shrink-0">
+                    <span id="editor-words-count">0 mots</span>
+                    <span class="text-slate-200">|</span>
+                    <span id="editor-chars-count">0 caract.</span>
+                </footer>
+            </div>
+
+            <!-- PLOT GRID VIEW -->
+            <div id="plot-grid-view" class="hidden flex-1 flex flex-col overflow-hidden bg-slate-50">
+                <div class="flex-1 overflow-auto p-6">
+                    <!-- Dynamic Grid -->
+                    <table class="border-collapse bg-white rounded-xl shadow-sm overflow-hidden min-w-full">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-600 text-xs font-bold uppercase tracking-wider" id="plot-grid-headers">
+                                <!-- Column headers dynamically inserted -->
+                            </tr>
+                        </thead>
+                        <tbody id="plot-grid-body" class="divide-y divide-slate-100">
+                            <!-- Swimlanes and Cells dynamically inserted -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- RESOURCE VIEW (CHARACTERS & STORY NOTES) -->
+            <div id="resource-view" class="hidden flex-1 flex flex-col overflow-hidden bg-slate-50 p-10 items-center justify-start overflow-y-auto">
+                <div class="w-full max-w-2xl bg-white p-8 rounded-xl shadow-sm border border-slate-200">
+                    <div class="flex items-center space-x-3 mb-6">
+                        <span id="resource-icon" class="text-3xl">👤</span>
+                        <input type="text" id="resource-title" oninput="onResourceInput('title', this.value)" class="text-2xl font-bold border-none outline-none focus:ring-0 text-slate-800 placeholder-slate-300 w-full" placeholder="Nom...">
+                    </div>
+
+                    <!-- Dynamic field forms for Characters -->
+                    <div id="character-fields" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1" data-i18n="character_role">Rôle / Fonction</label>
+                            <input type="text" id="char-role" oninput="onResourceInput('role', this.value)" class="w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1" data-i18n="character_desc">Description du personnage</label>
+                            <textarea id="char-desc" oninput="onResourceInput('description', this.value)" rows="8" class="w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500 shadow-sm resize-none"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic field forms for Story Notes -->
+                    <div id="note-fields" class="hidden space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1" data-i18n="note_type">Type de note / Lieu</label>
+                            <input type="text" id="note-type" oninput="onResourceInput('type', this.value)" class="w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1" data-i18n="note_content">Contenu de la note</label>
+                            <textarea id="note-content" oninput="onResourceInput('content', this.value)" rows="8" class="w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500 shadow-sm resize-none"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- RIGHT SIDEBAR: GOALS & FOCUS TIMER -->
+        <aside class="w-56 bg-slate-100 border-l border-slate-200 flex flex-col shrink-0 p-4 space-y-6">
+
+            <!-- GOALS & METRICS -->
+            <div class="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3" data-i18n="goals_and_stats">Objectifs & Stats</h3>
+
+                <div class="space-y-4">
+                    <!-- Daily Goal Setting -->
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1" data-i18n="daily_word_goal">Objectif quotidien</label>
+                        <input type="number" id="daily-goal-input" onchange="onDailyGoalChange(this.value)" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+
+                    <!-- Daily Progress Bar -->
+                    <div>
+                        <div class="flex justify-between text-[10px] font-semibold text-slate-500 mb-1" id="daily-progress-text">
+                            Quotidien : 0 / 500 mots
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-2">
+                            <div id="daily-progress-bar" class="bg-emerald-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Overall Progress Bar -->
+                    <div>
+                        <div class="flex justify-between text-[10px] font-semibold text-slate-500 mb-1" id="overall-progress-text">
+                            Global : 0 / 50000 mots
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-2">
+                            <div id="overall-progress-bar" class="bg-indigo-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- POMODORO FOCUS TIMER -->
+            <div class="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm flex flex-col items-center">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 self-start" data-i18n="focus_timer">Minuteur Focus</h3>
+
+                <!-- Large Countdown Clock -->
+                <div class="text-3xl font-bold text-slate-700 tracking-wider mb-2 font-mono" id="timer-display">
+                    15:00
+                </div>
+
+                <!-- Timer duration slider -->
+                <input type="range" id="timer-slider" min="1" max="60" value="15" oninput="onTimerSlider(this.value)" class="w-full h-1 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600 mb-4">
+
+                <!-- Controls -->
+                <div class="flex space-x-2 w-full">
+                    <button id="timer-start-btn" onclick="toggleTimer()" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold py-1.5 px-2 rounded-lg shadow-sm transition-all" data-i18n="start">Démarrer</button>
+                    <button onclick="resetTimer()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold py-1.5 px-2 rounded-lg transition-all" data-i18n="reset">Réinit.</button>
+                </div>
+            </div>
+        </aside>
+
+    </div>
+
+    <!-- MODAL: PROJECT SETTINGS -->
+    <div id="settings-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50">
+        <div class="bg-white w-96 rounded-xl shadow-xl p-6 border border-slate-200">
+            <h3 class="text-lg font-bold text-slate-800 mb-4" data-i18n="project_settings">Paramètres du projet</h3>
+
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1" data-i18n="novel_title">Titre du roman</label>
+                    <input type="text" id="settings-title-input" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1" data-i18n="overall_word_goal">Objectif global (mots)</label>
+                    <input type="number" id="settings-goal-input" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-2">
+                <button onclick="closeSettingsModal()" class="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-700 transition-colors" data-i18n="cancel">Annuler</button>
+                <button onclick="saveProjectSettings()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-all" data-i18n="save">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: ABOUT -->
+    <div id="about-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50">
+        <div class="bg-white w-96 rounded-xl shadow-xl p-6 border border-slate-200 text-center">
+            <span class="text-5xl mb-3 block">✒️</span>
+            <h3 class="text-lg font-bold text-slate-800 mb-2" data-i18n="about">À propos</h3>
+            <p class="text-sm text-slate-500 mb-6" data-i18n="about_text">Écriture v1.0 - Un environnement d'écriture et de planification moderne et sans distraction inspiré de DabbleWriter.</p>
+            <button onclick="closeAboutModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-semibold shadow-sm transition-all w-full" data-i18n="cancel">Fermer</button>
+        </div>
+    </div>
+
+    <!-- MODAL: PLOT CARD EDIT -->
+    <div id="plot-card-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50">
+        <div class="bg-white w-96 rounded-xl shadow-xl p-6 border border-slate-200">
+            <h3 class="text-lg font-bold text-slate-800 mb-4" data-i18n="edit_plot_card">Modifier la carte d'intrigue</h3>
+
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1" data-i18n="card_title">Titre de la carte</label>
+                    <input type="text" id="plot-card-title-input" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1" data-i18n="card_content">Contenu de la carte</label>
+                    <textarea id="plot-card-desc-input" rows="4" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-indigo-500 focus:border-indigo-500 resize-none"></textarea>
+                </div>
+            </div>
+
+            <div class="flex justify-between">
+                <button onclick="deletePlotCard()" class="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-4 py-2 rounded-lg text-sm font-semibold transition-all" data-i18n="delete">Supprimer</button>
+                <div class="flex space-x-2">
+                    <button onclick="closePlotCardModal()" class="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-700 transition-colors" data-i18n="cancel">Annuler</button>
+                    <button onclick="savePlotCard()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-all" data-i18n="save">Enregistrer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CORE SPA JAVASCRIPT -->
+    <script>
+        // Core application data state
+        let projectData = null;
+        let translations = {};
+        let activeLang = "fr";
+
+        let activeNodeId = null;     // ID of current active workspace item (scene/chap/char/note)
+        let activeNodeType = null;   // "scene", "chapter", "character", "note", or "plot_grid"
+
+        // Auto-save debounce timer
+        let autoSaveTimer = null;
+
+        // Pomodoro Focus Timer variables
+        let timerDurationMinutes = 15;
+        let timerSecondsLeft = 15 * 60;
+        let timerIntervalId = null;
+        let timerIsRunning = false;
+
+        // Initialize application
+        window.addEventListener('DOMContentLoaded', async () => {
+            // Close resource quick menu if clicked outside
+            document.addEventListener('click', (e) => {
+                const dropdown = document.getElementById('asset-menu-dropdown');
+                if (dropdown && !e.target.closest('.relative')) {
+                    dropdown.classList.add('hidden');
+                }
+            });
+
+            await loadProject();
+        });
+
+        // LOAD PROJECT FROM BACKEND JSON
+        async function loadProject() {
+            try {
+                const res = await fetch('/api/project');
+                projectData = await res.json();
+
+                // Read language preference
+                activeLang = projectData.settings.lang || "fr";
+                document.getElementById('lang-select').value = activeLang;
+
+                // Load appropriate language translation file
+                await loadLocale(activeLang);
+
+                // Build navigation pane
+                renderTree();
+
+                // Update settings modals and right sidebar progress goals
+                updateRightSidebar();
+
+                // Load first scene into editor if none selected
+                if (!activeNodeId) {
+                    loadFirstAvailableScene();
+                } else {
+                    refreshActiveWorkspace();
+                }
+
+            } catch (err) {
+                console.error("Error loading project state:", err);
+            }
+        }
+
+        // FETCH EXTERNAL LOCALIZATION
+        async function loadLocale(lang) {
+            try {
+                const res = await fetch(`/api/locale/${lang}`);
+                translations = await res.json();
+                activeLang = lang;
+                translateDOM();
+            } catch (err) {
+                console.error("Could not load locale:", err);
+            }
+        }
+
+        // TRANSLATE DOM ELEMENTS USING TRANSLATIONS MAP
+        function translateDOM() {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[key]) {
+                    el.innerHTML = translations[key];
+                }
+            });
+
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (translations[key]) {
+                    el.setAttribute('placeholder', translations[key]);
+                }
+            });
+        }
+
+        // HELPER: Format strings with curly braces (e.g., "Written: {written} / {goal}")
+        function formatTranslation(key, params = {}) {
+            let val = translations[key] || "";
+            for (const [k, v] of Object.entries(params)) {
+                val = val.replace(`{${k}}`, v);
+            }
+            return val;
+        }
+
+        // SAVE STATE BACK TO JSON FILE
+        async function persistProject() {
+            try {
+                const res = await fetch('/api/project', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(projectData)
+                });
+                const result = await res.json();
+                projectData = result.data;
+                updateRightSidebar();
+            } catch (err) {
+                console.error("Failed to save project data:", err);
+            }
+        }
+
+        // DEBOUNCED AUTOMATED SAVING
+        function triggerAutoSave() {
+            if (autoSaveTimer) clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(() => {
+                persistProject();
+            }, 800); // 800ms quiet period before saving
+        }
+
+        // DYNAMIC TREE VIEW RENDER
+        function renderTree(filterText = "") {
+            const searchVal = filterText.toLowerCase().trim();
+
+            // Project title in Left Sidebar
+            document.getElementById('project-title-display').innerText = projectData.settings.title;
+
+            // 1. Render Manuscript (Chapters & Scenes)
+            const msList = document.getElementById('manuscript-nodes-list');
+            msList.innerHTML = "";
+
+            projectData.manuscript.forEach(chap => {
+                const matchesChap = chap.title.toLowerCase().includes(searchVal);
+
+                // Gather matching scenes
+                const matchingScenes = chap.children.filter(scene =>
+                    scene.title.toLowerCase().includes(searchVal) ||
+                    scene.content.toLowerCase().includes(searchVal)
+                );
+
+                if (searchVal && !matchesChap && matchingScenes.length === 0) {
+                    return; // Skip since it doesn't match query
+                }
+
+                // Create Chapter node element
+                const chapEl = document.createElement('div');
+                chapEl.className = "group";
+
+                const isChapActive = (activeNodeId === chap.id);
+
+                chapEl.innerHTML = `
+                    <div class="flex items-center justify-between px-2 py-1 rounded-lg text-sm font-semibold ${isChapActive ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-200/50'} cursor-pointer select-none">
+                        <div class="flex items-center space-x-1.5 flex-1 min-w-0" onclick="selectChapter('${chap.id}')">
+                            <span>📁</span>
+                            <span class="truncate">${chap.title}</span>
+                        </div>
+                        <div class="opacity-0 group-hover:opacity-100 flex items-center space-x-1 shrink-0">
+                            <button onclick="event.stopPropagation(); renameItem('${chap.id}', 'chapter')" class="hover:text-indigo-600 p-0.5 text-xs">✏️</button>
+                            <button onclick="event.stopPropagation(); deleteItem('${chap.id}', 'chapter')" class="hover:text-red-600 p-0.5 text-xs">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="pl-4 mt-0.5 space-y-0.5">
+                        ${(searchVal ? matchingScenes : chap.children).map(scene => {
+                            const isSceneActive = (activeNodeId === scene.id);
+                            return `
+                                <div class="group/scene flex items-center justify-between px-2 py-1 rounded-lg text-xs font-medium ${isSceneActive ? 'bg-indigo-100 text-indigo-800 font-bold' : 'text-slate-500 hover:bg-slate-200/50'} cursor-pointer">
+                                    <div class="flex items-center space-x-1.5 flex-1 min-w-0" onclick="selectScene('${scene.id}')">
+                                        <span>📄</span>
+                                        <span class="truncate">${scene.title}</span>
+                                    </div>
+                                    <div class="opacity-0 group-hover/scene:opacity-100 flex items-center space-x-1 shrink-0">
+                                        <button onclick="event.stopPropagation(); renameItem('${scene.id}', 'scene')" class="hover:text-indigo-600 p-0.5">✏️</button>
+                                        <button onclick="event.stopPropagation(); deleteItem('${scene.id}', 'scene')" class="hover:text-red-600 p-0.5">🗑️</button>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+                msList.appendChild(chapEl);
+            });
+
+            // Highlight active state on Plot Grid menu button
+            const plotGridBtn = document.getElementById('plot-grid-menu-item');
+            if (activeNodeType === "plot_grid") {
+                plotGridBtn.className = "flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-bold bg-indigo-50 text-indigo-700 cursor-pointer transition-all";
+            } else {
+                plotGridBtn.className = "flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-200 hover:text-slate-900 cursor-pointer transition-all";
+            }
+
+            // 2. Render Characters
+            const charList = document.getElementById('characters-list');
+            charList.innerHTML = "";
+            projectData.characters.forEach(char => {
+                if (searchVal && !char.name.toLowerCase().includes(searchVal) && !char.role.toLowerCase().includes(searchVal)) {
+                    return;
+                }
+                const isCharActive = (activeNodeId === char.id);
+                const charEl = document.createElement('div');
+                charEl.className = "group/char flex items-center justify-between px-2.5 py-1 rounded-lg text-sm font-medium " +
+                                  (isCharActive ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-600 hover:bg-slate-200/50') +
+                                  " cursor-pointer";
+                charEl.innerHTML = `
+                    <div class="flex items-center space-x-1.5 flex-1 min-w-0" onclick="selectCharacter('${char.id}')">
+                        <span>👤</span>
+                        <span class="truncate">${char.name}</span>
+                    </div>
+                    <div class="opacity-0 group-hover/char:opacity-100 flex items-center space-x-1 shrink-0">
+                        <button onclick="event.stopPropagation(); renameItem('${char.id}', 'character')" class="hover:text-indigo-600 p-0.5 text-xs">✏️</button>
+                        <button onclick="event.stopPropagation(); deleteItem('${char.id}', 'character')" class="hover:text-red-600 p-0.5 text-xs">🗑️</button>
+                    </div>
+                `;
+                charList.appendChild(charEl);
+            });
+
+            // 3. Render Story Notes
+            const noteList = document.getElementById('notes-list');
+            noteList.innerHTML = "";
+            projectData.story_notes.forEach(note => {
+                if (searchVal && !note.title.toLowerCase().includes(searchVal) && !note.content.toLowerCase().includes(searchVal)) {
+                    return;
+                }
+                const isNoteActive = (activeNodeId === note.id);
+                const noteEl = document.createElement('div');
+                noteEl.className = "group/note flex items-center justify-between px-2.5 py-1 rounded-lg text-sm font-medium " +
+                                  (isNoteActive ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-600 hover:bg-slate-200/50') +
+                                  " cursor-pointer";
+                noteEl.innerHTML = `
+                    <div class="flex items-center space-x-1.5 flex-1 min-w-0" onclick="selectNote('${note.id}')">
+                        <span>📌</span>
+                        <span class="truncate">${note.title}</span>
+                    </div>
+                    <div class="opacity-0 group-hover/note:opacity-100 flex items-center space-x-1 shrink-0">
+                        <button onclick="event.stopPropagation(); renameItem('${note.id}', 'note')" class="hover:text-indigo-600 p-0.5 text-xs">✏️</button>
+                        <button onclick="event.stopPropagation(); deleteItem('${note.id}', 'note')" class="hover:text-red-600 p-0.5 text-xs">🗑️</button>
+                    </div>
+                `;
+                noteList.appendChild(noteEl);
+            });
+        }
+
+        // TRIGGER TREE FILTERING
+        function filterTree(val) {
+            renderTree(val);
+        }
+
+        // LOAD FIRST SCENE ON START
+        function loadFirstAvailableScene() {
+            if (projectData.manuscript.length > 0 && projectData.manuscript[0].children.length > 0) {
+                selectScene(projectData.manuscript[0].children[0].id);
+            } else {
+                selectPlotGrid();
+            }
+        }
+
+        // PANELS NAVIGATION & VIEW SWITCHING
+        function switchView(viewName) {
+            document.getElementById('editor-view').classList.add('hidden');
+            document.getElementById('plot-grid-view').classList.add('hidden');
+            document.getElementById('resource-view').classList.add('hidden');
+
+            if (viewName === 'editor') {
+                document.getElementById('editor-view').classList.remove('hidden');
+            } else if (viewName === 'plot') {
+                document.getElementById('plot-grid-view').classList.remove('hidden');
+            } else if (viewName === 'resource') {
+                document.getElementById('resource-view').classList.remove('hidden');
+            }
+        }
+
+        // ACTIVE WORKSPACE REFRESH
+        function refreshActiveWorkspace() {
+            if (activeNodeType === "scene") {
+                const node = findNodeById(activeNodeId);
+                if (node) {
+                    switchView('editor');
+                    document.getElementById('editor-title').value = node.title;
+                    document.getElementById('editor-content').value = node.content || "";
+                    updateEditorWordsCount(node.content || "");
+                }
+            } else if (activeNodeType === "chapter") {
+                const node = findNodeById(activeNodeId);
+                if (node) {
+                    switchView('editor');
+                    document.getElementById('editor-title').value = node.title;
+                    // Gather scenes overview as chapter content
+                    const scenesOverview = node.children.map(s => `- ${s.title}`).join('\n');
+                    document.getElementById('editor-content').value = scenesOverview || "No scenes in this chapter yet.";
+                    updateEditorWordsCount(scenesOverview);
+                }
+            } else if (activeNodeType === "character") {
+                const char = projectData.characters.find(c => c.id === activeNodeId);
+                if (char) {
+                    switchView('resource');
+                    document.getElementById('resource-icon').innerText = "👤";
+                    document.getElementById('resource-title').value = char.name;
+                    document.getElementById('character-fields').classList.remove('hidden');
+                    document.getElementById('note-fields').classList.add('hidden');
+
+                    document.getElementById('char-role').value = char.role || "";
+                    document.getElementById('char-desc').value = char.description || "";
+                }
+            } else if (activeNodeType === "note") {
+                const note = projectData.story_notes.find(n => n.id === activeNodeId);
+                if (note) {
+                    switchView('resource');
+                    document.getElementById('resource-icon').innerText = "📌";
+                    document.getElementById('resource-title').value = note.title;
+                    document.getElementById('character-fields').classList.add('hidden');
+                    document.getElementById('note-fields').classList.remove('hidden');
+
+                    document.getElementById('note-type').value = note.type || "";
+                    document.getElementById('note-content').value = note.content || "";
+                }
+            } else if (activeNodeType === "plot_grid") {
+                switchView('plot');
+                renderPlotGrid();
+            }
+        }
+
+        // SELECT HANDLERS
+        function selectScene(id) {
+            activeNodeId = id;
+            activeNodeType = "scene";
+            renderTree();
+            refreshActiveWorkspace();
+        }
+
+        function selectChapter(id) {
+            activeNodeId = id;
+            activeNodeType = "chapter";
+            renderTree();
+            refreshActiveWorkspace();
+        }
+
+        function selectCharacter(id) {
+            activeNodeId = id;
+            activeNodeType = "character";
+            renderTree();
+            refreshActiveWorkspace();
+        }
+
+        function selectNote(id) {
+            activeNodeId = id;
+            activeNodeType = "note";
+            renderTree();
+            refreshActiveWorkspace();
+        }
+
+        function selectPlotGrid() {
+            activeNodeId = "PLOT_GRID";
+            activeNodeType = "plot_grid";
+            renderTree();
+            refreshActiveWorkspace();
+        }
+
+        // FIND NODE IN MANUSCRIPT HIERARCHY
+        function findNodeById(id, list = projectData.manuscript) {
+            for (const item of list) {
+                if (item.id === id) return item;
+                if (item.children) {
+                    const found = findNodeById(id, item.children);
+                    if (found) return found;
+                }
+            }
+            return null;
+        }
+
+        // INPUT CHANGED HANDLERS (EDITOR / RESOURCE)
+        function onEditorInput(field, val) {
+            if (activeNodeType === "scene") {
+                const node = findNodeById(activeNodeId);
+                if (node) {
+                    node[field] = val;
+                    if (field === 'title') {
+                        // Refresh tree live to show title change
+                        renderTree();
+                    } else if (field === 'content') {
+                        updateEditorWordsCount(val);
+                    }
+                    triggerAutoSave();
+                }
+            } else if (activeNodeType === "chapter" && field === "title") {
+                const node = findNodeById(activeNodeId);
+                if (node) {
+                    node.title = val;
+                    renderTree();
+                    triggerAutoSave();
+                }
+            }
+        }
+
+        function onResourceInput(field, val) {
+            if (activeNodeType === "character") {
+                const char = projectData.characters.find(c => c.id === activeNodeId);
+                if (char) {
+                    if (field === 'title') {
+                        char.name = val;
+                        renderTree();
+                    } else {
+                        char[field] = val;
+                    }
+                    triggerAutoSave();
+                }
+            } else if (activeNodeType === "note") {
+                const note = projectData.story_notes.find(n => n.id === activeNodeId);
+                if (note) {
+                    if (field === 'title') {
+                        note.title = val;
+                        renderTree();
+                    } else {
+                        note[field] = val;
+                    }
+                    triggerAutoSave();
+                }
+            }
+        }
+
+        // WORD COUNTERS UPDATES
+        function updateEditorWordsCount(text) {
+            const cleanText = text.trim();
+            const words = cleanText ? cleanText.split(/\s+/).length : 0;
+            const chars = text.length;
+
+            document.getElementById('editor-words-count').innerText = formatTranslation("words_count", { words });
+            document.getElementById('editor-chars-count').innerText = formatTranslation("chars_count", { chars });
+        }
+
+        // WORD GOALS & PROGRESS UPDATE
+        function updateRightSidebar() {
+            // Recompute overall written word count
+            let totalWords = 0;
+            projectData.manuscript.forEach(chap => {
+                chap.children.forEach(scene => {
+                    const cleanText = (scene.content || "").trim();
+                    if (cleanText) {
+                        totalWords += cleanText.split(/\s+/).length;
+                    }
+                });
+            });
+
+            projectData.settings.overall_written = totalWords;
+
+            const dailyGoal = projectData.settings.daily_goal || 500;
+            const overallGoal = projectData.settings.overall_goal || 50000;
+            const dailyWritten = Math.min(dailyGoal, totalWords); // simplified simulation
+
+            // Update inputs and sliders
+            document.getElementById('daily-goal-input').value = dailyGoal;
+
+            // Update text elements
+            document.getElementById('daily-progress-text').innerText = formatTranslation("daily_progress", { written: dailyWritten, goal: dailyGoal });
+            document.getElementById('overall-progress-text').innerText = formatTranslation("overall_progress", { written: totalWords, goal: overallGoal });
+
+            // Update bars
+            const dailyPct = Math.min(100, (dailyWritten / dailyGoal) * 100);
+            const overallPct = Math.min(100, (totalWords / overallGoal) * 100);
+
+            document.getElementById('daily-progress-bar').style.width = `${dailyPct}%`;
+            document.getElementById('overall-progress-bar').style.width = `${overallPct}%`;
+        }
+
+        function onDailyGoalChange(val) {
+            projectData.settings.daily_goal = parseInt(val) || 500;
+            updateRightSidebar();
+            persistProject();
+        }
+
+        // ADDING NODES (CHAPTERS / SCENES / ASSETS)
+        function generateId(prefix) {
+            return `${prefix}_${Math.random().toString(36).substr(2, 9)}`;
+        }
+
+        function addNewChapter() {
+            const num = projectData.manuscript.length + 1;
+            const newTitle = `${translations["new_chapter_title"] || "New Chapter"} ${num}`;
+            const newChap = {
+                id: generateId("chap"),
+                type: "chapter",
+                title: newTitle,
+                children: []
+            };
+            projectData.manuscript.push(newChap);
+
+            renderTree();
+            selectChapter(newChap.id);
+            persistProject();
+        }
+
+        function addNewScene() {
+            let parentChapId = null;
+
+            // Use currently selected chapter if scene/chapter is selected
+            if (activeNodeType === "chapter") {
+                parentChapId = activeNodeId;
+            } else if (activeNodeType === "scene") {
+                // Find parent chapter
+                for (const chap of projectData.manuscript) {
+                    if (chap.children.some(s => s.id === activeNodeId)) {
+                        parentChapId = chap.id;
+                        break;
+                    }
+                }
+            }
+
+            // Fallback to last chapter
+            if (!parentChapId && projectData.manuscript.length > 0) {
+                parentChapId = projectData.manuscript[projectData.manuscript.length - 1].id;
+            }
+
+            if (!parentChapId) {
+                // Create a chapter first if none exists
+                addNewChapter();
+                return;
+            }
+
+            const chap = findNodeById(parentChapId);
+            const num = chap.children.length + 1;
+            const newTitle = `${translations["new_scene_title"] || "New Scene"} ${num}`;
+            const newScene = {
+                id: generateId("scene"),
+                type: "scene",
+                title: newTitle,
+                content: ""
+            };
+            chap.children.push(newScene);
+
+            renderTree();
+            selectScene(newScene.id);
+            persistProject();
+        }
+
+        function showAssetMenu() {
+            const dropdown = document.getElementById('asset-menu-dropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        function addNewCharacter() {
+            document.getElementById('asset-menu-dropdown').classList.add('hidden');
+            const num = projectData.characters.length + 1;
+            const newChar = {
+                id: generateId("char"),
+                name: `${translations["new_character_title"] || "New Character"} ${num}`,
+                role: "Major Character",
+                description: ""
+            };
+            projectData.characters.push(newChar);
+
+            renderTree();
+            selectCharacter(newChar.id);
+            persistProject();
+        }
+
+        function addNewNote() {
+            document.getElementById('asset-menu-dropdown').classList.add('hidden');
+            const num = projectData.story_notes.length + 1;
+            const newNote = {
+                id: generateId("note"),
+                title: `${translations["new_note_title"] || "New Note"} ${num}`,
+                type: "Location",
+                content: ""
+            };
+            projectData.story_notes.push(newNote);
+
+            renderTree();
+            selectNote(newNote.id);
+            persistProject();
+        }
+
+        // DELETING & RENAMING NODES
+        function deleteItem(id, type) {
+            const confirmMsg = translations["confirm_delete"] || "Are you sure you want to delete this item?";
+            if (!confirm(confirmMsg)) return;
+
+            if (type === "chapter" || type === "scene") {
+                deleteManuscriptNode(id, projectData.manuscript);
+            } else if (type === "character") {
+                projectData.characters = projectData.characters.filter(c => c.id !== id);
+            } else if (type === "note") {
+                projectData.story_notes = projectData.story_notes.filter(n => n.id !== id);
+            }
+
+            // Clean up active state if deleted item was selected
+            if (activeNodeId === id) {
+                activeNodeId = null;
+                activeNodeType = null;
+            }
+
+            renderTree();
+            loadFirstAvailableScene();
+            persistProject();
+        }
+
+        function deleteManuscriptNode(id, list) {
+            for (let i = 0; i < list.length; i++) {
+                if (list[i].id === id) {
+                    // Clean related plot cards if deleting a scene
+                    if (list[i].type === "scene") {
+                        projectData.plot.cards = projectData.plot.cards.filter(card => card.scene_id !== id);
+                    }
+                    list.splice(i, 1);
+                    return true;
+                }
+                if (list[i].children) {
+                    const deleted = deleteManuscriptNode(id, list[i].children);
+                    if (deleted) return true;
+                }
+            }
+            return false;
+        }
+
+        function renameItem(id, type) {
+            const item = (type === "character") ? projectData.characters.find(c => c.id === id) :
+                         (type === "note") ? projectData.story_notes.find(n => n.id === id) : findNodeById(id);
+
+            if (!item) return;
+            const nameField = (type === "character") ? "name" : "title";
+
+            const newName = prompt("Rename / Renommer :", item[nameField]);
+            if (newName && newName.trim()) {
+                item[nameField] = newName.trim();
+                renderTree();
+                refreshActiveWorkspace();
+                persistProject();
+            }
+        }
+
+        // EXPORT THE ENTIRE NOVEL
+        async function exportDraft() {
+            try {
+                // Post save first to ensure we export latest
+                await persistProject();
+
+                const response = await fetch('/api/export', { method: 'POST' });
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+
+                    const cleanTitle = (projectData.settings.title || "roman").replace(/\s+/g, '_');
+                    a.download = `${cleanTitle}_draft.txt`;
+
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                } else {
+                    alert("Export failed.");
+                }
+            } catch (err) {
+                console.error("Export error:", err);
+            }
+        }
+
+        // LANGUAGE CHANGE HANDLER
+        async function changeLanguage(lang) {
+            projectData.settings.lang = lang;
+            await loadLocale(lang);
+            renderTree();
+            updateRightSidebar();
+            persistProject();
+        }
+
+        // MODAL MANAGEMENT: SETTINGS
+        function openSettingsModal() {
+            document.getElementById('settings-title-input').value = projectData.settings.title;
+            document.getElementById('settings-goal-input').value = projectData.settings.overall_goal;
+            document.getElementById('settings-modal').classList.remove('hidden');
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settings-modal').classList.add('hidden');
+        }
+
+        function saveProjectSettings() {
+            projectData.settings.title = document.getElementById('settings-title-input').value;
+            projectData.settings.overall_goal = parseInt(document.getElementById('settings-goal-input').value) || 50000;
+
+            closeSettingsModal();
+            renderTree();
+            updateRightSidebar();
+            persistProject();
+        }
+
+        // MODAL MANAGEMENT: ABOUT
+        function openAboutModal() {
+            document.getElementById('about-modal').classList.remove('hidden');
+        }
+        function closeAboutModal() {
+            document.getElementById('about-modal').classList.add('hidden');
+        }
+
+        // POMODORO TIMER MANAGEMENT
+        function onTimerSlider(val) {
+            timerDurationMinutes = val;
+            timerSecondsLeft = val * 60;
+            updateTimerDisplay();
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(timerSecondsLeft / 60);
+            const secs = timerSecondsLeft % 60;
+            document.getElementById('timer-display').innerText =
+                `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function toggleTimer() {
+            const startBtn = document.getElementById('timer-start-btn');
+
+            if (timerIsRunning) {
+                // Pause timer
+                clearInterval(timerIntervalId);
+                timerIsRunning = false;
+                startBtn.innerText = translations["start"] || "Start";
+                startBtn.className = "flex-1 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold py-1.5 px-2 rounded-lg shadow-sm transition-all";
+            } else {
+                // Start timer
+                timerIsRunning = true;
+                startBtn.innerText = translations["pause"] || "Pause";
+                startBtn.className = "flex-1 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold py-1.5 px-2 rounded-lg shadow-sm transition-all";
+
+                timerIntervalId = setInterval(() => {
+                    if (timerSecondsLeft > 0) {
+                        timerSecondsLeft--;
+                        updateTimerDisplay();
+                    } else {
+                        // Timer completed!
+                        clearInterval(timerIntervalId);
+                        timerIsRunning = false;
+                        startBtn.innerText = translations["start"] || "Start";
+                        startBtn.className = "flex-1 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold py-1.5 px-2 rounded-lg shadow-sm transition-all";
+                        alert("Focus session completed! Take a short break! ☕");
+                        resetTimer();
+                    }
+                }, 1000);
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerIntervalId);
+            timerIsRunning = false;
+            timerSecondsLeft = timerDurationMinutes * 60;
+            updateTimerDisplay();
+
+            const startBtn = document.getElementById('timer-start-btn');
+            startBtn.innerText = translations["start"] || "Start";
+            startBtn.className = "flex-1 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold py-1.5 px-2 rounded-lg shadow-sm transition-all";
+        }
+
+
+        // DABBLE PLOT GRID DYNAMIC RENDERING
+        let currentEditingCard = null;
+
+        function getScenesList() {
+            const scenes = [];
+            projectData.manuscript.forEach(chap => {
+                chap.children.forEach(scene => {
+                    scenes.push(scene);
+                });
+            });
+            return scenes;
+        }
+
+        function renderPlotGrid() {
+            const scenes = getScenesList();
+
+            // Build headers (Column 1 is the Title Corner, then all Scenes)
+            const headersRow = document.getElementById('plot-grid-headers');
+            headersRow.innerHTML = `
+                <th class="p-4 border border-slate-200/80 text-left bg-slate-100 font-bold text-slate-500 text-xs w-48" data-i18n="plot_lanes_scenes">Intrigues / Scènes</th>
+                ${scenes.map(scene => `
+                    <th class="p-4 border border-slate-200/80 text-center bg-teal-50 text-teal-950 font-bold text-xs min-w-[180px] max-w-[200px]">
+                        <div class="truncate" title="${scene.title}">${scene.title}</div>
+                    </th>
+                `).join('')}
+            `;
+
+            // Build body rows for each plotline
+            const body = document.getElementById('plot-grid-body');
+            body.innerHTML = "";
+
+            projectData.plot.plotlines.forEach(plotline => {
+                const tr = document.createElement('tr');
+
+                // Plotline Title Cell
+                let tdHtml = `
+                    <td class="p-4 border border-slate-200/80 bg-purple-50/40 font-bold text-purple-950 text-sm align-middle">
+                        <div class="font-georgia italic">${plotline.title}</div>
+                    </td>
+                `;
+
+                // Render cell for each scene
+                scenes.forEach(scene => {
+                    const card = projectData.plot.cards.find(c => c.plotline_id === plotline.id && c.scene_id === scene.id);
+
+                    if (card) {
+                        tdHtml += `
+                            <td class="p-3 border border-slate-200/80 align-top max-w-[200px]">
+                                <div onclick="openPlotCardModal('${card.id}')" class="bg-indigo-50/50 hover:bg-indigo-50 border border-indigo-200 rounded-lg p-2.5 h-24 flex flex-col justify-between cursor-pointer shadow-xs transition-all select-none">
+                                    <div class="text-xs font-bold text-indigo-900 truncate mb-1" title="${card.title}">${card.title}</div>
+                                    <div class="text-[11px] text-slate-500 line-clamp-3 leading-tight overflow-hidden">${card.content || "..."}</div>
+                                </div>
+                            </td>
+                        `;
+                    } else {
+                        tdHtml += `
+                            <td class="p-3 border border-slate-200/80 align-middle max-w-[200px]">
+                                <button onclick="addPlotCard('${plotline.id}', '${scene.id}')" class="w-full py-3 hover:bg-slate-50 border border-dashed border-slate-200 hover:border-slate-300 rounded-lg text-slate-400 hover:text-slate-600 text-xs font-medium transition-all" data-i18n="add_plot_card">
+                                    + Ajouter carte
+                                </button>
+                            </td>
+                        `;
+                    }
+                });
+
+                tr.innerHTML = tdHtml;
+                body.appendChild(tr);
+            });
+
+            translateDOM();
+        }
+
+        // PLOT CARDS INTERACTIONS
+        function addPlotCard(plotlineId, sceneId) {
+            const cardId = generateId("card");
+            const newCard = {
+                id: cardId,
+                plotline_id: plotlineId,
+                scene_id: sceneId,
+                title: translations["new_scene_title"] ? `${translations["new_scene_title"]} Card` : "New Card",
+                content: ""
+            };
+            projectData.plot.cards.push(newCard);
+            renderPlotGrid();
+            openPlotCardModal(cardId);
+        }
+
+        function openPlotCardModal(cardId) {
+            const card = projectData.plot.cards.find(c => c.id === cardId);
+            if (!card) return;
+
+            currentEditingCard = card;
+            document.getElementById('plot-card-title-input').value = card.title;
+            document.getElementById('plot-card-desc-input').value = card.content || "";
+            document.getElementById('plot-card-modal').classList.remove('hidden');
+        }
+
+        function closePlotCardModal() {
+            document.getElementById('plot-card-modal').classList.add('hidden');
+            currentEditingCard = null;
+        }
+
+        function savePlotCard() {
+            if (currentEditingCard) {
+                currentEditingCard.title = document.getElementById('plot-card-title-input').value;
+                currentEditingCard.content = document.getElementById('plot-card-desc-input').value;
+                closePlotCardModal();
+                renderPlotGrid();
+                persistProject();
+            }
+        }
+
+        function deletePlotCard() {
+            if (currentEditingCard) {
+                projectData.plot.cards = projectData.plot.cards.filter(c => c.id !== currentEditingCard.id);
+                closePlotCardModal();
+                renderPlotGrid();
+                persistProject();
+            }
+        }
+    </script>
+</body>
+</html>
