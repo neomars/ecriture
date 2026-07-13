@@ -33,6 +33,14 @@ Pour exécuter l'application sur votre machine, suivez ces étapes simples :
 
 ### Prérequis
 * **Python 3.8** ou supérieur installé sur votre système.
+* **Tkinter** (généralement inclus avec Python, mais nécessite d'être installé séparément sur certaines distributions Linux comme Ubuntu/Debian).
+
+> 💡 **Résoudre l'erreur "No module named 'tkinter'" sous Linux (Ubuntu/Debian) :**
+> Si vous obtenez l'erreur `ModuleNotFoundError: No module named 'tkinter'`, installez Tkinter avec la commande suivante :
+> ```bash
+> sudo apt update
+> sudo apt install python3-tk
+> ```
 
 ### Étape 1 : Créer et activer un environnement virtuel (Recommandé)
 Il est fortement recommandé d'utiliser un environnement virtuel pour isoler les dépendances du projet.
