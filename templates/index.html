@@ -141,18 +141,20 @@
             <div class="p-3 bg-slate-50 border-t border-slate-200 grid grid-cols-3 gap-1 shrink-0">
                 <button onclick="addNewChapter()" class="bg-blue-500 hover:bg-blue-600 text-white py-1.5 px-1 rounded text-xs font-bold shadow-sm transition-all" data-i18n="add_chapter">+ Chapitre</button>
                 <button onclick="addNewScene()" class="bg-emerald-500 hover:bg-emerald-600 text-white py-1.5 px-1 rounded text-xs font-bold shadow-sm transition-all" data-i18n="add_scene">+ Scène</button>
-                <button onclick="showAssetMenu()" class="bg-purple-500 hover:bg-purple-600 text-white py-1.5 px-1 rounded text-xs font-bold shadow-sm transition-all relative">
-                    <span data-i18n="add_asset">+ Ressource</span>
+                <div class="relative">
+                    <button onclick="showAssetMenu(); event.stopPropagation();" class="w-full h-full bg-purple-500 hover:bg-purple-600 text-white py-1.5 px-1 rounded text-xs font-bold shadow-sm transition-all flex items-center justify-center">
+                        <span data-i18n="add_asset">+ Ressource</span>
+                    </button>
                     <!-- Dropdown for Asset creation -->
                     <div id="asset-menu-dropdown" class="hidden absolute bottom-12 left-0 w-44 bg-white border border-slate-200 rounded-lg shadow-xl py-1 text-slate-700 z-20 text-left">
-                        <button onclick="addNewCharacter()" class="w-full px-3 py-2 hover:bg-slate-100 text-xs font-semibold flex items-center space-x-1.5">
+                        <button onclick="addNewCharacter(); event.stopPropagation();" class="w-full px-3 py-2 hover:bg-slate-100 text-xs font-semibold flex items-center space-x-1.5 text-left">
                             <span>👤</span> <span data-i18n="add_character">Ajouter personnage</span>
                         </button>
-                        <button onclick="addNewNote()" class="w-full px-3 py-2 hover:bg-slate-100 text-xs font-semibold flex items-center space-x-1.5">
+                        <button onclick="addNewNote(); event.stopPropagation();" class="w-full px-3 py-2 hover:bg-slate-100 text-xs font-semibold flex items-center space-x-1.5 text-left">
                             <span>📌</span> <span data-i18n="add_note">Ajouter note</span>
                         </button>
                     </div>
-                </button>
+                </div>
             </div>
         </aside>
 
