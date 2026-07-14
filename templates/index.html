@@ -591,62 +591,69 @@
             const searchVal = filterText.toLowerCase().trim();
 
             // Project title in Left Sidebar
-            document.getElementById('project-title-display').innerText = projectData.settings.title;
+            document.getElementById('project-title-display').innerText = (projectData && projectData.settings && projectData.settings.title) || "";
 
             // 1. Render Manuscript (Chapters & Scenes)
             const msList = document.getElementById('manuscript-nodes-list');
             msList.innerHTML = "";
 
-            projectData.manuscript.forEach(chap => {
-                const matchesChap = chap.title.toLowerCase().includes(searchVal);
+            if (projectData && projectData.manuscript) {
+                projectData.manuscript.forEach(chap => {
+                    const chapTitle = chap.title || "";
+                    const matchesChap = chapTitle.toLowerCase().includes(searchVal);
 
-                // Gather matching scenes
-                const matchingScenes = chap.children.filter(scene =>
-                    scene.title.toLowerCase().includes(searchVal) ||
-                    scene.content.toLowerCase().includes(searchVal)
-                );
+                    // Gather matching scenes
+                    const childrenList = chap.children || [];
+                    const matchingScenes = childrenList.filter(scene => {
+                        const sceneTitle = scene.title || "";
+                        const sceneContent = scene.content || "";
+                        return sceneTitle.toLowerCase().includes(searchVal) ||
+                               sceneContent.toLowerCase().includes(searchVal);
+                    });
 
-                if (searchVal && !matchesChap && matchingScenes.length === 0) {
-                    return; // Skip since it doesn't match query
-                }
+                    if (searchVal && !matchesChap && matchingScenes.length === 0) {
+                        return; // Skip since it doesn't match query
+                    }
 
-                // Create Chapter node element
-                const chapEl = document.createElement('div');
-                chapEl.className = "group";
+                    // Create Chapter node element
+                    const chapEl = document.createElement('div');
+                    chapEl.className = "group";
 
-                const isChapActive = (activeNodeId === chap.id);
+                    const isChapActive = (activeNodeId === chap.id);
 
-                chapEl.innerHTML = `
-                    <div class="flex items-center justify-between px-2 py-1 rounded-lg text-sm font-semibold ${isChapActive ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-200/50'} cursor-pointer select-none">
-                        <div class="flex items-center space-x-1.5 flex-1 min-w-0" onclick="selectChapter('${chap.id}')">
-                            <span>📁</span>
-                            <span class="truncate">${chap.title}</span>
+                    chapEl.innerHTML = `
+                        <div class="flex items-center justify-between px-2 py-1 rounded-lg text-sm font-semibold ${isChapActive ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-200/50'} cursor-pointer select-none">
+                            <div class="flex items-center space-x-1.5 flex-1 min-w-0" onclick="selectChapter('${chap.id}')">
+                                <span>📁</span>
+                                <span class="truncate">${chapTitle}</span>
+                            </div>
+                            <div class="opacity-0 group-hover:opacity-100 flex items-center space-x-1 shrink-0">
+                                <button onclick="event.stopPropagation(); renameItem('${chap.id}', 'chapter')" class="hover:text-indigo-600 p-0.5 text-xs">✏️</button>
+                                <button onclick="event.stopPropagation(); deleteItem('${chap.id}', 'chapter')" class="hover:text-red-600 p-0.5 text-xs">🗑️</button>
+                            </div>
                         </div>
-                        <div class="opacity-0 group-hover:opacity-100 flex items-center space-x-1 shrink-0">
-                            <button onclick="event.stopPropagation(); renameItem('${chap.id}', 'chapter')" class="hover:text-indigo-600 p-0.5 text-xs">✏️</button>
-                            <button onclick="event.stopPropagation(); deleteItem('${chap.id}', 'chapter')" class="hover:text-red-600 p-0.5 text-xs">🗑️</button>
+                        <div class="pl-4 mt-0.5 space-y-0.5">
+                            ${(searchVal ? matchingScenes : childrenList).map(scene => {
+                                const isSceneActive = (activeNodeId === scene.id);
+                                const sceneTitle = scene.title || "";
+                                return `
+                                    <div class="group/scene flex items-center justify-between px-2 py-1 rounded-lg text-xs font-medium ${isSceneActive ? 'bg-indigo-100 text-indigo-800 font-bold' : 'text-slate-500 hover:bg-slate-200/50'} cursor-pointer">
+                                        <div class="flex items-center space-x-1.5 flex-1 min-w-0" onclick="selectScene('${scene.id}')">
+                                            <span>📄</span>
+                                            <span class="truncate">${sceneTitle}</span>
+                                        </div>
+                                        <div class="opacity-0 group-hover/scene:opacity-100 flex items-center space-x-1 shrink-0">
+                                            <button onclick="event.stopPropagation(); renameItem('${scene.id}', 'scene')" class="hover:text-indigo-600 p-0.5">✏️</button>
+                                            <button onclick="event.stopPropagation(); deleteItem('${scene.id}', 'scene')" class="hover:text-red-600 p-0.5">🗑️</button>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
                         </div>
-                    </div>
-                    <div class="pl-4 mt-0.5 space-y-0.5">
-                        ${(searchVal ? matchingScenes : chap.children).map(scene => {
-                            const isSceneActive = (activeNodeId === scene.id);
-                            return `
-                                <div class="group/scene flex items-center justify-between px-2 py-1 rounded-lg text-xs font-medium ${isSceneActive ? 'bg-indigo-100 text-indigo-800 font-bold' : 'text-slate-500 hover:bg-slate-200/50'} cursor-pointer">
-                                    <div class="flex items-center space-x-1.5 flex-1 min-w-0" onclick="selectScene('${scene.id}')">
-                                        <span>📄</span>
-                                        <span class="truncate">${scene.title}</span>
-                                    </div>
-                                    <div class="opacity-0 group-hover/scene:opacity-100 flex items-center space-x-1 shrink-0">
-                                        <button onclick="event.stopPropagation(); renameItem('${scene.id}', 'scene')" class="hover:text-indigo-600 p-0.5">✏️</button>
-                                        <button onclick="event.stopPropagation(); deleteItem('${scene.id}', 'scene')" class="hover:text-red-600 p-0.5">🗑️</button>
-                                    </div>
-                                </div>
-                            `;
-                        }).join('')}
-                    </div>
-                `;
-                msList.appendChild(chapEl);
-            });
+                    `;
+                    msList.appendChild(chapEl);
+                });
+            }
 
             // Highlight active state on Plot Grid menu button
             const plotGridBtn = document.getElementById('plot-grid-menu-item');
@@ -659,52 +666,60 @@
             // 2. Render Characters
             const charList = document.getElementById('characters-list');
             charList.innerHTML = "";
-            projectData.characters.forEach(char => {
-                if (searchVal && !char.name.toLowerCase().includes(searchVal) && !char.role.toLowerCase().includes(searchVal)) {
-                    return;
-                }
-                const isCharActive = (activeNodeId === char.id);
-                const charEl = document.createElement('div');
-                charEl.className = "group/char flex items-center justify-between px-2.5 py-1 rounded-lg text-sm font-medium " +
-                                  (isCharActive ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-600 hover:bg-slate-200/50') +
-                                  " cursor-pointer";
-                charEl.innerHTML = `
-                    <div class="flex items-center space-x-1.5 flex-1 min-w-0" onclick="selectCharacter('${char.id}')">
-                        <span>👤</span>
-                        <span class="truncate">${char.name}</span>
-                    </div>
-                    <div class="opacity-0 group-hover/char:opacity-100 flex items-center space-x-1 shrink-0">
-                        <button onclick="event.stopPropagation(); renameItem('${char.id}', 'character')" class="hover:text-indigo-600 p-0.5 text-xs">✏️</button>
-                        <button onclick="event.stopPropagation(); deleteItem('${char.id}', 'character')" class="hover:text-red-600 p-0.5 text-xs">🗑️</button>
-                    </div>
-                `;
-                charList.appendChild(charEl);
-            });
+            if (projectData && projectData.characters) {
+                projectData.characters.forEach(char => {
+                    const charName = char.name || "";
+                    const charRole = char.role || "";
+                    if (searchVal && !charName.toLowerCase().includes(searchVal) && !charRole.toLowerCase().includes(searchVal)) {
+                        return;
+                    }
+                    const isCharActive = (activeNodeId === char.id);
+                    const charEl = document.createElement('div');
+                    charEl.className = "group/char flex items-center justify-between px-2.5 py-1 rounded-lg text-sm font-medium " +
+                                      (isCharActive ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-600 hover:bg-slate-200/50') +
+                                      " cursor-pointer";
+                    charEl.innerHTML = `
+                        <div class="flex items-center space-x-1.5 flex-1 min-w-0" onclick="selectCharacter('${char.id}')">
+                            <span>👤</span>
+                            <span class="truncate">${charName}</span>
+                        </div>
+                        <div class="opacity-0 group-hover/char:opacity-100 flex items-center space-x-1 shrink-0">
+                            <button onclick="event.stopPropagation(); renameItem('${char.id}', 'character')" class="hover:text-indigo-600 p-0.5 text-xs">✏️</button>
+                            <button onclick="event.stopPropagation(); deleteItem('${char.id}', 'character')" class="hover:text-red-600 p-0.5 text-xs">🗑️</button>
+                        </div>
+                    `;
+                    charList.appendChild(charEl);
+                });
+            }
 
             // 3. Render Story Notes
             const noteList = document.getElementById('notes-list');
             noteList.innerHTML = "";
-            projectData.story_notes.forEach(note => {
-                if (searchVal && !note.title.toLowerCase().includes(searchVal) && !note.content.toLowerCase().includes(searchVal)) {
-                    return;
-                }
-                const isNoteActive = (activeNodeId === note.id);
-                const noteEl = document.createElement('div');
-                noteEl.className = "group/note flex items-center justify-between px-2.5 py-1 rounded-lg text-sm font-medium " +
-                                  (isNoteActive ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-600 hover:bg-slate-200/50') +
-                                  " cursor-pointer";
-                noteEl.innerHTML = `
-                    <div class="flex items-center space-x-1.5 flex-1 min-w-0" onclick="selectNote('${note.id}')">
-                        <span>📌</span>
-                        <span class="truncate">${note.title}</span>
-                    </div>
-                    <div class="opacity-0 group-hover/note:opacity-100 flex items-center space-x-1 shrink-0">
-                        <button onclick="event.stopPropagation(); renameItem('${note.id}', 'note')" class="hover:text-indigo-600 p-0.5 text-xs">✏️</button>
-                        <button onclick="event.stopPropagation(); deleteItem('${note.id}', 'note')" class="hover:text-red-600 p-0.5 text-xs">🗑️</button>
-                    </div>
-                `;
-                noteList.appendChild(noteEl);
-            });
+            if (projectData && projectData.story_notes) {
+                projectData.story_notes.forEach(note => {
+                    const noteTitle = note.title || "";
+                    const noteContent = note.content || "";
+                    if (searchVal && !noteTitle.toLowerCase().includes(searchVal) && !noteContent.toLowerCase().includes(searchVal)) {
+                        return;
+                    }
+                    const isNoteActive = (activeNodeId === note.id);
+                    const noteEl = document.createElement('div');
+                    noteEl.className = "group/note flex items-center justify-between px-2.5 py-1 rounded-lg text-sm font-medium " +
+                                      (isNoteActive ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-600 hover:bg-slate-200/50') +
+                                      " cursor-pointer";
+                    noteEl.innerHTML = `
+                        <div class="flex items-center space-x-1.5 flex-1 min-w-0" onclick="selectNote('${note.id}')">
+                            <span>📌</span>
+                            <span class="truncate">${noteTitle}</span>
+                        </div>
+                        <div class="opacity-0 group-hover/note:opacity-100 flex items-center space-x-1 shrink-0">
+                            <button onclick="event.stopPropagation(); renameItem('${note.id}', 'note')" class="hover:text-indigo-600 p-0.5 text-xs">✏️</button>
+                            <button onclick="event.stopPropagation(); deleteItem('${note.id}', 'note')" class="hover:text-red-600 p-0.5 text-xs">🗑️</button>
+                        </div>
+                    `;
+                    noteList.appendChild(noteEl);
+                });
+            }
         }
 
         // TRIGGER TREE FILTERING
@@ -714,8 +729,17 @@
 
         // LOAD FIRST SCENE ON START
         function loadFirstAvailableScene() {
-            if (projectData.manuscript.length > 0 && projectData.manuscript[0].children.length > 0) {
-                selectScene(projectData.manuscript[0].children[0].id);
+            let firstSceneId = null;
+            if (projectData && projectData.manuscript) {
+                for (const chap of projectData.manuscript) {
+                    if (chap.children && chap.children.length > 0) {
+                        firstSceneId = chap.children[0].id;
+                        break;
+                    }
+                }
+            }
+            if (firstSceneId) {
+                selectScene(firstSceneId);
             } else {
                 selectPlotGrid();
             }
