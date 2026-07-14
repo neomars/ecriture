@@ -50,5 +50,10 @@
   "new_scene_title": "New Scene",
   "new_character_title": "New Character",
   "new_note_title": "New Story Note",
-  "confirm_delete": "Are you sure you want to delete this item?"
+  "confirm_delete": "Are you sure you want to delete this item?",
+  "ai_assistant": "AI Assistant (Ollama)",
+  "chat_placeholder": "Ask a question about your novel...",
+  "send": "Send",
+  "clear_chat": "Clear",
+  "chat_welcome": "Hello! I am your Ecriture assistant. Ask me questions about your characters, plot, or ask for ideas on your current scene."
 }

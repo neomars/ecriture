@@ -116,5 +116,22 @@ class TestEcritureWebApp(unittest.TestCase):
         self.assertIn('filename', data)
         self.assertEqual(data['data']['settings']['title'], "Test Creation Novel")
 
+    def test_ai_chat_api(self):
+        """Test the AI Chat offline fallback."""
+        payload = {
+            "messages": [
+                {"role": "user", "content": "Peux-tu m'aider à faire un plan ?"}
+            ],
+            "model": "llama3"
+        }
+        response = self.client.post('/api/ai/chat',
+                                    data=json.dumps(payload),
+                                    content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data)
+        self.assertIn('status', data)
+        self.assertIn('message', data)
+        self.assertIn('model', data)
+
 if __name__ == '__main__':
     unittest.main()

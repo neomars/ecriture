@@ -210,6 +210,94 @@ def export_draft():
     except Exception as e:
         return jsonify({"error": f"Failed to export: {str(e)}"}), 500
 
+@app.route('/api/ai/chat', methods=['POST'])
+def ai_chat():
+    """Proxy or fallback endpoint for a local Ollama AI assistant."""
+    import urllib.request
+    import urllib.error
+
+    payload = request.json or {}
+    messages = payload.get("messages", [])
+    model = payload.get("model", "llama3")
+
+    # 1. Check if Ollama is reachable and find any installed models
+    ollama_url = "http://localhost:11434"
+    selected_model = model
+
+    try:
+        # Check available tags/models to auto-select if user did not specify/fallback
+        req_tags = urllib.request.Request(f"{ollama_url}/api/tags", method="GET")
+        with urllib.request.urlopen(req_tags, timeout=2) as response:
+            tags_data = json.loads(response.read().decode('utf-8'))
+            models = tags_data.get("models", [])
+            if models:
+                available_names = [m["name"] for m in models]
+                if selected_model not in available_names and f"{selected_model}:latest" not in available_names:
+                    selected_model = models[0]["name"]
+    except Exception:
+        # If we can't reach Ollama, trigger fallback/simulation mode
+        pass
+
+    # 2. Try querying Ollama chat endpoint
+    try:
+        chat_payload = {
+            "model": selected_model,
+            "messages": messages,
+            "stream": False
+        }
+        req_chat = urllib.request.Request(
+            f"{ollama_url}/api/chat",
+            data=json.dumps(chat_payload).encode('utf-8'),
+            headers={'Content-Type': 'application/json'},
+            method="POST"
+        )
+        with urllib.request.urlopen(req_chat, timeout=15) as response:
+            chat_response = json.loads(response.read().decode('utf-8'))
+            assistant_message = chat_response.get("message", {}).get("content", "")
+            return jsonify({
+                "status": "success",
+                "message": assistant_message,
+                "model": selected_model
+            })
+    except Exception as e:
+        # Graceful fallback simulation
+        user_text = ""
+        if messages:
+            user_text = messages[-1].get("content", "").lower()
+
+        # Build simulated responses based on keywords
+        if any(kw in user_text for kw in ["plan", "intrigue", "plot"]):
+            simulation = (
+                "[Assistant IA (Ollama Simulation - Hors ligne)]\n"
+                "Pour structurer votre intrigue, je vous suggère de suivre le schéma narratif :\n"
+                "1. Situation initiale : Présentation du protagoniste et du cadre.\n"
+                "2. Élément déclencheur : Un bouleversement majeur.\n"
+                "3. Péripéties : Obstacles et évolution des personnages.\n"
+                "4. Climax : Le point de tension maximale.\n"
+                "5. Dénouement : Résolution de l'intrigue."
+            )
+        elif any(kw in user_text for kw in ["personnage", "character", "heros", "héro"]):
+            simulation = (
+                "[Assistant IA (Ollama Simulation - Hors ligne)]\n"
+                "Voici quelques idées pour approfondir un personnage :\n"
+                "- Quel est son plus grand secret ?\n"
+                "- Quelle est sa motivation principale (désir profond vs. besoin inconscient) ?\n"
+                "- Ajoutez un défaut physique ou une habitude unique pour le rendre mémorable."
+            )
+        else:
+            simulation = (
+                "[Assistant IA (Ollama Simulation - Hors ligne)]\n"
+                "Bonjour ! Je suis votre assistant d'écriture Écriture.\n"
+                "Ollama semble être hors ligne sur http://localhost:11434.\n"
+                "Voici une suggestion pour continuer : déterminez l'enjeu principal de votre scène actuelle !"
+            )
+
+        return jsonify({
+            "status": "offline_fallback",
+            "message": simulation,
+            "model": "Simulation"
+        })
+
 if __name__ == "__main__":
     # Start the local development web server on port 5000
     app.run(host="0.0.0.0", port=5000, debug=True)

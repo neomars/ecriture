@@ -235,7 +235,9 @@
         </main>
 
         <!-- RIGHT SIDEBAR: GOALS & FOCUS TIMER -->
-        <aside class="w-56 bg-slate-100 border-l border-slate-200 flex flex-col h-full shrink-0 p-4 space-y-6">
+        <aside id="right-sidebar" class="w-[448px] bg-slate-100 border-l border-slate-200 flex flex-col h-full shrink-0 p-4 space-y-6 relative">
+            <!-- RESIZE HANDLE -->
+            <div id="sidebar-resize-handle" class="absolute top-0 left-0 w-1.5 h-full cursor-col-resize hover:bg-indigo-300 transition-colors z-20 border-l border-slate-200"></div>
 
             <!-- GOALS & METRICS -->
             <div class="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm shrink-0">
@@ -286,6 +288,30 @@
                 <div class="flex space-x-2 w-full">
                     <button id="timer-start-btn" onclick="toggleTimer()" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold py-1.5 px-2 rounded-lg shadow-sm transition-all" data-i18n="start">Démarrer</button>
                     <button onclick="resetTimer()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold py-1.5 px-2 rounded-lg transition-all" data-i18n="reset">Réinit.</button>
+                </div>
+            </div>
+
+            <!-- AI ASSISTANT CHAT -->
+            <div class="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm flex flex-col flex-1 min-h-[250px] overflow-hidden">
+                <div class="flex items-center justify-between mb-2 shrink-0">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400" data-i18n="ai_assistant">Assistant IA (Ollama)</h3>
+                    <button onclick="clearChat()" class="text-[10px] text-indigo-500 hover:text-red-500 font-bold transition-all" data-i18n="clear_chat">Effacer</button>
+                </div>
+
+                <!-- Chat Messages History Box -->
+                <div id="chat-messages" class="flex-1 overflow-y-auto space-y-2 mb-3 pr-1 text-xs flex flex-col">
+                    <!-- Default greeting bubble -->
+                    <div class="bg-slate-50 text-slate-700 p-2.5 rounded-lg border border-slate-100 self-start mr-6 shadow-2xs">
+                        Bonjour ! Je suis votre assistant Écriture. Posez-moi des questions sur vos personnages, l'intrigue ou demandez-moi des idées pour votre scène en cours.
+                    </div>
+                </div>
+
+                <!-- Input area -->
+                <div class="flex items-center space-x-1 shrink-0">
+                    <input type="text" id="chat-input" onkeydown="if(event.key==='Enter') sendChatMessage()" data-i18n-placeholder="chat_placeholder" placeholder="Posez une question..." class="flex-1 bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none">
+                    <button onclick="sendChatMessage()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-1.5 px-3 rounded-lg text-xs shadow-sm transition-all" data-i18n="send">
+                        Envoyer
+                    </button>
                 </div>
             </div>
         </aside>
@@ -553,6 +579,10 @@
                     el.setAttribute('placeholder', translations[key]);
                 }
             });
+
+            if (typeof updateChatWelcomeMessage === "function") {
+                updateChatWelcomeMessage();
+            }
         }
 
         // HELPER: Format strings with curly braces (e.g., "Written: {written} / {goal}")
@@ -1370,6 +1400,118 @@
                 persistProject();
             }
         }
+
+        // AI Chat history state
+        let chatMessages = [];
+
+        function updateChatWelcomeMessage() {
+            const welcomeText = translations["chat_welcome"] || "Bonjour ! Je suis votre assistant Écriture. Posez-moi des questions sur vos personnages, l'intrigue ou demandez-moi des idées pour votre scène en cours.";
+            if (chatMessages.length === 0) {
+                chatMessages.push({ role: "assistant", content: welcomeText });
+            } else if (chatMessages.length === 1 && chatMessages[0].role === "assistant") {
+                chatMessages[0].content = welcomeText;
+            }
+            renderChat();
+        }
+
+        function clearChat() {
+            const welcomeText = translations["chat_welcome"] || "Bonjour ! Je suis votre assistant Écriture. Posez-moi des questions sur vos personnages, l'intrigue ou demandez-moi des idées pour votre scène en cours.";
+            chatMessages = [
+                { role: "assistant", content: welcomeText }
+            ];
+            renderChat();
+        }
+
+        function renderChat() {
+            const container = document.getElementById('chat-messages');
+            if (!container) return;
+            container.innerHTML = "";
+
+            chatMessages.forEach(msg => {
+                const bubble = document.createElement('div');
+                if (msg.role === "user") {
+                    bubble.className = "bg-indigo-50 text-indigo-950 p-2.5 rounded-lg border border-indigo-100 ml-6 self-end shadow-2xs max-w-[85%]";
+                } else {
+                    bubble.className = "bg-slate-50 text-slate-800 p-2.5 rounded-lg border border-slate-100 mr-6 self-start shadow-2xs max-w-[85%] whitespace-pre-line";
+                }
+                bubble.innerText = msg.content;
+                container.appendChild(bubble);
+            });
+
+            container.scrollTop = container.scrollHeight;
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const content = input.value.trim();
+            if (!content) return;
+
+            input.value = "";
+
+            chatMessages.push({ role: "user", content });
+            renderChat();
+
+            const loadingIndex = chatMessages.length;
+            chatMessages.push({ role: "assistant", content: "..." });
+            renderChat();
+
+            try {
+                const res = await fetch('/api/ai/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        messages: chatMessages.slice(0, loadingIndex)
+                    })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    chatMessages[loadingIndex] = { role: "assistant", content: data.message };
+                } else {
+                    chatMessages[loadingIndex] = { role: "assistant", content: "Error: Could not retrieve response from Ollama." };
+                }
+            } catch (err) {
+                chatMessages[loadingIndex] = { role: "assistant", content: "Error: Network connection failed." };
+            }
+
+            renderChat();
+        }
+
+        // Right Sidebar Resizer Logic
+        (function() {
+            const rightSidebar = document.getElementById('right-sidebar');
+            const resizeHandle = document.getElementById('sidebar-resize-handle');
+            let isResizing = false;
+
+            // Load saved sidebar width
+            const savedWidth = localStorage.getItem('right-sidebar-width');
+            if (savedWidth) {
+                rightSidebar.style.width = savedWidth + 'px';
+            }
+
+            resizeHandle.addEventListener('mousedown', (e) => {
+                isResizing = true;
+                document.body.classList.add('select-none');
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isResizing) return;
+                const newWidth = window.innerWidth - e.clientX;
+                // Enforce constraints: min 240px, max 700px
+                if (newWidth >= 240 && newWidth <= 700) {
+                    rightSidebar.style.width = newWidth + 'px';
+                    localStorage.setItem('right-sidebar-width', newWidth);
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isResizing) {
+                    isResizing = false;
+                    document.body.classList.remove('select-none');
+                }
+            });
+        })();
     </script>
 </body>
 </html>

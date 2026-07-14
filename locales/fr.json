@@ -50,5 +50,10 @@
   "new_scene_title": "Nouvelle scène",
   "new_character_title": "Nouveau personnage",
   "new_note_title": "Nouvelle note de récit",
-  "confirm_delete": "Êtes-vous sûr de vouloir supprimer cet élément ?"
+  "confirm_delete": "Êtes-vous sûr de vouloir supprimer cet élément ?",
+  "ai_assistant": "Assistant IA (Ollama)",
+  "chat_placeholder": "Posez une question sur votre roman...",
+  "send": "Envoyer",
+  "clear_chat": "Effacer",
+  "chat_welcome": "Bonjour ! Je suis votre assistant Écriture. Posez-moi des questions sur vos personnages, l'intrigue ou demandez-moi des idées pour votre scène en cours."
 }
