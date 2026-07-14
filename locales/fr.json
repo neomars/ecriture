@@ -1,6 +1,10 @@
 {
   "app_title": "Écriture",
   "search_placeholder": "Rechercher manuscrit, personnages, notes...",
+  "add_novel": "Nouveau roman",
+  "novel_select": "Roman",
+  "new_novel_title_placeholder": "Entrez le titre du roman...",
+  "create_novel": "Créer le roman",
   "manuscript": "Manuscrit",
   "plot_grid": "Grille d'intrigue",
   "characters": "Personnages",

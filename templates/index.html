@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" class="h-full bg-slate-50">
+<html lang="fr" class="h-screen bg-slate-50">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -28,21 +28,35 @@
         }
     </style>
 </head>
-<body class="h-full overflow-hidden flex flex-col font-sans text-slate-800">
+<body class="h-screen overflow-hidden flex flex-col font-sans text-slate-800">
 
     <!-- TOP HEADER -->
     <header class="bg-white border-b border-slate-200 h-14 flex items-center justify-between px-6 z-10 shrink-0">
-        <div class="flex items-center space-x-3">
+        <div class="flex items-center space-x-6">
             <!-- App Logo / Icon -->
-            <span class="text-2xl">✒️</span>
-            <h1 class="text-xl font-bold tracking-tight text-indigo-600" data-i18n="app_title">Écriture</h1>
+            <div class="flex items-center space-x-3">
+                <span class="text-2xl">✒️</span>
+                <h1 class="text-xl font-bold tracking-tight text-indigo-600" data-i18n="app_title">Écriture</h1>
+            </div>
+
+            <!-- Novel Selector -->
+            <div class="flex items-center space-x-2 border-l border-slate-200 pl-6">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider" data-i18n="novel_select">Roman</span>
+                <select id="project-select" onchange="switchProject(this.value)" class="bg-slate-50 border border-slate-300 text-slate-700 text-xs rounded-lg focus:ring-indigo-500 focus:border-indigo-500 p-1.5 font-bold cursor-pointer">
+                    <!-- Dynamically populated -->
+                </select>
+                <button onclick="openNewProjectModal()" class="text-indigo-600 hover:text-indigo-800 text-xs font-bold px-2 py-1.5 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-all flex items-center space-x-1">
+                    <span>➕</span>
+                    <span data-i18n="add_novel">Nouveau</span>
+                </button>
+            </div>
         </div>
 
         <div class="flex items-center space-x-4">
             <!-- Language Selector -->
             <div class="flex items-center space-x-2">
                 <span class="text-sm text-slate-500" data-i18n="select_language">Langue</span>
-                <select id="lang-select" onchange="changeLanguage(this.value)" class="bg-slate-100 border border-slate-300 text-slate-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 p-1">
+                <select id="lang-select" onchange="changeLanguage(this.value)" class="bg-slate-50 border border-slate-300 text-slate-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 p-1">
                     <option value="fr">Français</option>
                     <option value="en">English</option>
                 </select>
@@ -60,17 +74,17 @@
             </button>
 
             <!-- About Button -->
-            <button onclick="openAboutModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
+            <button onclick="openAboutModal()" class="text-slate-400 hover:text-slate-600 transition-colors text-lg">
                 ❓
             </button>
         </div>
     </header>
 
     <!-- MAIN BODY CONTAINER -->
-    <div class="flex flex-1 overflow-hidden">
+    <div class="flex flex-1 overflow-hidden h-[calc(100vh-3.5rem)]">
 
         <!-- LEFT SIDEBAR: MANUSCRIPT TREE & SEARCH -->
-        <aside class="w-64 bg-slate-100 border-r border-slate-200 flex flex-col shrink-0">
+        <aside class="w-64 bg-slate-100 border-r border-slate-200 flex flex-col h-full shrink-0">
             <!-- Search Bar -->
             <div class="p-3 border-b border-slate-200">
                 <div class="relative">
@@ -80,7 +94,7 @@
             </div>
 
             <!-- Project Title Display -->
-            <div class="px-4 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider" id="project-title-display">
+            <div class="px-4 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-200/50 bg-slate-50" id="project-title-display">
                 Mon Roman
             </div>
 
@@ -130,11 +144,11 @@
                 <button onclick="showAssetMenu()" class="bg-purple-500 hover:bg-purple-600 text-white py-1.5 px-1 rounded text-xs font-bold shadow-sm transition-all relative">
                     <span data-i18n="add_asset">+ Ressource</span>
                     <!-- Dropdown for Asset creation -->
-                    <div id="asset-menu-dropdown" class="hidden absolute bottom-10 left-0 w-36 bg-white border border-slate-200 rounded-lg shadow-xl py-1 text-slate-700 z-20 text-left">
-                        <button onclick="addNewCharacter()" class="w-full px-3 py-1.5 hover:bg-slate-100 text-xs font-semibold flex items-center space-x-1.5">
+                    <div id="asset-menu-dropdown" class="hidden absolute bottom-12 left-0 w-44 bg-white border border-slate-200 rounded-lg shadow-xl py-1 text-slate-700 z-20 text-left">
+                        <button onclick="addNewCharacter()" class="w-full px-3 py-2 hover:bg-slate-100 text-xs font-semibold flex items-center space-x-1.5">
                             <span>👤</span> <span data-i18n="add_character">Ajouter personnage</span>
                         </button>
-                        <button onclick="addNewNote()" class="w-full px-3 py-1.5 hover:bg-slate-100 text-xs font-semibold flex items-center space-x-1.5">
+                        <button onclick="addNewNote()" class="w-full px-3 py-2 hover:bg-slate-100 text-xs font-semibold flex items-center space-x-1.5">
                             <span>📌</span> <span data-i18n="add_note">Ajouter note</span>
                         </button>
                     </div>
@@ -142,19 +156,19 @@
             </div>
         </aside>
 
-        <!-- CENTRAL WORKSPACE -->
-        <main class="flex-1 bg-white flex flex-col overflow-hidden relative">
+        <!-- CENTRAL WORKSPACE (Occupies full height and expands elegantly) -->
+        <main class="flex-1 h-full bg-white flex flex-col overflow-hidden relative">
 
             <!-- EDITOR VIEW -->
-            <div id="editor-view" class="flex-1 flex flex-col overflow-hidden">
+            <div id="editor-view" class="flex-1 flex flex-col overflow-hidden h-full">
                 <!-- Centered distraction-free layout -->
-                <div class="flex-1 overflow-y-auto px-12 py-10 flex flex-col items-center">
-                    <div class="w-full max-w-2xl flex-1 flex flex-col">
+                <div class="flex-1 overflow-y-auto px-12 py-10 flex flex-col items-center h-full">
+                    <div class="w-full max-w-2xl flex-1 flex flex-col h-full">
                         <!-- Chapter or Scene title input -->
-                        <input type="text" id="editor-title" oninput="onEditorInput('title', this.value)" placeholder="Titre..." class="w-full text-3xl font-bold font-georgia border-none outline-none focus:ring-0 text-slate-900 placeholder-slate-300 pb-4 mb-6 border-b border-slate-100">
+                        <input type="text" id="editor-title" oninput="onEditorInput('title', this.value)" placeholder="Titre..." class="w-full text-3xl font-bold font-georgia border-none outline-none focus:ring-0 text-slate-900 placeholder-slate-300 pb-4 mb-6 border-b border-slate-100 shrink-0">
 
                         <!-- Rich text-area drafting canvas -->
-                        <textarea id="editor-content" oninput="onEditorInput('content', this.value)" data-i18n-placeholder="editor_placeholder" placeholder="Commencez votre écriture ici..." class="w-full flex-1 resize-none font-georgia text-lg leading-relaxed text-slate-800 border-none outline-none focus:ring-0 placeholder-slate-300 bg-transparent min-h-[400px]"></textarea>
+                        <textarea id="editor-content" oninput="onEditorInput('content', this.value)" data-i18n-placeholder="editor_placeholder" placeholder="Commencez votre écriture ici..." class="w-full flex-1 resize-none font-georgia text-lg leading-relaxed text-slate-800 border-none outline-none focus:ring-0 placeholder-slate-300 bg-transparent min-h-[300px]"></textarea>
                     </div>
                 </div>
 
@@ -167,8 +181,8 @@
             </div>
 
             <!-- PLOT GRID VIEW -->
-            <div id="plot-grid-view" class="hidden flex-1 flex flex-col overflow-hidden bg-slate-50">
-                <div class="flex-1 overflow-auto p-6">
+            <div id="plot-grid-view" class="hidden flex-1 flex flex-col overflow-hidden bg-slate-50 h-full">
+                <div class="flex-1 overflow-auto p-6 h-full">
                     <!-- Dynamic Grid -->
                     <table class="border-collapse bg-white rounded-xl shadow-sm overflow-hidden min-w-full">
                         <thead>
@@ -184,7 +198,7 @@
             </div>
 
             <!-- RESOURCE VIEW (CHARACTERS & STORY NOTES) -->
-            <div id="resource-view" class="hidden flex-1 flex flex-col overflow-hidden bg-slate-50 p-10 items-center justify-start overflow-y-auto">
+            <div id="resource-view" class="hidden flex-1 flex flex-col overflow-hidden bg-slate-50 p-10 items-center justify-start overflow-y-auto h-full">
                 <div class="w-full max-w-2xl bg-white p-8 rounded-xl shadow-sm border border-slate-200">
                     <div class="flex items-center space-x-3 mb-6">
                         <span id="resource-icon" class="text-3xl">👤</span>
@@ -219,10 +233,10 @@
         </main>
 
         <!-- RIGHT SIDEBAR: GOALS & FOCUS TIMER -->
-        <aside class="w-56 bg-slate-100 border-l border-slate-200 flex flex-col shrink-0 p-4 space-y-6">
+        <aside class="w-56 bg-slate-100 border-l border-slate-200 flex flex-col h-full shrink-0 p-4 space-y-6">
 
             <!-- GOALS & METRICS -->
-            <div class="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm">
+            <div class="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm shrink-0">
                 <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3" data-i18n="goals_and_stats">Objectifs & Stats</h3>
 
                 <div class="space-y-4">
@@ -255,7 +269,7 @@
             </div>
 
             <!-- POMODORO FOCUS TIMER -->
-            <div class="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm flex flex-col items-center">
+            <div class="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm flex flex-col items-center shrink-0">
                 <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 self-start" data-i18n="focus_timer">Minuteur Focus</h3>
 
                 <!-- Large Countdown Clock -->
@@ -295,6 +309,25 @@
             <div class="flex justify-end space-x-2">
                 <button onclick="closeSettingsModal()" class="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-700 transition-colors" data-i18n="cancel">Annuler</button>
                 <button onclick="saveProjectSettings()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-all" data-i18n="save">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: NEW NOVEL CREATE -->
+    <div id="new-project-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50">
+        <div class="bg-white w-96 rounded-xl shadow-xl p-6 border border-slate-200">
+            <h3 class="text-lg font-bold text-slate-800 mb-4" data-i18n="add_novel">Nouveau roman</h3>
+
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1" data-i18n="novel_title">Titre du roman</label>
+                    <input type="text" id="new-project-title-input" data-i18n-placeholder="new_novel_title_placeholder" placeholder="Entrez le titre du roman..." class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-2">
+                <button onclick="closeNewProjectModal()" class="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-700 transition-colors" data-i18n="cancel">Annuler</button>
+                <button onclick="createNewProject()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-all" data-i18n="create_novel">Créer le roman</button>
             </div>
         </div>
     </div>
@@ -364,10 +397,103 @@
                 }
             });
 
+            await loadProjectsList();
             await loadProject();
         });
 
-        // LOAD PROJECT FROM BACKEND JSON
+        // LOAD PROJECTS LIST FOR DROPDOWN
+        async function loadProjectsList() {
+            try {
+                const res = await fetch('/api/projects');
+                const projects = await res.json();
+
+                const select = document.getElementById('project-select');
+                select.innerHTML = "";
+
+                projects.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.filename;
+                    opt.innerText = p.title;
+                    select.appendChild(opt);
+                });
+
+                // Get active project filename
+                const activeRes = await fetch('/api/projects/active');
+                const activeData = await activeRes.json();
+                select.value = activeData.active_filename;
+            } catch (err) {
+                console.error("Error loading projects list:", err);
+            }
+        }
+
+        // SWITCH CURRENT ACTIVE NOVEL
+        async function switchProject(filename) {
+            try {
+                // Save current project state first
+                if (projectData) {
+                    await persistProject();
+                }
+
+                const res = await fetch('/api/projects/active', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ filename })
+                });
+
+                if (res.ok) {
+                    activeNodeId = null;
+                    activeNodeType = null;
+                    await loadProjectsList();
+                    await loadProject();
+                }
+            } catch (err) {
+                console.error("Failed to switch project:", err);
+            }
+        }
+
+        // OPEN / CLOSE NEW PROJECT MODAL
+        function openNewProjectModal() {
+            document.getElementById('new-project-title-input').value = "";
+            document.getElementById('new-project-modal').classList.remove('hidden');
+        }
+
+        function closeNewProjectModal() {
+            document.getElementById('new-project-modal').classList.add('hidden');
+        }
+
+        // CREATE NEW NOVEL PROJECT
+        async function createNewProject() {
+            const title = document.getElementById('new-project-title-input').value.trim();
+            if (!title) {
+                alert("Please enter a title.");
+                return;
+            }
+
+            try {
+                // Save current first
+                if (projectData) {
+                    await persistProject();
+                }
+
+                const res = await fetch('/api/projects/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title })
+                });
+
+                if (res.ok) {
+                    closeNewProjectModal();
+                    activeNodeId = null;
+                    activeNodeType = null;
+                    await loadProjectsList();
+                    await loadProject();
+                }
+            } catch (err) {
+                console.error("Failed to create new project:", err);
+            }
+        }
+
+        // LOAD ACTIVE PROJECT FROM BACKEND JSON
         async function loadProject() {
             try {
                 const res = await fetch('/api/project');
@@ -732,6 +858,7 @@
             }
         }
 
+        // RESOURCE FIELDS SAVE
         function onResourceInput(field, val) {
             if (activeNodeType === "character") {
                 const char = projectData.characters.find(c => c.id === activeNodeId);
@@ -1010,18 +1137,25 @@
             document.getElementById('settings-modal').classList.remove('hidden');
         }
 
+        // CLOSE NOVEL SETTINGS MODAL
         function closeSettingsModal() {
             document.getElementById('settings-modal').classList.add('hidden');
         }
 
-        function saveProjectSettings() {
-            projectData.settings.title = document.getElementById('settings-title-input').value;
+        // SAVE NOVEL SETTINGS
+        async function saveProjectSettings() {
+            const oldTitle = projectData.settings.title;
+            const newTitle = document.getElementById('settings-title-input').value.trim();
+            projectData.settings.title = newTitle || oldTitle;
             projectData.settings.overall_goal = parseInt(document.getElementById('settings-goal-input').value) || 50000;
 
             closeSettingsModal();
             renderTree();
             updateRightSidebar();
-            persistProject();
+            await persistProject();
+
+            // Reload list to update titles in selector
+            await loadProjectsList();
         }
 
         // MODAL MANAGEMENT: ABOUT

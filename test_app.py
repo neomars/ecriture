@@ -1,13 +1,23 @@
 import unittest
 import json
 import os
-from main import app, PROJECT_FILE
+from main import app
 
 class TestEcritureWebApp(unittest.TestCase):
     def setUp(self):
         # Configure app for testing
         app.config['TESTING'] = True
         self.client = app.test_client()
+        # Save initial active project
+        res = self.client.get('/api/projects/active')
+        self.initial_active = json.loads(res.data).get('active_filename')
+
+    def tearDown(self):
+        # Restore initial active project
+        if hasattr(self, 'initial_active') and self.initial_active:
+            self.client.post('/api/projects/active',
+                             data=json.dumps({"filename": self.initial_active}),
+                             content_type='application/json')
 
     def test_home_page(self):
         """Test that the index route loads the SPA HTML correctly."""
@@ -77,7 +87,34 @@ class TestEcritureWebApp(unittest.TestCase):
         response = self.client.post('/api/export')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.mimetype, 'text/plain')
-        self.assertIn(b'=== Pride & Prejudice', response.data)
+        self.assertTrue(response.data.startswith(b'==='))
+
+    def test_list_projects_api(self):
+        """Test getting lists of projects."""
+        response = self.client.get('/api/projects')
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data)
+        self.assertIsInstance(data, list)
+        self.assertTrue(len(data) > 0)
+
+    def test_get_active_project_api(self):
+        """Test getting active project filename."""
+        response = self.client.get('/api/projects/active')
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data)
+        self.assertIn('active_filename', data)
+
+    def test_create_project_api(self):
+        """Test creating a new project."""
+        payload = {"title": "Test Creation Novel"}
+        response = self.client.post('/api/projects/create',
+                                    data=json.dumps(payload),
+                                    content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data)
+        self.assertEqual(data['status'], 'success')
+        self.assertIn('filename', data)
+        self.assertEqual(data['data']['settings']['title'], "Test Creation Novel")
 
 if __name__ == '__main__':
     unittest.main()

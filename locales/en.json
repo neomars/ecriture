@@ -1,6 +1,10 @@
 {
   "app_title": "Ecriture",
   "search_placeholder": "Search manuscript, characters, notes...",
+  "add_novel": "New Novel",
+  "novel_select": "Novel",
+  "new_novel_title_placeholder": "Enter novel title...",
+  "create_novel": "Create Novel",
   "manuscript": "Manuscript",
   "plot_grid": "Plot Grid",
   "characters": "Characters",
