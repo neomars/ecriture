@@ -1,6 +1,9 @@
 # Ecriture - Guide d'Utilisation (README)
 
-Ce guide vous explique l'objectif, les technologies utilisées, l'installation et l'utilisation de l'application **Ecriture**, un outil d'aide à la rédaction de romans en Python inspiré de Dabble Writer.
+Créé par Martial Limousin - 2026.
+Licence libre CeCILL (http://www.cecill.info/licences/Licence_CeCILL_V2.1-fr.html)
+
+Ce guide vous explique l'objectif, les technologies utilisées, l'installation et l'utilisation de l'application **Ecriture**, un outil d'aide à la rédaction de romans en Python.
 
 ---
 
@@ -11,7 +14,7 @@ L'objectif d'**Ecriture** est de fournir aux romanciers et écrivains un environ
 Le logiciel propose :
 * **Un éditeur de texte épuré** : Un focus absolu sur les mots avec une police élégante (Georgia) et des marges optimales.
 * **Une structuration hiérarchique** : Gestion visuelle des chapitres et des scènes à l'aide d'un arbre de navigation.
-* **Le Plot Grid (Grille d'intrigue)** : Un tableau interactif (lignes pour les intrigues secondaires, colonnes pour les scènes) pour planifier l'évolution narrative à la manière de Dabble Writer.
+* **Le Plot Grid (Grille d'intrigue)** : Un tableau interactif (lignes pour les intrigues secondaires, colonnes pour les scènes) pour planifier l'évolution narrative.
 * **Suivi des objectifs et statistiques** : Définition d'objectifs de mots quotidiens et globaux avec des barres de progression dynamiques.
 * **Gestion des fiches personnages et notes de recherche** : Fiches détaillées pour centraliser toutes vos idées et la psychologie des personnages.
 * **Chronomètre de focus (Focus Timer)** : Un minuteur réglable pour pratiquer la méthode Pomodoro et booster sa productivité.

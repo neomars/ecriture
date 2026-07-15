@@ -44,7 +44,7 @@
   "card_title": "Card Title",
   "card_content": "Card Content",
   "about": "About",
-  "about_text": "Ecriture v1.0 - A beautiful distraction-free story writing & planning platform featuring writing assistance from a local AI via Ollama.",
+  "about_text": "Ecriture v1.0 - A beautiful distraction-free story writing & planning platform featuring writing assistance from a local AI via Ollama.<br><br>Created by Martial Limousin - 2026.<br>Free CeCILL License (<a href=\"http://www.cecill.info/licences/Licence_CeCILL_V2.1-fr.html\" target=\"_blank\" class=\"text-indigo-600 underline\">CeCILL V2.1 License</a>)",
   "select_language": "Language",
   "new_chapter_title": "New Chapter",
   "new_scene_title": "New Scene",
@@ -61,5 +61,6 @@
   "lock_status_unlocked": "Unlocked 🔓",
   "delete_novel": "Delete Novel",
   "confirm_delete_novel": "Are you sure you want to permanently delete this novel?",
-  "locked_warning": "This novel is locked. Unlock it in settings to make changes."
+  "locked_warning": "This novel is locked. Unlock it in settings to make changes.",
+  "toggle_ai": "Enable AI"
 }

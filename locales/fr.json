@@ -44,7 +44,7 @@
   "card_title": "Titre de la carte",
   "card_content": "Contenu de la carte",
   "about": "À propos",
-  "about_text": "Écriture v1.0 - Un environnement d'écriture et de planification moderne et sans distraction intégrant une aide à la rédaction par intelligence artificielle locale via Ollama.",
+  "about_text": "Écriture v1.0 - Un environnement d'écriture et de planification moderne et sans distraction intégrant une aide à la rédaction par intelligence artificielle locale via Ollama.<br><br>Créé par Martial Limousin - 2026.<br>Licence libre CeCILL (<a href=\"http://www.cecill.info/licences/Licence_CeCILL_V2.1-fr.html\" target=\"_blank\" class=\"text-indigo-600 underline\">Licence CeCILL V2.1</a>)",
   "select_language": "Langue",
   "new_chapter_title": "Nouveau chapitre",
   "new_scene_title": "Nouvelle scène",
@@ -61,5 +61,6 @@
   "lock_status_unlocked": "Déverrouillé 🔓",
   "delete_novel": "Supprimer le roman",
   "confirm_delete_novel": "Êtes-vous sûr de vouloir supprimer définitivement ce roman ?",
-  "locked_warning": "Ce roman est verrouillé. Déverrouillez-le dans les paramètres pour le modifier."
+  "locked_warning": "Ce roman est verrouillé. Déverrouillez-le dans les paramètres pour le modifier.",
+  "toggle_ai": "Activer l'IA"
 }

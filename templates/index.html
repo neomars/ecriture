@@ -53,6 +53,15 @@
         </div>
 
         <div class="flex items-center space-x-4">
+            <!-- AI Optional Toggle -->
+            <div class="flex items-center space-x-2 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1">
+                <span class="text-sm font-medium text-slate-600" data-i18n="toggle_ai">Activer l'IA</span>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="ai-toggle-checkbox" onchange="toggleAiOption(this.checked)" class="sr-only peer" checked>
+                    <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                </label>
+            </div>
+
             <!-- Language Selector -->
             <div class="flex items-center space-x-2">
                 <span class="text-sm text-slate-500" data-i18n="select_language">Langue</span>
@@ -292,9 +301,9 @@
             </div>
 
             <!-- AI ASSISTANT CHAT -->
-            <div class="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm flex flex-col flex-1 min-h-[250px] overflow-hidden">
+            <div id="ai-chat-section" class="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm flex flex-col flex-1 min-h-[250px] overflow-hidden">
                 <div class="flex items-center justify-between mb-2 shrink-0">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400" data-i18n="ai_assistant">Assistant IA (Ollama)</h3>
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400" data-i18n="ai_assistant">Assistant IA</h3>
                     <button onclick="clearChat()" class="text-[10px] text-indigo-500 hover:text-red-500 font-bold transition-all" data-i18n="clear_chat">Effacer</button>
                 </div>
 
@@ -374,7 +383,7 @@
         <div class="bg-white w-96 rounded-xl shadow-xl p-6 border border-slate-200 text-center">
             <span class="text-5xl mb-3 block">✒️</span>
             <h3 class="text-lg font-bold text-slate-800 mb-2" data-i18n="about">À propos</h3>
-            <p class="text-sm text-slate-500 mb-6" data-i18n="about_text">Écriture v1.0 - Un environnement d'écriture et de planification moderne et sans distraction inspiré de DabbleWriter.</p>
+            <div class="text-sm text-slate-500 mb-6" data-i18n="about_text">Écriture v1.0 - Un environnement d'écriture et de planification moderne et sans distraction.</div>
             <button onclick="closeAboutModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-semibold shadow-sm transition-all w-full" data-i18n="cancel">Fermer</button>
         </div>
     </div>
@@ -433,6 +442,15 @@
                     dropdown.classList.add('hidden');
                 }
             });
+
+            // Initialize AI option from localStorage
+            const storedAiVal = localStorage.getItem('ai-enabled');
+            const aiEnabled = (storedAiVal !== 'false'); // defaults to true
+            const aiCheckbox = document.getElementById('ai-toggle-checkbox');
+            if (aiCheckbox) {
+                aiCheckbox.checked = aiEnabled;
+            }
+            toggleAiOption(aiEnabled);
 
             await loadProjectsList();
             await loadProject();
@@ -1266,6 +1284,19 @@
             }
         }
 
+        // AI OPTION TOGGLE HANDLER
+        function toggleAiOption(enabled) {
+            const aiChatSection = document.getElementById('ai-chat-section');
+            if (aiChatSection) {
+                if (enabled) {
+                    aiChatSection.classList.remove('hidden');
+                } else {
+                    aiChatSection.classList.add('hidden');
+                }
+            }
+            localStorage.setItem('ai-enabled', enabled ? 'true' : 'false');
+        }
+
         // LANGUAGE CHANGE HANDLER
         async function changeLanguage(lang) {
             projectData.settings.lang = lang;
@@ -1403,7 +1434,7 @@
         }
 
 
-        // DABBLE PLOT GRID DYNAMIC RENDERING
+        // PLOT GRID DYNAMIC RENDERING
         let currentEditingCard = null;
 
         function getScenesList() {
