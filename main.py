@@ -163,6 +163,44 @@ def create_project():
 
     return jsonify({"status": "success", "filename": filename, "data": project.data})
 
+@app.route('/api/projects/delete', methods=['POST'])
+def delete_project():
+    """Deletes a project file securely."""
+    global project
+    payload = request.json or {}
+    filename = payload.get("filename")
+    if not filename:
+        return jsonify({"error": "No filename specified"}), 400
+
+    filepath = os.path.join(PROJECTS_DIR, filename)
+    if not os.path.exists(filepath):
+        return jsonify({"error": "Project file not found"}), 404
+
+    try:
+        os.remove(filepath)
+    except Exception as e:
+        return jsonify({"error": f"Failed to delete file: {str(e)}"}), 500
+
+    # If we deleted the active project, find a new active project or create one
+    active_fn = get_active_project_filename()
+    if active_fn == filename or not os.path.exists(os.path.join(PROJECTS_DIR, active_fn)):
+        if os.path.exists(ACTIVE_CONFIG_FILE):
+            os.remove(ACTIVE_CONFIG_FILE)
+        new_active = get_active_project_filename()
+        project = NovelProject(os.path.join(PROJECTS_DIR, new_active))
+        return jsonify({
+            "status": "success",
+            "switched": True,
+            "active_filename": new_active,
+            "data": project.data
+        })
+
+    return jsonify({
+        "status": "success",
+        "switched": False,
+        "active_filename": active_fn
+    })
+
 @app.route('/api/locale/<lang>', methods=['GET'])
 def get_locale(lang):
     """Loads and returns external translation files."""

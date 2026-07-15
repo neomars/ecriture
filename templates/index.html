@@ -332,6 +332,15 @@
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1" data-i18n="overall_word_goal">Objectif global (mots)</label>
                     <input type="number" id="settings-goal-input" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
+                <div class="flex items-center space-x-2 pt-2 border-t border-slate-100">
+                    <input type="checkbox" id="settings-lock-input" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                    <label for="settings-lock-input" class="text-xs font-bold uppercase tracking-wider text-slate-600 cursor-pointer" data-i18n="lock_novel">Verrouiller le roman</label>
+                </div>
+                <div class="pt-2 border-t border-slate-100">
+                    <button onclick="deleteCurrentProject()" class="w-full bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-3 py-2 rounded-lg text-xs font-bold transition-all" data-i18n="delete_novel">
+                        Supprimer le roman
+                    </button>
+                </div>
             </div>
 
             <div class="flex justify-end space-x-2">
@@ -521,6 +530,68 @@
             }
         }
 
+        // ENFORCE LOCK STATE IN FRONTEND
+        function applyLockState() {
+            const isLocked = !!(projectData && projectData.settings && projectData.settings.locked);
+
+            // Disable editing inputs
+            const editorTitle = document.getElementById('editor-title');
+            if (editorTitle) editorTitle.disabled = isLocked;
+
+            const editorContent = document.getElementById('editor-content');
+            if (editorContent) {
+                editorContent.disabled = isLocked;
+                if (isLocked) {
+                    editorContent.classList.add('bg-slate-50/30', 'cursor-not-allowed');
+                    editorContent.setAttribute('placeholder', translations["locked_warning"] || "Ce roman est verrouillé.");
+                } else {
+                    editorContent.classList.remove('bg-slate-50/30', 'cursor-not-allowed');
+                    editorContent.setAttribute('placeholder', translations["editor_placeholder"] || "Commencez à rédiger votre chef-d'œuvre ici...");
+                }
+            }
+
+            const resourceTitle = document.getElementById('resource-title');
+            if (resourceTitle) resourceTitle.disabled = isLocked;
+
+            const charRole = document.getElementById('char-role');
+            if (charRole) charRole.disabled = isLocked;
+
+            const charDesc = document.getElementById('char-desc');
+            if (charDesc) charDesc.disabled = isLocked;
+
+            const noteType = document.getElementById('note-type');
+            if (noteType) noteType.disabled = isLocked;
+
+            const noteContent = document.getElementById('note-content');
+            if (noteContent) noteContent.disabled = isLocked;
+
+            const dailyGoalInput = document.getElementById('daily-goal-input');
+            if (dailyGoalInput) dailyGoalInput.disabled = isLocked;
+
+            // Hide or disable sidebar additions
+            const addChapterBtn = document.querySelector('[onclick="addNewChapter()"]');
+            if (addChapterBtn) addChapterBtn.style.display = isLocked ? 'none' : 'block';
+
+            const addSceneBtn = document.querySelector('[onclick="addNewScene()"]');
+            if (addSceneBtn) addSceneBtn.style.display = isLocked ? 'none' : 'block';
+
+            const showAssetMenuBtn = document.querySelector('[onclick="showAssetMenu(); event.stopPropagation();"]');
+            if (showAssetMenuBtn) {
+                const parentDiv = showAssetMenuBtn.parentElement;
+                if (parentDiv) parentDiv.style.display = isLocked ? 'none' : 'block';
+            }
+
+            // Adjust quick actions footer visibility
+            const quickActionsFooter = document.querySelector('.grid-cols-3');
+            if (quickActionsFooter) {
+                if (isLocked) {
+                    quickActionsFooter.classList.add('hidden');
+                } else {
+                    quickActionsFooter.classList.remove('hidden');
+                }
+            }
+        }
+
         // LOAD ACTIVE PROJECT FROM BACKEND JSON
         async function loadProject() {
             try {
@@ -546,6 +617,9 @@
                 } else {
                     refreshActiveWorkspace();
                 }
+
+                // Apply locking restrictions frontend
+                applyLockState();
 
             } catch (err) {
                 console.error("Error loading project state:", err);
@@ -621,9 +695,11 @@
         // DYNAMIC TREE VIEW RENDER
         function renderTree(filterText = "") {
             const searchVal = filterText.toLowerCase().trim();
+            const isLocked = !!(projectData && projectData.settings && projectData.settings.locked);
 
             // Project title in Left Sidebar
-            document.getElementById('project-title-display').innerText = (projectData && projectData.settings && projectData.settings.title) || "";
+            const lockIndicator = isLocked ? " 🔒" : "";
+            document.getElementById('project-title-display').innerText = ((projectData && projectData.settings && projectData.settings.title) || "") + lockIndicator;
 
             // 1. Render Manuscript (Chapters & Scenes)
             const msList = document.getElementById('manuscript-nodes-list');
@@ -652,6 +728,12 @@
                     chapEl.className = "group";
 
                     const isChapActive = (activeNodeId === chap.id);
+                    const chapButtons = isLocked ? "" : `
+                        <div class="opacity-0 group-hover:opacity-100 flex items-center space-x-1 shrink-0">
+                            <button onclick="event.stopPropagation(); renameItem('${chap.id}', 'chapter')" class="hover:text-indigo-600 p-0.5 text-xs">✏️</button>
+                            <button onclick="event.stopPropagation(); deleteItem('${chap.id}', 'chapter')" class="hover:text-red-600 p-0.5 text-xs">🗑️</button>
+                        </div>
+                    `;
 
                     chapEl.innerHTML = `
                         <div class="flex items-center justify-between px-2 py-1 rounded-lg text-sm font-semibold ${isChapActive ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-200/50'} cursor-pointer select-none">
@@ -659,25 +741,25 @@
                                 <span>📁</span>
                                 <span class="truncate">${chapTitle}</span>
                             </div>
-                            <div class="opacity-0 group-hover:opacity-100 flex items-center space-x-1 shrink-0">
-                                <button onclick="event.stopPropagation(); renameItem('${chap.id}', 'chapter')" class="hover:text-indigo-600 p-0.5 text-xs">✏️</button>
-                                <button onclick="event.stopPropagation(); deleteItem('${chap.id}', 'chapter')" class="hover:text-red-600 p-0.5 text-xs">🗑️</button>
-                            </div>
+                            ${chapButtons}
                         </div>
                         <div class="pl-4 mt-0.5 space-y-0.5">
                             ${(searchVal ? matchingScenes : childrenList).map(scene => {
                                 const isSceneActive = (activeNodeId === scene.id);
                                 const sceneTitle = scene.title || "";
+                                const sceneButtons = isLocked ? "" : `
+                                        <div class="opacity-0 group-hover/scene:opacity-100 flex items-center space-x-1 shrink-0">
+                                            <button onclick="event.stopPropagation(); renameItem('${scene.id}', 'scene')" class="hover:text-indigo-600 p-0.5">✏️</button>
+                                            <button onclick="event.stopPropagation(); deleteItem('${scene.id}', 'scene')" class="hover:text-red-600 p-0.5">🗑️</button>
+                                        </div>
+                                `;
                                 return `
                                     <div class="group/scene flex items-center justify-between px-2 py-1 rounded-lg text-xs font-medium ${isSceneActive ? 'bg-indigo-100 text-indigo-800 font-bold' : 'text-slate-500 hover:bg-slate-200/50'} cursor-pointer">
                                         <div class="flex items-center space-x-1.5 flex-1 min-w-0" onclick="selectScene('${scene.id}')">
                                             <span>📄</span>
                                             <span class="truncate">${sceneTitle}</span>
                                         </div>
-                                        <div class="opacity-0 group-hover/scene:opacity-100 flex items-center space-x-1 shrink-0">
-                                            <button onclick="event.stopPropagation(); renameItem('${scene.id}', 'scene')" class="hover:text-indigo-600 p-0.5">✏️</button>
-                                            <button onclick="event.stopPropagation(); deleteItem('${scene.id}', 'scene')" class="hover:text-red-600 p-0.5">🗑️</button>
-                                        </div>
+                                        ${sceneButtons}
                                     </div>
                                 `;
                             }).join('')}
@@ -710,15 +792,18 @@
                     charEl.className = "group/char flex items-center justify-between px-2.5 py-1 rounded-lg text-sm font-medium " +
                                       (isCharActive ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-600 hover:bg-slate-200/50') +
                                       " cursor-pointer";
+                    const charButtons = isLocked ? "" : `
+                        <div class="opacity-0 group-hover/char:opacity-100 flex items-center space-x-1 shrink-0">
+                            <button onclick="event.stopPropagation(); renameItem('${char.id}', 'character')" class="hover:text-indigo-600 p-0.5 text-xs">✏️</button>
+                            <button onclick="event.stopPropagation(); deleteItem('${char.id}', 'character')" class="hover:text-red-600 p-0.5 text-xs">🗑️</button>
+                        </div>
+                    `;
                     charEl.innerHTML = `
                         <div class="flex items-center space-x-1.5 flex-1 min-w-0" onclick="selectCharacter('${char.id}')">
                             <span>👤</span>
                             <span class="truncate">${charName}</span>
                         </div>
-                        <div class="opacity-0 group-hover/char:opacity-100 flex items-center space-x-1 shrink-0">
-                            <button onclick="event.stopPropagation(); renameItem('${char.id}', 'character')" class="hover:text-indigo-600 p-0.5 text-xs">✏️</button>
-                            <button onclick="event.stopPropagation(); deleteItem('${char.id}', 'character')" class="hover:text-red-600 p-0.5 text-xs">🗑️</button>
-                        </div>
+                        ${charButtons}
                     `;
                     charList.appendChild(charEl);
                 });
@@ -739,15 +824,18 @@
                     noteEl.className = "group/note flex items-center justify-between px-2.5 py-1 rounded-lg text-sm font-medium " +
                                       (isNoteActive ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-600 hover:bg-slate-200/50') +
                                       " cursor-pointer";
+                    const noteButtons = isLocked ? "" : `
+                        <div class="opacity-0 group-hover/note:opacity-100 flex items-center space-x-1 shrink-0">
+                            <button onclick="event.stopPropagation(); renameItem('${note.id}', 'note')" class="hover:text-indigo-600 p-0.5 text-xs">✏️</button>
+                            <button onclick="event.stopPropagation(); deleteItem('${note.id}', 'note')" class="hover:text-red-600 p-0.5 text-xs">🗑️</button>
+                        </div>
+                    `;
                     noteEl.innerHTML = `
                         <div class="flex items-center space-x-1.5 flex-1 min-w-0" onclick="selectNote('${note.id}')">
                             <span>📌</span>
                             <span class="truncate">${noteTitle}</span>
                         </div>
-                        <div class="opacity-0 group-hover/note:opacity-100 flex items-center space-x-1 shrink-0">
-                            <button onclick="event.stopPropagation(); renameItem('${note.id}', 'note')" class="hover:text-indigo-600 p-0.5 text-xs">✏️</button>
-                            <button onclick="event.stopPropagation(); deleteItem('${note.id}', 'note')" class="hover:text-red-600 p-0.5 text-xs">🗑️</button>
-                        </div>
+                        ${noteButtons}
                     `;
                     noteList.appendChild(noteEl);
                 });
@@ -840,6 +928,7 @@
                 switchView('plot');
                 renderPlotGrid();
             }
+            applyLockState();
         }
 
         // SELECT HANDLERS
@@ -1190,6 +1279,7 @@
         function openSettingsModal() {
             document.getElementById('settings-title-input').value = projectData.settings.title;
             document.getElementById('settings-goal-input').value = projectData.settings.overall_goal;
+            document.getElementById('settings-lock-input').checked = !!projectData.settings.locked;
             document.getElementById('settings-modal').classList.remove('hidden');
         }
 
@@ -1204,14 +1294,47 @@
             const newTitle = document.getElementById('settings-title-input').value.trim();
             projectData.settings.title = newTitle || oldTitle;
             projectData.settings.overall_goal = parseInt(document.getElementById('settings-goal-input').value) || 50000;
+            projectData.settings.locked = document.getElementById('settings-lock-input').checked;
 
             closeSettingsModal();
             renderTree();
             updateRightSidebar();
             await persistProject();
 
+            // Apply locking restrictions frontend
+            applyLockState();
+
             // Reload list to update titles in selector
             await loadProjectsList();
+        }
+
+        // DELETE CURRENT NOVEL
+        async function deleteCurrentProject() {
+            const confirmMsg = translations["confirm_delete_novel"] || "Are you sure you want to permanently delete this novel?";
+            if (!confirm(confirmMsg)) return;
+
+            const select = document.getElementById('project-select');
+            const filename = select.value;
+
+            try {
+                const res = await fetch('/api/projects/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ filename })
+                });
+
+                if (res.ok) {
+                    closeSettingsModal();
+                    activeNodeId = null;
+                    activeNodeType = null;
+                    await loadProjectsList();
+                    await loadProject();
+                } else {
+                    alert("Failed to delete project.");
+                }
+            } catch (err) {
+                console.error("Error deleting project:", err);
+            }
         }
 
         // MODAL MANAGEMENT: ABOUT
@@ -1324,6 +1447,7 @@
                 // Render cell for each scene
                 scenes.forEach(scene => {
                     const card = projectData.plot.cards.find(c => c.plotline_id === plotline.id && c.scene_id === scene.id);
+                    const isLocked = !!(projectData && projectData.settings && projectData.settings.locked);
 
                     if (card) {
                         tdHtml += `
@@ -1335,13 +1459,21 @@
                             </td>
                         `;
                     } else {
-                        tdHtml += `
-                            <td class="p-3 border border-slate-200/80 align-middle max-w-[200px]">
-                                <button onclick="addPlotCard('${plotline.id}', '${scene.id}')" class="w-full py-3 hover:bg-slate-50 border border-dashed border-slate-200 hover:border-slate-300 rounded-lg text-slate-400 hover:text-slate-600 text-xs font-medium transition-all" data-i18n="add_plot_card">
-                                    + Ajouter carte
-                                </button>
-                            </td>
-                        `;
+                        if (isLocked) {
+                            tdHtml += `
+                                <td class="p-3 border border-slate-200/80 align-middle max-w-[200px]">
+                                    <div class="text-center text-slate-300 text-xs py-3">—</div>
+                                </td>
+                            `;
+                        } else {
+                            tdHtml += `
+                                <td class="p-3 border border-slate-200/80 align-middle max-w-[200px]">
+                                    <button onclick="addPlotCard('${plotline.id}', '${scene.id}')" class="w-full py-3 hover:bg-slate-50 border border-dashed border-slate-200 hover:border-slate-300 rounded-lg text-slate-400 hover:text-slate-600 text-xs font-medium transition-all" data-i18n="add_plot_card">
+                                        + Ajouter carte
+                                    </button>
+                                </td>
+                            `;
+                        }
                     }
                 });
 
@@ -1370,6 +1502,16 @@
         function openPlotCardModal(cardId) {
             const card = projectData.plot.cards.find(c => c.id === cardId);
             if (!card) return;
+
+            const isLocked = !!(projectData && projectData.settings && projectData.settings.locked);
+            document.getElementById('plot-card-title-input').disabled = isLocked;
+            document.getElementById('plot-card-desc-input').disabled = isLocked;
+
+            const saveBtn = document.querySelector('[onclick="savePlotCard()"]');
+            if (saveBtn) saveBtn.style.display = isLocked ? 'none' : 'block';
+
+            const deleteBtn = document.querySelector('[onclick="deletePlotCard()"]');
+            if (deleteBtn) deleteBtn.style.display = isLocked ? 'none' : 'block';
 
             currentEditingCard = card;
             document.getElementById('plot-card-title-input').value = card.title;

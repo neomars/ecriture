@@ -116,6 +116,22 @@ class TestEcritureWebApp(unittest.TestCase):
         self.assertIn('filename', data)
         self.assertEqual(data['data']['settings']['title'], "Test Creation Novel")
 
+    def test_delete_project_api(self):
+        """Test deleting a project."""
+        payload = {"title": "Project to Delete"}
+        res_create = self.client.post('/api/projects/create',
+                                      data=json.dumps(payload),
+                                      content_type='application/json')
+        data_create = json.loads(res_create.data)
+        filename = data_create['filename']
+
+        res_delete = self.client.post('/api/projects/delete',
+                                      data=json.dumps({"filename": filename}),
+                                      content_type='application/json')
+        self.assertEqual(res_delete.status_code, 200)
+        data_delete = json.loads(res_delete.data)
+        self.assertEqual(data_delete['status'], 'success')
+
     def test_ai_chat_api(self):
         """Test the AI Chat offline fallback."""
         payload = {

@@ -55,5 +55,11 @@
   "chat_placeholder": "Posez une question sur votre roman...",
   "send": "Envoyer",
   "clear_chat": "Effacer",
-  "chat_welcome": "Bonjour ! Je suis votre assistant Écriture. Posez-moi des questions sur vos personnages, l'intrigue ou demandez-moi des idées pour votre scène en cours."
+  "chat_welcome": "Bonjour ! Je suis votre assistant Écriture. Posez-moi des questions sur vos personnages, l'intrigue ou demandez-moi des idées pour votre scène en cours.",
+  "lock_novel": "Verrouiller le roman (lecture seule)",
+  "lock_status_locked": "Verrouillé 🔒",
+  "lock_status_unlocked": "Déverrouillé 🔓",
+  "delete_novel": "Supprimer le roman",
+  "confirm_delete_novel": "Êtes-vous sûr de vouloir supprimer définitivement ce roman ?",
+  "locked_warning": "Ce roman est verrouillé. Déverrouillez-le dans les paramètres pour le modifier."
 }

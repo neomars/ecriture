@@ -55,5 +55,11 @@
   "chat_placeholder": "Ask a question about your novel...",
   "send": "Send",
   "clear_chat": "Clear",
-  "chat_welcome": "Hello! I am your Ecriture assistant. Ask me questions about your characters, plot, or ask for ideas on your current scene."
+  "chat_welcome": "Hello! I am your Ecriture assistant. Ask me questions about your characters, plot, or ask for ideas on your current scene.",
+  "lock_novel": "Lock novel (read-only mode)",
+  "lock_status_locked": "Locked 🔒",
+  "lock_status_unlocked": "Unlocked 🔓",
+  "delete_novel": "Delete Novel",
+  "confirm_delete_novel": "Are you sure you want to permanently delete this novel?",
+  "locked_warning": "This novel is locked. Unlock it in settings to make changes."
 }
