@@ -1,7 +1,7 @@
 __pycache__/
 *.pyc
 *.log
-*.png
 .DS_Store
 venv/
 .pytest_cache/
+!images/*.png
