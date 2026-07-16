@@ -207,14 +207,14 @@
                     <span data-i18n="ai_describe">Décrire</span>
                 </button>
                 <!-- Rewrite Dropdown Trigger -->
-                <div class="relative group border-r border-slate-700 pr-2">
-                    <button class="hover:text-indigo-300 flex items-center space-x-1 transition-colors">
+                <div class="relative border-r border-slate-700 pr-2" id="ai-rewrite-dropdown-wrapper">
+                    <button onclick="toggleRewriteDropdown(event)" class="hover:text-indigo-300 flex items-center space-x-1 transition-colors">
                         <span>✍️</span>
                         <span data-i18n="ai_rewrite">Réécrire</span>
                         <span>▾</span>
                     </button>
-                    <!-- Rewrite Styles Dropdown (appears on hover) -->
-                    <div class="absolute hidden group-hover:block left-0 top-full mt-1 w-36 bg-slate-800 text-slate-100 rounded shadow-lg py-1 border border-slate-700 z-50">
+                    <!-- Rewrite Styles Dropdown (appears on click) -->
+                    <div id="ai-rewrite-dropdown-menu" class="absolute hidden left-0 top-full mt-1.5 w-36 bg-slate-800 text-slate-100 rounded shadow-lg py-1 border border-slate-700 z-50">
                         <button onclick="triggerContextAI('rewrite', 'elegant')" class="w-full text-left px-3 py-1.5 hover:bg-slate-700 flex items-center space-x-1 transition-colors">
                             <span>📘</span> <span data-i18n="style_elegant">Soutenu</span>
                         </button>
@@ -569,6 +569,58 @@
 
     <!-- CORE SPA JAVASCRIPT -->
     <script>
+        // Textarea caret position locator utility
+        const properties = [
+            'direction', 'boxSizing', 'width', 'height', 'overflowX', 'overflowY',
+            'borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth', 'borderStyle',
+            'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
+            'fontStyle', 'fontVariant', 'fontWeight', 'fontStretch', 'fontSize',
+            'fontSizeAdjust', 'lineHeight', 'fontFamily', 'textAlign', 'textTransform',
+            'textIndent', 'textDecoration', 'letterSpacing', 'wordSpacing', 'tabSize', 'MozTabSize'
+        ];
+        const isFirefox = (typeof window !== 'undefined' && window.mozInnerScreenX != null);
+
+        function getCaretCoordinates(element, position) {
+            const div = document.createElement('div');
+            div.id = 'input-textarea-caret-position-mirror-div';
+            document.body.appendChild(div);
+
+            const style = div.style;
+            const computed = window.getComputedStyle(element);
+
+            style.whiteSpace = 'pre-wrap';
+            style.wordWrap = 'break-word';
+            style.position = 'absolute';
+            style.visibility = 'hidden';
+
+            properties.forEach(prop => {
+                style[prop] = computed[prop];
+            });
+
+            if (isFirefox) {
+                if (element.scrollHeight > parseInt(computed.height)) {
+                    style.overflowY = 'scroll';
+                }
+            } else {
+                style.overflow = 'hidden';
+            }
+
+            div.textContent = element.value.substring(0, position);
+
+            const span = document.createElement('span');
+            span.textContent = element.value.substring(position) || '.';
+            div.appendChild(span);
+
+            const coordinates = {
+                top: span.offsetTop + parseInt(computed['borderTopWidth']),
+                left: span.offsetLeft + parseInt(computed['borderLeftWidth']),
+                height: parseInt(computed['lineHeight'])
+            };
+
+            document.body.removeChild(div);
+            return coordinates;
+        }
+
         // Core application data state
         let projectData = null;
         let translations = {};
@@ -600,10 +652,16 @@
                     exportMenu.classList.add('hidden');
                 }
 
+                const rewriteMenu = document.getElementById('ai-rewrite-dropdown-menu');
+                if (rewriteMenu && !e.target.closest('#ai-rewrite-dropdown-wrapper')) {
+                    rewriteMenu.classList.add('hidden');
+                }
+
                 // Hide selection menu if clicked outside selection and selection menu
                 const selectionMenu = document.getElementById('ai-selection-menu');
                 if (selectionMenu && !e.target.closest('#ai-selection-menu') && !e.target.closest('#editor-content')) {
                     selectionMenu.classList.add('hidden');
+                    if (rewriteMenu) rewriteMenu.classList.add('hidden');
                 }
             });
 
@@ -1392,20 +1450,20 @@
             if (start !== end && text.length > 0) {
                 activeSelection = { start, end, text: editor.value.substring(start, end) };
 
-                // Position selection menu near selection
-                let x = 0;
-                let y = 0;
-                if (e && e.pageX && e.pageY) {
-                    x = e.pageX;
-                    y = e.pageY;
-                } else {
-                    const rect = editor.getBoundingClientRect();
-                    x = rect.left + window.scrollX + (rect.width / 2);
-                    y = rect.top + window.scrollY + 40;
-                }
+                // Calculate position relative to editor contents
+                const caretCoords = getCaretCoordinates(editor, start);
 
-                menu.style.left = `${x}px`;
-                menu.style.top = `${y - 45}px`;
+                // Offset calculation relative to the editor's bounding box and scroll offset
+                const rect = editor.getBoundingClientRect();
+                const container = editor.closest('main');
+                const containerRect = container.getBoundingClientRect();
+
+                // Compute exact absolute coordinates within the main workspace container
+                const menuLeft = rect.left - containerRect.left + caretCoords.left - editor.scrollLeft;
+                const menuTop = rect.top - containerRect.top + caretCoords.top + caretCoords.height - editor.scrollTop + 8; // placed perfectly below selection
+
+                menu.style.left = `${Math.max(10, Math.min(menuLeft, containerRect.width - 250))}px`;
+                menu.style.top = `${menuTop}px`;
                 menu.classList.remove('hidden');
             } else {
                 // Wait slightly to verify click target to prevent immediate hide on click
@@ -1426,10 +1484,20 @@
             document.getElementById('ai-preview-card').classList.add('hidden');
         }
 
+        function toggleRewriteDropdown(event) {
+            event.stopPropagation();
+            const menu = document.getElementById('ai-rewrite-dropdown-menu');
+            if (menu) {
+                menu.classList.toggle('hidden');
+            }
+        }
+
         async function triggerContextAI(tool, style = "") {
             const menu = document.getElementById('ai-selection-menu');
+            const rewriteMenu = document.getElementById('ai-rewrite-dropdown-menu');
             const card = document.getElementById('ai-preview-card');
             if (menu) menu.classList.add('hidden');
+            if (rewriteMenu) rewriteMenu.classList.add('hidden');
             if (!card) return;
 
             // Save last call params
