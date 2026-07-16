@@ -71,11 +71,40 @@
                 </select>
             </div>
 
-            <!-- Export as TXT -->
-            <button onclick="exportDraft()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm font-semibold shadow-sm transition-all flex items-center space-x-1">
-                <span>📥</span>
-                <span data-i18n="export_draft">Exporter en .txt</span>
-            </button>
+            <!-- Export with Format Dropdown -->
+            <div class="relative inline-block text-left" id="export-dropdown-wrapper">
+                <button onclick="toggleExportDropdown(event)" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm font-semibold shadow-sm transition-all flex items-center space-x-1">
+                    <span>📥</span>
+                    <span data-i18n="export_draft">Exporter</span>
+                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div id="export-dropdown-menu" class="hidden absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-lg shadow-lg py-1 z-50">
+                    <button onclick="exportDraft('txt')" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 flex items-center space-x-2">
+                        <span>📄</span>
+                        <span data-i18n="export_txt">Texte (.txt)</span>
+                    </button>
+                    <button onclick="exportDraft('docx')" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 flex items-center space-x-2">
+                        <span>📘</span>
+                        <span data-i18n="export_docx">Word (.docx)</span>
+                    </button>
+                    <button onclick="exportDraft('odt')" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 flex items-center space-x-2">
+                        <span>📝</span>
+                        <span data-i18n="export_odt">OpenDocument (.odt)</span>
+                    </button>
+                    <button onclick="exportDraft('epub')" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 flex items-center space-x-2">
+                        <span>📱</span>
+                        <span data-i18n="export_epub">ePub (.epub)</span>
+                    </button>
+                    <button onclick="exportDraft('mobi')" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 flex items-center space-x-2">
+                        <span>💾</span>
+                        <span data-i18n="export_mobi">Mobipocket (.mobi)</span>
+                    </button>
+                    <button onclick="exportDraft('pdf')" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 flex items-center space-x-2">
+                        <span>📕</span>
+                        <span data-i18n="export_pdf">PDF (.pdf)</span>
+                    </button>
+                </div>
+            </div>
 
             <!-- Project Settings -->
             <button onclick="openSettingsModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all">
@@ -489,6 +518,10 @@
                 const dropdown = document.getElementById('asset-menu-dropdown');
                 if (dropdown && !e.target.closest('.relative')) {
                     dropdown.classList.add('hidden');
+                }
+                const exportMenu = document.getElementById('export-dropdown-menu');
+                if (exportMenu && !e.target.closest('#export-dropdown-wrapper')) {
+                    exportMenu.classList.add('hidden');
                 }
             });
 
@@ -1306,13 +1339,32 @@
             }
         }
 
+        function toggleExportDropdown(event) {
+            event.stopPropagation();
+            const menu = document.getElementById('export-dropdown-menu');
+            if (menu) {
+                menu.classList.toggle('hidden');
+            }
+        }
+
         // EXPORT THE ENTIRE NOVEL
-        async function exportDraft() {
+        async function exportDraft(format = 'txt') {
             try {
+                // Hide menu immediately
+                const menu = document.getElementById('export-dropdown-menu');
+                if (menu) {
+                    menu.classList.add('hidden');
+                }
+
                 // Post save first to ensure we export latest
                 await persistProject();
 
-                const response = await fetch('/api/export', { method: 'POST' });
+                const response = await fetch('/api/export', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ format: format })
+                });
+
                 if (response.ok) {
                     const blob = await response.blob();
                     const url = window.URL.createObjectURL(blob);
@@ -1320,13 +1372,14 @@
                     a.href = url;
 
                     const cleanTitle = (projectData.settings.title || "roman").replace(/\s+/g, '_');
-                    a.download = `${cleanTitle}_draft.txt`;
+                    a.download = `${cleanTitle}_draft.${format}`;
 
                     document.body.appendChild(a);
                     a.click();
                     a.remove();
                 } else {
-                    alert("Export failed.");
+                    const errorJson = await response.json().catch(() => ({}));
+                    alert("Export failed: " + (errorJson.error || "Unknown error"));
                 }
             } catch (err) {
                 console.error("Export error:", err);

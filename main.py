@@ -217,35 +217,341 @@ def get_locale(lang):
 
 @app.route('/api/export', methods=['POST'])
 def export_draft():
-    """Compiles the entire manuscript and exports it as a .txt file."""
+    """Compiles the entire manuscript and exports it in the chosen format."""
     global project
     try:
-        title = project.data["settings"].get("title", "My Novel")
-        content_lines = [f"=== {title} ===\n\n"]
+        payload = request.get_json(silent=True) or {}
+        fmt = payload.get("format", "txt").lower().strip()
 
+        title = project.data["settings"].get("title", "My Novel")
+        safe_title = title.replace(' ', '_')
+
+        # Compile clean manuscript text representation
+        content_lines = [f"=== {title} ===\n\n"]
         for chap in project.data["manuscript"]:
             content_lines.append(f"\n--- {chap['title']} ---\n\n")
             for scene in chap.get("children", []):
                 content_lines.append(f"[{scene['title']}]\n")
                 content_lines.append(f"{scene.get('content', '')}\n\n")
-
         compiled_text = "".join(content_lines)
 
-        # Temp file to send
-        temp_file_path = "novel_export_temp.txt"
-        with open(temp_file_path, 'w', encoding='utf-8') as f:
-            f.write(compiled_text)
+        if fmt == "txt":
+            temp_file_path = "novel_export_temp.txt"
+            with open(temp_file_path, 'w', encoding='utf-8') as f:
+                f.write(compiled_text)
+            return send_file(
+                temp_file_path,
+                as_attachment=True,
+                download_name=f"{safe_title}_draft.txt",
+                mimetype="text/plain"
+            )
 
-        # Standard clean filename for downloading
-        clean_filename = f"{title.replace(' ', '_')}_draft.txt"
+        elif fmt == "docx":
+            import docx
+            temp_file_path = "novel_export_temp.docx"
+            doc = docx.Document()
+            doc.add_heading(title, 0)
 
-        return send_file(
-            temp_file_path,
-            as_attachment=True,
-            download_name=clean_filename,
-            mimetype="text/plain"
-        )
+            for chap in project.data["manuscript"]:
+                doc.add_heading(chap['title'], level=1)
+                for scene in chap.get("children", []):
+                    doc.add_heading(scene['title'], level=2)
+                    doc.add_paragraph(scene.get('content', ''))
+
+            doc.save(temp_file_path)
+            return send_file(
+                temp_file_path,
+                as_attachment=True,
+                download_name=f"{safe_title}_draft.docx",
+                mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            )
+
+        elif fmt == "pdf":
+            from reportlab.lib.pagesizes import letter
+            from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+            from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+            from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
+
+            temp_file_path = "novel_export_temp.pdf"
+            doc = SimpleDocTemplate(temp_file_path, pagesize=letter)
+            story = []
+
+            styles = getSampleStyleSheet()
+
+            title_style = ParagraphStyle(
+                'TitleStyle',
+                parent=styles['Heading1'],
+                alignment=TA_CENTER,
+                fontSize=24,
+                spaceAfter=20
+            )
+            story.append(Paragraph(title, title_style))
+            story.append(Spacer(1, 20))
+
+            heading1_style = ParagraphStyle(
+                'Heading1Style',
+                parent=styles['Heading2'],
+                fontSize=18,
+                spaceBefore=15,
+                spaceAfter=10
+            )
+            heading2_style = ParagraphStyle(
+                'Heading2Style',
+                parent=styles['Heading3'],
+                fontSize=14,
+                spaceBefore=10,
+                spaceAfter=6
+            )
+            body_style = ParagraphStyle(
+                'BodyStyle',
+                parent=styles['BodyText'],
+                fontSize=11,
+                leading=14,
+                alignment=TA_JUSTIFY,
+                spaceAfter=10
+            )
+
+            for chap in project.data["manuscript"]:
+                story.append(Paragraph(chap['title'], heading1_style))
+                for scene in chap.get("children", []):
+                    story.append(Paragraph(scene['title'], heading2_style))
+                    content = scene.get('content', '').replace('\n', '<br/>')
+                    story.append(Paragraph(content, body_style))
+                    story.append(Spacer(1, 10))
+
+            doc.build(story)
+            return send_file(
+                temp_file_path,
+                as_attachment=True,
+                download_name=f"{safe_title}_draft.pdf",
+                mimetype="application/pdf"
+            )
+
+        elif fmt == "odt":
+            import zipfile
+            import html
+            temp_file_path = "novel_export_temp.odt"
+
+            manifest_xml = (
+                '<?xml version="1.0" encoding="UTF-8"?>\n'
+                '<manifest:manifest xmlns:manifest="urn:oasis:names:tc:opendocument:xmlns:manifest:1.0" manifest:version="1.2">\n'
+                ' <manifest:file-entry manifest:full-path="/" manifest:version="1.2" manifest:media-type="application/vnd.oasis.opendocument.text"/>\n'
+                ' <manifest:file-entry manifest:full-path="content.xml" manifest:media-type="text/xml"/>\n'
+                ' <manifest:file-entry manifest:full-path="styles.xml" manifest:media-type="text/xml"/>\n'
+                ' <manifest:file-entry manifest:full-path="meta.xml" manifest:media-type="text/xml"/>\n'
+                '</manifest:manifest>\n'
+            )
+
+            meta_xml = (
+                '<?xml version="1.0" encoding="UTF-8"?>\n'
+                '<office:document-meta xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0" office:version="1.2">\n'
+                ' <office:meta>\n'
+                '  <meta:generator>Ecriture Novel Assistant</meta:generator>\n'
+                f'  <meta:title>{html.escape(title)}</meta:title>\n'
+                ' </office:meta>\n'
+                '</office:document-meta>\n'
+            )
+
+            styles_xml = (
+                '<?xml version="1.0" encoding="UTF-8"?>\n'
+                '<office:document-styles xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" office:version="1.2">\n'
+                '</office:document-styles>\n'
+            )
+
+            body_xml_lines = []
+            for chap in project.data["manuscript"]:
+                body_xml_lines.append(f'<text:h text:outline-level="1">{html.escape(chap["title"])}</text:h>')
+                for scene in chap.get("children", []):
+                    body_xml_lines.append(f'<text:h text:outline-level="2">{html.escape(scene["title"])}</text:h>')
+                    for para in scene.get("content", "").split("\n"):
+                        if para.strip():
+                            body_xml_lines.append(f'<text:p>{html.escape(para)}</text:p>')
+            body_xml = "\n".join(body_xml_lines)
+
+            content_xml = (
+                '<?xml version="1.0" encoding="UTF-8"?>\n'
+                '<office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" office:version="1.2">\n'
+                ' <office:body>\n'
+                '  <office:text>\n'
+                f'   <text:h text:outline-level="1">{html.escape(title)}</text:h>\n'
+                f'   {body_xml}\n'
+                '  </office:text>\n'
+                ' </office:body>\n'
+                '</office:document-content>\n'
+            )
+
+            with zipfile.ZipFile(temp_file_path, 'w', zipfile.ZIP_DEFLATED) as o:
+                o.writestr('mimetype', 'application/vnd.oasis.opendocument.text', compress_type=zipfile.ZIP_STORED)
+                o.writestr('META-INF/manifest.xml', manifest_xml)
+                o.writestr('meta.xml', meta_xml)
+                o.writestr('styles.xml', styles_xml)
+                o.writestr('content.xml', content_xml)
+
+            return send_file(
+                temp_file_path,
+                as_attachment=True,
+                download_name=f"{safe_title}_draft.odt",
+                mimetype="application/vnd.oasis.opendocument.text"
+            )
+
+        elif fmt == "epub":
+            import zipfile
+            import html
+            temp_file_path = "novel_export_temp.epub"
+
+            container_xml = (
+                '<?xml version="1.0" encoding="UTF-8"?>\n'
+                '<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">\n'
+                '  <rootfiles>\n'
+                '    <rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>\n'
+                '  </rootfiles>\n'
+                '</container>\n'
+            )
+
+            content_opf = (
+                '<?xml version="1.0" encoding="UTF-8"?>\n'
+                '<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookID" version="2.0">\n'
+                '  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">\n'
+                f'    <dc:title>{html.escape(title)}</dc:title>\n'
+                '    <dc:language>fr</dc:language>\n'
+                '    <dc:creator>Ecriture Novel Assistant</dc:creator>\n'
+                '    <dc:identifier id="BookID">urn:uuid:12345678-1234-1234-1234-123456789abc</dc:identifier>\n'
+                '  </metadata>\n'
+                '  <manifest>\n'
+                '    <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>\n'
+                '    <item id="text" href="text.html" media-type="application/xhtml+xml"/>\n'
+                '  </manifest>\n'
+                '  <spine toc="ncx">\n'
+                '    <itemref idref="text"/>\n'
+                '  </spine>\n'
+                '</package>\n'
+            )
+
+            toc_ncx = (
+                '<?xml version="1.0" encoding="UTF-8"?>\n'
+                '<!DOCTYPE ncx PUBLIC "-//NISO//DTD NCX 2005-1//EN" "http://www.daisy.org/z3986/2005/ncx-2005-1.dtd">\n'
+                '<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">\n'
+                '  <head>\n'
+                '    <meta name="dtb:uid" content="urn:uuid:12345678-1234-1234-1234-123456789abc"/>\n'
+                '    <meta name="dtb:depth" content="1"/>\n'
+                '    <meta name="dtb:totalPageCount" content="0"/>\n'
+                '    <meta name="dtb:maxPageNumber" content="0"/>\n'
+                '  </head>\n'
+                '  <docTitle>\n'
+                f'    <text>{html.escape(title)}</text>\n'
+                '  </docTitle>\n'
+                '  <navMap>\n'
+                '    <navPoint id="navPoint-1" playOrder="1">\n'
+                '      <navLabel>\n'
+                '        <text>Start</text>\n'
+                '      </navLabel>\n'
+                '      <content src="text.html"/>\n'
+                '    </navPoint>\n'
+                '  </navMap>\n'
+                '</ncx>\n'
+            )
+
+            html_body_lines = []
+            for chap in project.data["manuscript"]:
+                html_body_lines.append(f'<h2>{html.escape(chap["title"])}</h2>')
+                for scene in chap.get("children", []):
+                    html_body_lines.append(f'<h3>{html.escape(scene["title"])}</h3>')
+                    for para in scene.get("content", "").split("\n"):
+                        if para.strip():
+                            html_body_lines.append(f'<p>{html.escape(para)}</p>')
+            html_body = "\n".join(html_body_lines)
+
+            text_html = (
+                '<?xml version="1.0" encoding="utf-8"?>\n'
+                '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">\n'
+                '<html xmlns="http://www.w3.org/1999/xhtml">\n'
+                '<head>\n'
+                f'  <title>{html.escape(title)}</title>\n'
+                '</head>\n'
+                '<body>\n'
+                f'  <h1>{html.escape(title)}</h1>\n'
+                f'  {html_body}\n'
+                '</body>\n'
+                '</html>\n'
+            )
+
+            with zipfile.ZipFile(temp_file_path, 'w', zipfile.ZIP_DEFLATED) as o:
+                o.writestr('mimetype', 'application/epub+zip', compress_type=zipfile.ZIP_STORED)
+                o.writestr('META-INF/container.xml', container_xml)
+                o.writestr('OEBPS/content.opf', content_opf)
+                o.writestr('OEBPS/toc.ncx', toc_ncx)
+                o.writestr('OEBPS/text.html', text_html)
+
+            return send_file(
+                temp_file_path,
+                as_attachment=True,
+                download_name=f"{safe_title}_draft.epub",
+                mimetype="application/epub+zip"
+            )
+
+        elif fmt == "mobi":
+            import struct
+            temp_file_path = "novel_export_temp.mobi"
+
+            title_bytes = title.encode('utf-8')[:31].ljust(32, b'\0')
+            num_records = 3
+
+            pdb_header = struct.pack(
+                '>32sHHIIIIII4s4sIIH',
+                title_bytes,
+                0, # attributes
+                0, # version
+                0, 0, 0, 0, # dates
+                0, # app info
+                0, # sort info
+                b'BOOK',
+                b'MOBI',
+                0, # unique id seed
+                0, # next record
+                num_records
+            )
+
+            text_bytes = compiled_text.encode('utf-8')
+            text_len = len(text_bytes)
+
+            # Rec0 is the PalmDOC/Mobi description header:
+            # - compression: 1 (none)
+            # - unused: 0
+            # - text length
+            # - record count: 1 (text records count)
+            # - record size: 4096
+            # - encryption: 0
+            rec0 = struct.pack('>HHIIHH', 1, 0, text_len, num_records - 1, 4096, 0)
+            rec1 = text_bytes
+            rec2 = b'\xe9\x8e\r\n' # EOF
+
+            offset0 = 78 + (num_records * 8) + 2
+            offset1 = offset0 + len(rec0)
+            offset2 = offset1 + len(rec1)
+
+            rec_info = b''
+            rec_info += struct.pack('>II', offset0, 0)
+            rec_info += struct.pack('>II', offset1, 2)
+            rec_info += struct.pack('>II', offset2, 4)
+
+            mobi_bytes = pdb_header + rec_info + b'\0\0' + rec0 + rec1 + rec2
+
+            with open(temp_file_path, 'wb') as f:
+                f.write(mobi_bytes)
+
+            return send_file(
+                temp_file_path,
+                as_attachment=True,
+                download_name=f"{safe_title}_draft.mobi",
+                mimetype="application/x-mobipocket-ebook"
+            )
+
+        else:
+            return jsonify({"error": f"Unsupported format: {fmt}"}), 400
+
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return jsonify({"error": f"Failed to export: {str(e)}"}), 500
 
 @app.route('/api/ai/chat', methods=['POST'])

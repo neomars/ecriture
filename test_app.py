@@ -89,6 +89,20 @@ class TestEcritureWebApp(unittest.TestCase):
         self.assertEqual(response.mimetype, 'text/plain')
         self.assertTrue(response.data.startswith(b'==='))
 
+    def test_export_formats(self):
+        """Test exporting other formats."""
+        for fmt, mimetype in [
+            ('docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'),
+            ('pdf', 'application/pdf'),
+            ('odt', 'application/vnd.oasis.opendocument.text'),
+            ('epub', 'application/epub+zip'),
+            ('mobi', 'application/x-mobipocket-ebook')
+        ]:
+            response = self.client.post('/api/export', json={'format': fmt})
+            self.assertEqual(response.status_code, 200, f"Failed for format: {fmt}")
+            self.assertEqual(response.mimetype, mimetype, f"Mimetype mismatch for: {fmt}")
+            self.assertTrue(len(response.data) > 0, f"Empty response data for: {fmt}")
+
     def test_list_projects_api(self):
         """Test getting lists of projects."""
         response = self.client.get('/api/projects')
