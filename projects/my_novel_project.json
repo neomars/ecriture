@@ -50,20 +50,37 @@
     "plot": {
         "cards": [
             {
+                "characters": [
+                    "char_1",
+                    "char_3"
+                ],
                 "content": "Bingley rents Netherfield Park, exciting Mrs. Bennet.",
                 "id": "card_1",
+                "links": [
+                    "card_3"
+                ],
                 "plotline_id": "pl_1",
                 "scene_id": "scene_1_1",
                 "title": "Bingley Arrives"
             },
             {
+                "characters": [
+                    "char_1",
+                    "char_2"
+                ],
                 "content": "Jane and Bingley meet and there's immediate mutual interest.",
                 "id": "card_2",
+                "links": [
+                    "card_3"
+                ],
                 "plotline_id": "pl_2",
                 "scene_id": "scene_1_1",
                 "title": "First Spark"
             },
             {
+                "characters": [
+                    "char_3"
+                ],
                 "content": "Mr. Bennet reveals he has visited Bingley, surprising the family.",
                 "id": "card_3",
                 "plotline_id": "pl_1",

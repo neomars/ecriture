@@ -62,5 +62,14 @@
   "delete_novel": "Delete Novel",
   "confirm_delete_novel": "Are you sure you want to permanently delete this novel?",
   "locked_warning": "This novel is locked. Unlock it in settings to make changes.",
-  "toggle_ai": "Enable AI"
+  "toggle_ai": "Enable AI",
+  "associated_characters": "Associated Characters",
+  "connected_cards": "Connected Plot Cards",
+  "link_btn": "Link",
+  "link_select_placeholder": "Select a card...",
+  "visual_timeline": "Visual Timeline",
+  "grid_view": "Grid Table",
+  "timeline_view": "Visual Chronology",
+  "no_characters_yet": "No characters created",
+  "no_cards_yet": "No other plot cards available"
 }

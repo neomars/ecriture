@@ -62,5 +62,14 @@
   "delete_novel": "Supprimer le roman",
   "confirm_delete_novel": "Êtes-vous sûr de vouloir supprimer définitivement ce roman ?",
   "locked_warning": "Ce roman est verrouillé. Déverrouillez-le dans les paramètres pour le modifier.",
-  "toggle_ai": "Activer l'IA"
+  "toggle_ai": "Activer l'IA",
+  "associated_characters": "Personnages associés",
+  "connected_cards": "Cartes d'intrigue reliées",
+  "link_btn": "Relier",
+  "link_select_placeholder": "Sélectionner une carte...",
+  "visual_timeline": "Trame Chronologique",
+  "grid_view": "Vue Grille",
+  "timeline_view": "Trame Visuelle",
+  "no_characters_yet": "Aucun personnage créé",
+  "no_cards_yet": "Aucune autre carte d'intrigue"
 }

@@ -98,5 +98,20 @@ class TestNovelProject(unittest.TestCase):
         new_project = NovelProject(self.test_filename)
         self.assertEqual(new_project.data["settings"]["title"], "Persuasion")
 
+    def test_custom_plot_card_fields(self):
+        # Verify characters and links associations are correctly retained on save and load
+        card = self.project.data["plot"]["cards"][0]
+        card["characters"] = ["char_1", "char_3"]
+        card["links"] = ["card_2"]
+
+        self.project.save()
+
+        new_project = NovelProject(self.test_filename)
+        loaded_card = new_project.data["plot"]["cards"][0]
+        self.assertIn("characters", loaded_card)
+        self.assertEqual(loaded_card["characters"], ["char_1", "char_3"])
+        self.assertIn("links", loaded_card)
+        self.assertEqual(loaded_card["links"], ["card_2"])
+
 if __name__ == "__main__":
     unittest.main()

@@ -25,8 +25,11 @@
 ### Interface Principale (English)
 ![Main Interface in English](images/screenshot_main_en.png)
 
-### Grille d'Intrigue (Plot Grid)
+### Grille d'Intrigue (Plot Grid - Vue Table)
 ![Grille d'Intrigue](images/screenshot_plot_grid.png)
+
+### Trame Visuelle Chronologique (Timeline & Liaisons)
+![Trame Visuelle](images/screenshot_timeline.png)
 
 ### Verrouillage du Roman (Lecture seule)
 ![Espace Verrouillé](images/screenshot_locked.png)
@@ -37,7 +40,7 @@
 
 *   **Éditeur de Texte Minimaliste & Distraction-Free** : Conçu pour optimiser la concentration avec des polices élégantes (Georgia), des marges de lecture parfaites et une sauvegarde automatique et silencieuse à chaque frappe.
 *   **Arbre de Navigation Interactif** : Gérez de manière hiérarchique vos chapitres, scènes, fiches de personnages et notes de récit dans la barre latérale gauche. Ordonnez et renommez vos éléments d'un simple clic.
-*   **Grille d'Intrigue (Plot Grid)** : Un tableau de planification interactif pour cartographier vos intrigues secondaires et chapitres, inspiré de la méthode Snowflake.
+*   **Grille d'Intrigue & Trame Chronologique Visuelle** : Un espace de planification interactif à double affichage. Vous pouvez alterner entre la **Vue Grille** classique (tableau d'intrigue inspiré de la méthode Snowflake) et la **Trame Visuelle** (frise chronologique horizontale). Reliez graphiquement vos cartes d'intrigue entre elles par des lignes de flux dynamiques (courbes de Bézier SVG) et associez-y vos personnages pour visualiser simplement la structure et le rythme de votre roman.
 *   **Suivi des Objectifs & Statistiques** : Fixez des objectifs quotidiens et globaux. Des barres de progression interactives calculent vos mots en temps réel.
 *   **Minuteur de Focus (Focus Timer)** : Un minuteur Pomodoro réglable intégré pour rythmer vos sessions d'écriture intensives.
 *   **Assistant IA Local (Optionnel)** : Un volet d'assistant IA qui se connecte de manière transparente à votre serveur local **Ollama** (port 11434). L'assistant IA peut être complètement désactivé/masqué d'un simple clic via un interrupteur dans l'en-tête, préservant votre espace de travail.
@@ -97,7 +100,7 @@ Ouvrez votre navigateur web et accédez à :
 
 1.  **Création de Roman** : Cliquez sur le bouton **"+" Nouveau roman** dans l'en-tête pour créer instantanément un nouveau projet.
 2.  **Rédaction** : Sélectionnez n'est-ce pas un élément (Chapitre ou Scène) dans la barre latérale pour commencer à taper dans l'éditeur central. La sauvegarde est automatique !
-3.  **Grille d'Intrigue** : Cliquez sur **Grille d'intrigue** dans l'arbre pour afficher le tableau de planification. Cliquez sur une cellule pour y ajouter ou modifier une carte de l'intrigue.
+3.  **Grille d'Intrigue & Trame Visuelle** : Cliquez sur **Grille d'intrigue** dans l'arbre pour afficher l'espace de planification. Utilisez les onglets **Vue Grille** et **Trame Visuelle** pour alterner entre le tableau et la frise chronologique interactive. Associez des personnages et connectez des cartes entre elles via des lignes de flux graphiques directement depuis le formulaire d'édition d'une carte.
 4.  **Bouton IA** : Activez ou désactivez l'Assistant IA à l'aide de l'interrupteur **Activer l'IA** dans la barre supérieure.
 5.  **Paramètres de Projet** : Cliquez sur **Paramètres du projet** pour changer le titre, définir l'objectif de mots global, verrouiller/déverrouiller le roman, ou le supprimer.
 
@@ -117,8 +120,11 @@ Ouvrez votre navigateur web et accédez à :
 ### Main Workspace (English)
 ![Main Workspace in English](images/screenshot_main_en.png)
 
-### Plot Grid View
+### Plot Grid View (Classic Table Grid)
 ![Plot Grid](images/screenshot_plot_grid.png)
+
+### Visual Chronological Timeline (Connections & Flow)
+![Visual Chronological Timeline](images/screenshot_timeline.png)
 
 ### Locked Novel View (Read-Only)
 ![Locked Space](images/screenshot_locked.png)
@@ -129,7 +135,7 @@ Ouvrez votre navigateur web et accédez à :
 
 *   **Distraction-Free Text Editor**: Designed to maximize focus with gorgeous typography (Georgia), optimal margins, and silent automatic saving on every keystroke.
 *   **Interactive Navigation Tree**: Hierarchical management of chapters, scenes, characters, and notes in the left sidebar. Edit, rename, or delete elements instantly.
-*   **Plot Grid**: An interactive planning board to map out your subplots and chapters, inspired by the Snowflake method.
+*   **Plot Grid & Visual Chronological Timeline**: A dual-view interactive plotting workspace. Switch seamlessly between the classic **Grid View** (table layout inspired by the Snowflake method) and the **Visual Timeline** (horizontal flowchart). Graphically connect plot cards with dynamic SVG flowlines, and link characters directly to cards to visually track story flow, pacing, and character presence.
 *   **Goals & Statistics Tracker**: Define daily and overall word count goals. Real-time progress bars calculate counts dynamically as you write.
 *   **Focus Timer**: Built-in adjustable Pomodoro timer to pace your writing sprints.
 *   **Local AI Assistant (Optional)**: An AI assistant panel that connects seamlessly to your local **Ollama** server (port 11434). The AI assistant can be completely disabled/hidden with a simple header switch, ensuring a completely offline and distraction-free environment.
@@ -189,6 +195,6 @@ Open your favorite web browser and go to:
 
 1.  **Creating Novels**: Click the **"+" New novel / Nouveau roman** button in the top bar to create a fresh project.
 2.  **Drafting**: Click any Chapter or Scene in the navigation tree to open the distraction-free editor. Start writing; your work is auto-saved as you type.
-3.  **Plotting**: Access the **Plot Grid** from the sidebar to map your plot structure. Click empty cells to add plot cards or click existing cards to edit their summary.
+3.  **Plotting & Timeline**: Access the **Plot Grid** from the sidebar. Toggle between **Grid View** and **Visual Timeline** tabs. Link characters and draw graphical connection flowlines between plot cards directly from the card edit popup to map your story's chronological flow simply.
 4.  **AI Toggle**: Turn the AI assistant on or off using the **Toggle AI / Activer l'IA** switch in the top header.
 5.  **Project Settings**: Adjust project titles, overall word goals, lock/unlock the workspace, or delete the current novel via the **Project settings** modal.

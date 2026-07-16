@@ -23,6 +23,26 @@ def generate_all():
             pass
         page.wait_for_timeout(500)
 
+        # Programmatically set up beautiful card connections and character associations for the screenshots
+        page.evaluate("""() => {
+            const c1 = projectData.plot.cards.find(c => c.id === 'card_1');
+            if (c1) {
+                c1.links = ['card_3'];
+                c1.characters = ['char_1', 'char_3'];
+            }
+            const c2 = projectData.plot.cards.find(c => c.id === 'card_2');
+            if (c2) {
+                c2.links = ['card_3'];
+                c2.characters = ['char_1', 'char_2'];
+            }
+            const c3 = projectData.plot.cards.find(c => c.id === 'card_3');
+            if (c3) {
+                c3.characters = ['char_3'];
+            }
+            persistProject();
+        }""")
+        page.wait_for_timeout(500)
+
         # Take French Main Screenshot
         page.screenshot(path="images/screenshot_main_fr.png")
         print("Generated images/screenshot_main_fr.png")
@@ -38,10 +58,20 @@ def generate_all():
         page.wait_for_timeout(500)
         page.click("text=Grille d'intrigue")
         page.wait_for_timeout(1000)
+
+        # Ensure sub-view is 'grid'
+        page.click("#plot-view-grid-tab")
+        page.wait_for_timeout(1000)
         page.screenshot(path="images/screenshot_plot_grid.png")
         print("Generated images/screenshot_plot_grid.png")
 
-        # 4. Click a scene to get back to editor
+        # 4. Take visual timeline screenshot
+        page.click("#plot-view-timeline-tab")
+        page.wait_for_timeout(1000)
+        page.screenshot(path="images/screenshot_timeline.png")
+        print("Generated images/screenshot_timeline.png")
+
+        # 5. Click a scene to get back to editor
         page.click("text=Chapter 1")
         page.wait_for_timeout(500)
         try:
