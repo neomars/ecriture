@@ -554,6 +554,115 @@ def export_draft():
         traceback.print_exc()
         return jsonify({"error": f"Failed to export: {str(e)}"}), 500
 
+@app.route('/api/ai', methods=['POST'])
+def handle_ai_tool():
+    """Handles contextual AI writing tools: Describe, Rewrite, and Expand."""
+    import urllib.request
+    import urllib.error
+    from ai_prompts import DESCRIBE_PROMPT, REWRITE_PROMPT, EXPAND_PROMPT
+
+    payload = request.json or {}
+    tool = payload.get("tool", "describe").lower().strip()
+    style = payload.get("style", "elegant").lower().strip()
+    text = payload.get("text", "").strip()
+
+    if not text:
+        return jsonify({"error": "No text selected"}), 400
+
+    # Match the appropriate system prompt
+    if tool == "describe":
+        system_prompt = DESCRIBE_PROMPT
+    elif tool == "rewrite":
+        system_prompt = REWRITE_PROMPT.format(style=style)
+    elif tool == "expand":
+        system_prompt = EXPAND_PROMPT
+    else:
+        return jsonify({"error": f"Unknown tool: {tool}"}), 400
+
+    # Build chat messages payload
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": text}
+    ]
+
+    ollama_url = "http://localhost:11434"
+    selected_model = "llama3"
+
+    # 1. Try to find an active model on Ollama
+    try:
+        req_tags = urllib.request.Request(f"{ollama_url}/api/tags", method="GET")
+        with urllib.request.urlopen(req_tags, timeout=2) as response:
+            tags_data = json.loads(response.read().decode('utf-8'))
+            models = tags_data.get("models", [])
+            if models:
+                selected_model = models[0]["name"]
+    except Exception:
+        pass
+
+    # 2. Call Ollama
+    try:
+        chat_payload = {
+            "model": selected_model,
+            "messages": messages,
+            "stream": False,
+            "options": {
+                "temperature": 0.7
+            }
+        }
+        req_chat = urllib.request.Request(
+            f"{ollama_url}/api/chat",
+            data=json.dumps(chat_payload).encode('utf-8'),
+            headers={'Content-Type': 'application/json'},
+            method="POST"
+        )
+        with urllib.request.urlopen(req_chat, timeout=15) as response:
+            chat_response = json.loads(response.read().decode('utf-8'))
+            assistant_message = chat_response.get("message", {}).get("content", "").strip()
+            return jsonify({
+                "status": "success",
+                "message": assistant_message,
+                "model": selected_model
+            })
+    except Exception:
+        # Fallback interactive simulation based on the tool
+        is_french = any(word in text.lower() for word in ["le", "la", "les", "une", "un", "est", "et", "de", "je", "tu", "il"])
+
+        if tool == "describe":
+            if is_french:
+                simulated_output = f"Une description riche et sensorielle de « {text} » : Des nuances subtiles se détachent, capturant la lumière changeante avec une précision artistique, éveillant un sentiment profond d'émerveillement et de mystère."
+            else:
+                simulated_output = f"A rich and sensory description of '{text}': Subtle textures and fine details catch the ambient light, casting delicate shadows that evoke a deep sense of atmospheric presence and quiet contemplation."
+        elif tool == "rewrite":
+            if is_french:
+                style_fr = {
+                    "elegant": f"Version élégante de « {text} » : Une formulation raffinée, drapée de tournures mélodieuses et d'un vocabulaire choisi avec le plus grand soin.",
+                    "dramatic": f"Version dramatique de « {text} » : Soudain, l'air devint lourd de menaces. Chaque mot résonnait comme un coup de tonnerre sur le point d'éclater, scellant à jamais leur destin tragique.",
+                    "poetic": f"Version poétique de « {text} » : Comme un murmure d'étoiles filantes glissant sur le velours de la nuit, les mots dansent et s'envolent au gré des songes.",
+                    "humorous": f"Version humoristique de « {text} » : Bon, d'accord, « {text} »... Mais en plus rigolo, avec un zeste d'ironie et deux cuillères à soupe d'auto-dérision !",
+                    "action": f"Version action de « {text} » : Impact immédiat. Le souffle court. Pas un instant à perdre. Tout s'accélère à un rythme effréné !"
+                }
+                simulated_output = style_fr.get(style, style_fr["elegant"])
+            else:
+                style_en = {
+                    "elegant": f"Elegant version of '{text}': A polished expression, woven with sophisticated syntax and literary precision.",
+                    "dramatic": f"Dramatic version of '{text}': Suddenly, a suffocating tension filled the room, matching the perilous stakes of this critical hour.",
+                    "poetic": f"Poetic version of '{text}': Like starlight kissing the dark surface of a sleeping lake, the words shimmer with ethereal grace.",
+                    "humorous": f"Humorous version of '{text}': Well, let's add a playful twist to '{text}'—with a dash of wit and a side of healthy sarcasm!",
+                    "action": f"Action version of '{text}': High-octane response. Heart pounding. Every second counted. Move or die!"
+                }
+                simulated_output = style_en.get(style, style_en["elegant"])
+        else:  # expand
+            if is_french:
+                simulated_output = f"« {text} » de manière plus développée : Nous pouvons explorer l'arrière-plan avec soin, en ajoutant des détails descriptifs substantiels, en ralentissant le rythme et en enrichissant les émotions intérieures des personnages présents."
+            else:
+                simulated_output = f"Expanded version of '{text}': Elaborating further on this moment, we unfold layers of quiet thoughts and sensory nuances, breathing full dimension into the atmosphere and pacing of the narrative."
+
+        return jsonify({
+            "status": "offline_fallback",
+            "message": simulated_output,
+            "model": "Simulation"
+        })
+
 @app.route('/api/ai/chat', methods=['POST'])
 def ai_chat():
     """Proxy or fallback endpoint for a local Ollama AI assistant."""

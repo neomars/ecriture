@@ -199,6 +199,82 @@
         <!-- CENTRAL WORKSPACE (Occupies full height and expands elegantly) -->
         <main class="flex-1 h-full bg-white flex flex-col overflow-hidden relative">
 
+            <!-- Contextual AI Selection Menu -->
+            <div id="ai-selection-menu" class="hidden absolute bg-slate-900 text-white rounded-lg shadow-xl px-3 py-1.5 flex items-center space-x-2 text-xs font-semibold z-50 transition-all duration-150">
+                <!-- Describe Button -->
+                <button onclick="triggerContextAI('describe')" class="hover:text-indigo-300 flex items-center space-x-1 border-r border-slate-700 pr-2 transition-colors">
+                    <span>🔍</span>
+                    <span data-i18n="ai_describe">Décrire</span>
+                </button>
+                <!-- Rewrite Dropdown Trigger -->
+                <div class="relative group border-r border-slate-700 pr-2">
+                    <button class="hover:text-indigo-300 flex items-center space-x-1 transition-colors">
+                        <span>✍️</span>
+                        <span data-i18n="ai_rewrite">Réécrire</span>
+                        <span>▾</span>
+                    </button>
+                    <!-- Rewrite Styles Dropdown (appears on hover) -->
+                    <div class="absolute hidden group-hover:block left-0 top-full mt-1 w-36 bg-slate-800 text-slate-100 rounded shadow-lg py-1 border border-slate-700 z-50">
+                        <button onclick="triggerContextAI('rewrite', 'elegant')" class="w-full text-left px-3 py-1.5 hover:bg-slate-700 flex items-center space-x-1 transition-colors">
+                            <span>📘</span> <span data-i18n="style_elegant">Soutenu</span>
+                        </button>
+                        <button onclick="triggerContextAI('rewrite', 'dramatic')" class="w-full text-left px-3 py-1.5 hover:bg-slate-700 flex items-center space-x-1 transition-colors">
+                            <span>🎭</span> <span data-i18n="style_dramatic">Dramatique</span>
+                        </button>
+                        <button onclick="triggerContextAI('rewrite', 'poetic')" class="w-full text-left px-3 py-1.5 hover:bg-slate-700 flex items-center space-x-1 transition-colors">
+                            <span>✨</span> <span data-i18n="style_poetic">Poétique</span>
+                        </button>
+                        <button onclick="triggerContextAI('rewrite', 'humorous')" class="w-full text-left px-3 py-1.5 hover:bg-slate-700 flex items-center space-x-1 transition-colors">
+                            <span>🃏</span> <span data-i18n="style_humorous">Humoristique</span>
+                        </button>
+                        <button onclick="triggerContextAI('rewrite', 'action')" class="w-full text-left px-3 py-1.5 hover:bg-slate-700 flex items-center space-x-1 transition-colors">
+                            <span>🏃</span> <span data-i18n="style_action">Action</span>
+                        </button>
+                    </div>
+                </div>
+                <!-- Expand Button -->
+                <button onclick="triggerContextAI('expand')" class="hover:text-indigo-300 flex items-center space-x-1 transition-colors">
+                    <span>➕</span>
+                    <span data-i18n="ai_expand">Développer</span>
+                </button>
+            </div>
+
+            <!-- AI Contextual Tool Result Preview Card -->
+            <div id="ai-preview-card" class="hidden absolute bg-white border border-slate-200 rounded-xl shadow-2xl p-4 w-[450px] z-50 transition-all duration-200">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-2 mb-3">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center space-x-1">
+                        <span>🤖</span>
+                        <span id="ai-preview-tool-title">Assistant IA</span>
+                    </span>
+                    <button onclick="closeAiPreview()" class="text-slate-400 hover:text-slate-600 transition-colors">✕</button>
+                </div>
+
+                <!-- Loading Animation -->
+                <div id="ai-preview-loading" class="hidden py-6 flex flex-col items-center justify-center space-y-2">
+                    <div class="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                    <span class="text-xs text-slate-400 animate-pulse">L'IA rédige votre texte...</span>
+                </div>
+
+                <!-- Text Result Area -->
+                <div id="ai-preview-result-container" class="max-h-60 overflow-y-auto bg-slate-50 rounded-lg p-3 text-sm text-slate-800 leading-relaxed font-georgia whitespace-pre-wrap select-text mb-4 border border-slate-100">
+                </div>
+
+                <!-- UX Actions -->
+                <div id="ai-preview-actions" class="flex items-center justify-end space-x-2">
+                    <button id="ai-btn-cancel" onclick="closeAiPreview()" class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all">
+                        <span data-i18n="btn_cancel">Annuler</span>
+                    </button>
+                    <button id="ai-btn-regenerate" onclick="regenerateAI()" class="px-3 py-1.5 bg-slate-100 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-200 transition-all flex items-center space-x-1">
+                        <span>🔄</span>
+                        <span data-i18n="btn_regenerate">Régénérer</span>
+                    </button>
+                    <button id="ai-btn-apply" onclick="applyAiSuggestion()" class="px-3 py-1.5 bg-indigo-600 rounded-lg text-xs font-semibold text-white hover:bg-indigo-700 transition-all flex items-center space-x-1 shadow-sm">
+                        <span>✅</span>
+                        <span data-i18n="btn_apply">Appliquer</span>
+                    </button>
+                </div>
+            </div>
+
             <!-- EDITOR VIEW -->
             <div id="editor-view" class="flex-1 flex flex-col overflow-hidden h-full">
                 <!-- Centered distraction-free layout -->
@@ -523,7 +599,20 @@
                 if (exportMenu && !e.target.closest('#export-dropdown-wrapper')) {
                     exportMenu.classList.add('hidden');
                 }
+
+                // Hide selection menu if clicked outside selection and selection menu
+                const selectionMenu = document.getElementById('ai-selection-menu');
+                if (selectionMenu && !e.target.closest('#ai-selection-menu') && !e.target.closest('#editor-content')) {
+                    selectionMenu.classList.add('hidden');
+                }
             });
+
+            // Listen for text selection inside the editor
+            const editorContent = document.getElementById('editor-content');
+            if (editorContent) {
+                editorContent.addEventListener('mouseup', handleTextSelection);
+                editorContent.addEventListener('keyup', handleTextSelection);
+            }
 
             // Initialize AI option from localStorage
             const storedAiVal = localStorage.getItem('ai-enabled');
@@ -1279,6 +1368,155 @@
             renderTree();
             selectNote(newNote.id);
             persistProject();
+        }
+
+        // CONTEXTUAL AI TOOLS (Describe, Rewrite, Expand)
+        let activeSelection = { start: 0, end: 0, text: "" };
+        let lastAiToolCall = { tool: "", style: "", text: "" };
+
+        function handleTextSelection(e) {
+            const editor = document.getElementById('editor-content');
+            const menu = document.getElementById('ai-selection-menu');
+            if (!editor || !menu) return;
+
+            // If project is locked, do not offer AI tools
+            if (projectData && projectData.settings && projectData.settings.locked) {
+                menu.classList.add('hidden');
+                return;
+            }
+
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            const text = editor.value.substring(start, end).trim();
+
+            if (start !== end && text.length > 0) {
+                activeSelection = { start, end, text: editor.value.substring(start, end) };
+
+                // Position selection menu near selection
+                let x = 0;
+                let y = 0;
+                if (e && e.pageX && e.pageY) {
+                    x = e.pageX;
+                    y = e.pageY;
+                } else {
+                    const rect = editor.getBoundingClientRect();
+                    x = rect.left + window.scrollX + (rect.width / 2);
+                    y = rect.top + window.scrollY + 40;
+                }
+
+                menu.style.left = `${x}px`;
+                menu.style.top = `${y - 45}px`;
+                menu.classList.remove('hidden');
+            } else {
+                // Wait slightly to verify click target to prevent immediate hide on click
+                setTimeout(() => {
+                    const activeEl = document.activeElement;
+                    if (e && e.target && (e.target.closest('#ai-selection-menu') || e.target.closest('#ai-preview-card'))) {
+                        return;
+                    }
+                    if (activeEl && (activeEl.closest('#ai-selection-menu') || activeEl.closest('#ai-preview-card'))) {
+                        return;
+                    }
+                    menu.classList.add('hidden');
+                }, 150);
+            }
+        }
+
+        function closeAiPreview() {
+            document.getElementById('ai-preview-card').classList.add('hidden');
+        }
+
+        async function triggerContextAI(tool, style = "") {
+            const menu = document.getElementById('ai-selection-menu');
+            const card = document.getElementById('ai-preview-card');
+            if (menu) menu.classList.add('hidden');
+            if (!card) return;
+
+            // Save last call params
+            lastAiToolCall = { tool, style, text: activeSelection.text };
+
+            // Position card near selection menu
+            if (menu) {
+                card.style.left = menu.style.left;
+                card.style.top = menu.style.top;
+            }
+            card.classList.remove('hidden');
+
+            // Setup loading state
+            document.getElementById('ai-preview-loading').classList.remove('hidden');
+            document.getElementById('ai-preview-result-container').classList.add('hidden');
+            document.getElementById('ai-preview-actions').classList.add('hidden');
+
+            // Set Title
+            let titleText = "Assistant IA";
+            if (tool === "describe") {
+                titleText = formatTranslation("ai_describe") || "Décrire";
+            } else if (tool === "rewrite") {
+                const styleName = style.charAt(0).toUpperCase() + style.slice(1);
+                titleText = `${formatTranslation("ai_rewrite") || "Réécrire"} (${styleName})`;
+            } else if (tool === "expand") {
+                titleText = formatTranslation("ai_expand") || "Développer";
+            }
+            document.getElementById('ai-preview-tool-title').innerText = titleText;
+
+            try {
+                const response = await fetch('/api/ai', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        tool: tool,
+                        style: style,
+                        text: activeSelection.text
+                    })
+                });
+
+                const data = await response.json();
+                document.getElementById('ai-preview-loading').classList.add('hidden');
+
+                if (response.ok) {
+                    const resultContainer = document.getElementById('ai-preview-result-container');
+                    resultContainer.innerText = data.message;
+                    resultContainer.classList.remove('hidden');
+                    document.getElementById('ai-preview-actions').classList.remove('hidden');
+                } else {
+                    alert("AI error: " + (data.error || "Failed to generate"));
+                    closeAiPreview();
+                }
+            } catch (err) {
+                console.error("AI Context error:", err);
+                document.getElementById('ai-preview-loading').classList.add('hidden');
+                alert("Failed to connect to AI service.");
+                closeAiPreview();
+            }
+        }
+
+        function regenerateAI() {
+            if (lastAiToolCall.text) {
+                triggerContextAI(lastAiToolCall.tool, lastAiToolCall.style);
+            }
+        }
+
+        function applyAiSuggestion() {
+            const editor = document.getElementById('editor-content');
+            const resultContainer = document.getElementById('ai-preview-result-container');
+            if (!editor || !resultContainer) return;
+
+            const val = editor.value;
+            const start = activeSelection.start;
+            const end = activeSelection.end;
+            const suggestion = resultContainer.innerText;
+
+            // Perform clean replacement
+            editor.value = val.substring(0, start) + suggestion + val.substring(end);
+
+            // Reposition cursor
+            const newCursorPos = start + suggestion.length;
+            editor.setSelectionRange(newCursorPos, newCursorPos);
+            editor.focus();
+
+            // Trigger updates and persistence
+            onEditorInput('content', editor.value);
+            closeAiPreview();
         }
 
         // DELETING & RENAMING NODES

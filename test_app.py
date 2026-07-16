@@ -103,6 +103,31 @@ class TestEcritureWebApp(unittest.TestCase):
             self.assertEqual(response.mimetype, mimetype, f"Mimetype mismatch for: {fmt}")
             self.assertTrue(len(response.data) > 0, f"Empty response data for: {fmt}")
 
+    def test_ai_tools_api(self):
+        """Test contextual AI tools endpoints (Describe, Rewrite, Expand)."""
+        # Test Describe
+        resp = self.client.post('/api/ai', json={'tool': 'describe', 'text': 'Un sombre château'})
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.data)
+        self.assertIn('message', data)
+        self.assertIn('Une description', data['message'])
+
+        # Test Rewrite
+        resp = self.client.post('/api/ai', json={'tool': 'rewrite', 'style': 'dramatic', 'text': 'Il pleut'})
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.data)
+        self.assertIn('tragique', data['message'])
+
+        # Test Expand
+        resp = self.client.post('/api/ai', json={'tool': 'expand', 'text': 'The door opened'})
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.data)
+        self.assertIn('Expanded', data['message'])
+
+        # Test Error on empty text
+        resp = self.client.post('/api/ai', json={'tool': 'describe', 'text': ''})
+        self.assertEqual(resp.status_code, 400)
+
     def test_list_projects_api(self):
         """Test getting lists of projects."""
         response = self.client.get('/api/projects')
