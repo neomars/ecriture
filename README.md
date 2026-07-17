@@ -15,7 +15,7 @@
 
 # version française 🇫🇷
 
-**Écriture** est une application web de bureau élégante, moderne et sans distraction conçue en Python (Flask) et JavaScript (Tailwind CSS) pour aider les écrivains à planifier, structurer et rédiger leurs romans. Inspirée de la philosophie de conception de DabbleWriter, cette application intègre tous les outils indispensables aux romanciers au sein d'une interface unifiée, réactive et bilingue.
+**Écriture** est une application web de bureau élégante, moderne et sans distraction conçue en Python (Flask) et JavaScript (Tailwind CSS) pour aider les écrivains à planifier, structurer et rédiger leurs romans. Cette application intègre tous les outils indispensables aux romanciers au sein d'une interface unifiée, réactive et bilingue.
 
 ## 📸 Aperçus de l'Application
 
@@ -116,7 +116,7 @@ Ouvrez votre navigateur web et accédez à :
 
 # ENGLISH VERSION 🇬🇧
 
-**Écriture** is an elegant, modern, and distraction-free desktop web application built with Python (Flask) and JavaScript (Tailwind CSS) designed to assist writers in planning, structuring, and drafting their novels. Inspired by DabbleWriter’s clean philosophy, this application combines essential novel-writing tools in a single-page responsive, bilingual interface.
+**Écriture** is an elegant, modern, and distraction-free desktop web application built with Python (Flask) and JavaScript (Tailwind CSS) designed to assist writers in planning, structuring, and drafting their novels. This application combines essential novel-writing tools in a single-page responsive, bilingual interface.
 
 ## 📸 Application Screenshots
 
