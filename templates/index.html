@@ -348,15 +348,8 @@
                     </div>
 
                     <!-- Dynamic field forms for Characters -->
-                    <div id="character-fields" class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1" data-i18n="character_role">Rôle / Fonction</label>
-                            <input type="text" id="char-role" oninput="onResourceInput('role', this.value)" class="w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1" data-i18n="character_desc">Description du personnage</label>
-                            <textarea id="char-desc" oninput="onResourceInput('description', this.value)" rows="8" class="w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500 shadow-sm resize-none"></textarea>
-                        </div>
+                    <div id="character-fields" class="space-y-6">
+                        <!-- Filled dynamically by renderCharacterFields() -->
                     </div>
 
                     <!-- Dynamic field forms for Story Notes -->
@@ -872,6 +865,11 @@
                 const res = await fetch('/api/project');
                 projectData = await res.json();
 
+                // Normalize all characters to ensure backward compatibility
+                if (projectData && projectData.characters) {
+                    projectData.characters.forEach(c => ensureCharacterFields(c));
+                }
+
                 // Read language preference
                 activeLang = projectData.settings.lang || "fr";
                 document.getElementById('lang-select').value = activeLang;
@@ -1175,16 +1173,16 @@
                     updateEditorWordsCount(scenesOverview);
                 }
             } else if (activeNodeType === "character") {
-                const char = projectData.characters.find(c => c.id === activeNodeId);
+                let char = projectData.characters.find(c => c.id === activeNodeId);
                 if (char) {
+                    char = ensureCharacterFields(char);
                     switchView('resource');
                     document.getElementById('resource-icon').innerText = "👤";
                     document.getElementById('resource-title').value = char.name;
                     document.getElementById('character-fields').classList.remove('hidden');
                     document.getElementById('note-fields').classList.add('hidden');
 
-                    document.getElementById('char-role').value = char.role || "";
-                    document.getElementById('char-desc').value = char.description || "";
+                    renderCharacterFields(char);
                 }
             } else if (activeNodeType === "note") {
                 const note = projectData.story_notes.find(n => n.id === activeNodeId);
@@ -1302,6 +1300,293 @@
                     triggerAutoSave();
                 }
             }
+        }
+
+        // CHARACTER LORE MODEL AND RENDERING HELPERS
+        function ensureCharacterFields(char) {
+            if (!char) return char;
+            if (char.type === undefined) char.type = "personnage";
+            if (char.aliases === undefined) char.aliases = [];
+            if (char.traits === undefined) char.traits = [];
+            if (char.appearance === undefined) char.appearance = "";
+            if (char.notes === undefined) char.notes = "";
+            if (char.relations === undefined) char.relations = [];
+            if (char.linked_scenes === undefined) char.linked_scenes = [];
+            return char;
+        }
+
+        function renderCharacterFields(char) {
+            const container = document.getElementById('character-fields');
+            if (!container) return;
+            container.innerHTML = "";
+
+            // Ensure compatibility
+            ensureCharacterFields(char);
+
+            // 1. ROLE / FONCTION
+            const roleDiv = document.createElement('div');
+            roleDiv.className = "space-y-1";
+            roleDiv.innerHTML = `
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400" data-i18n="character_role">${translations["character_role"] || "Rôle / Fonction"}</label>
+                <input type="text" id="char-role" value="${char.role || ''}" class="w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+            `;
+            const roleInput = roleDiv.querySelector('#char-role');
+            roleInput.addEventListener('input', (e) => {
+                char.role = e.target.value;
+                triggerAutoSave();
+            });
+            container.appendChild(roleDiv);
+
+            // 2. ALIASES / SURNOMS (TAGS + INPUT)
+            const aliasDiv = document.createElement('div');
+            aliasDiv.className = "space-y-2";
+
+            // Render existing tags
+            let aliasTagsHtml = char.aliases.map((alias, idx) => `
+                <span class="inline-flex items-center gap-1 bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-full border border-slate-200">
+                    <span>${escapeHtml(alias)}</span>
+                    <button class="text-slate-400 hover:text-slate-600 font-bold focus:outline-none" onclick="removeAlias(${idx})">&times;</button>
+                </span>
+            `).join('');
+
+            aliasDiv.innerHTML = `
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400" data-i18n="character_aliases">${translations["character_aliases"] || "Surnoms / Alias"}</label>
+                <div class="flex flex-wrap gap-1.5 mb-2">${aliasTagsHtml || '<span class="text-xs text-slate-400 italic">Aucun surnom</span>'}</div>
+                <div class="flex gap-1.5">
+                    <input type="text" id="new-alias-input" placeholder="${translations["placeholder_new_alias"] || "Nouveau surnom..."}" class="flex-1 rounded-lg border-slate-300 text-xs focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+                    <button onclick="addAlias()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all" data-i18n="add_alias">${translations["add_alias"] || "Ajouter"}</button>
+                </div>
+            `;
+            container.appendChild(aliasDiv);
+
+            // Add alias enter listener
+            const aliasInput = aliasDiv.querySelector('#new-alias-input');
+            aliasInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addAlias();
+                }
+            });
+
+            window.addAlias = () => {
+                const input = document.getElementById('new-alias-input');
+                const val = input.value.trim();
+                if (val) {
+                    char.aliases.push(val);
+                    triggerAutoSave();
+                    renderCharacterFields(char);
+                }
+            };
+            window.removeAlias = (idx) => {
+                char.aliases.splice(idx, 1);
+                triggerAutoSave();
+                renderCharacterFields(char);
+            };
+
+            // 3. TRAITS / CARACTÈRE (TAGS + INPUT)
+            const traitDiv = document.createElement('div');
+            traitDiv.className = "space-y-2";
+
+            let traitTagsHtml = char.traits.map((trait, idx) => `
+                <span class="inline-flex items-center gap-1 bg-indigo-50 text-indigo-700 text-xs px-2.5 py-1 rounded-full border border-indigo-100">
+                    <span>${escapeHtml(trait)}</span>
+                    <button class="text-indigo-400 hover:text-indigo-600 font-bold focus:outline-none" onclick="removeTrait(${idx})">&times;</button>
+                </span>
+            `).join('');
+
+            traitDiv.innerHTML = `
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400" data-i18n="character_traits">${translations["character_traits"] || "Traits de caractère"}</label>
+                <div class="flex flex-wrap gap-1.5 mb-2">${traitTagsHtml || '<span class="text-xs text-slate-400 italic">Aucun trait</span>'}</div>
+                <div class="flex gap-1.5">
+                    <input type="text" id="new-trait-input" placeholder="${translations["placeholder_new_trait"] || "Nouveau trait..."}" class="flex-1 rounded-lg border-slate-300 text-xs focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+                    <button onclick="addTrait()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all" data-i18n="add_trait">${translations["add_trait"] || "Ajouter"}</button>
+                </div>
+            `;
+            container.appendChild(traitDiv);
+
+            // Add trait enter listener
+            const traitInput = traitDiv.querySelector('#new-trait-input');
+            traitInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addTrait();
+                }
+            });
+
+            window.addTrait = () => {
+                const input = document.getElementById('new-trait-input');
+                const val = input.value.trim();
+                if (val) {
+                    char.traits.push(val);
+                    triggerAutoSave();
+                    renderCharacterFields(char);
+                }
+            };
+            window.removeTrait = (idx) => {
+                char.traits.splice(idx, 1);
+                triggerAutoSave();
+                renderCharacterFields(char);
+            };
+
+            // 4. DESCRIPTION PHYSIQUE
+            const appDiv = document.createElement('div');
+            appDiv.className = "space-y-1";
+            appDiv.innerHTML = `
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400" data-i18n="character_appearance">${translations["character_appearance"] || "Apparence physique"}</label>
+                <textarea id="char-appearance" rows="3" class="w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500 shadow-sm resize-none" placeholder="cicatrices, style vestimentaire, particularités...">${char.appearance || ''}</textarea>
+            `;
+            const appTextarea = appDiv.querySelector('#char-appearance');
+            appTextarea.addEventListener('input', (e) => {
+                char.appearance = e.target.value;
+                triggerAutoSave();
+            });
+            container.appendChild(appDiv);
+
+            // 5. DESCRIPTION GÉNÉRALE
+            const descDiv = document.createElement('div');
+            descDiv.className = "space-y-1";
+            descDiv.innerHTML = `
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400" data-i18n="character_desc">${translations["character_desc"] || "Description du personnage"}</label>
+                <textarea id="char-desc" rows="4" class="w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500 shadow-sm resize-none">${char.description || ''}</textarea>
+            `;
+            const descTextarea = descDiv.querySelector('#char-desc');
+            descTextarea.addEventListener('input', (e) => {
+                char.description = e.target.value;
+                triggerAutoSave();
+            });
+            container.appendChild(descDiv);
+
+            // 6. RELATIONS (DYNAMIC CARDS LIST)
+            const relDiv = document.createElement('div');
+            relDiv.className = "space-y-3 pt-4 border-t border-slate-100";
+
+            let relationsHtml = "";
+            const availableChars = projectData.characters.filter(c => c.id !== char.id);
+
+            if (char.relations.length === 0) {
+                relationsHtml = `<div class="text-xs text-slate-400 italic">Aucune relation définie.</div>`;
+            } else {
+                char.relations.forEach((rel, idx) => {
+                    const selectOptions = availableChars.map(c => `
+                        <option value="${c.id}" ${c.id === rel.target_id ? 'selected' : ''}>${escapeHtml(c.name)}</option>
+                    `).join('');
+
+                    relationsHtml += `
+                        <div class="bg-slate-50 border border-slate-200 p-3 rounded-lg flex flex-col gap-2 relative group shadow-2xs">
+                            <button onclick="removeRelation(${idx})" class="absolute top-2 right-2 text-slate-400 hover:text-red-500 text-sm focus:outline-none">🗑️</button>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 mb-0.5" data-i18n="relation_target">${translations["relation_target"] || "Personnage cible"}</label>
+                                    <select onchange="updateRelation(${idx}, 'target_id', this.value)" class="w-full bg-white border border-slate-300 rounded-lg text-xs py-1 px-1.5 focus:border-indigo-500 focus:ring-indigo-500">
+                                        <option value="" disabled ${!rel.target_id ? 'selected' : ''}>Sélectionner...</option>
+                                        ${selectOptions}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 mb-0.5" data-i18n="relation_type">${translations["relation_type"] || "Type de relation"}</label>
+                                    <input type="text" value="${escapeHtml(rel.type || '')}" oninput="updateRelation(${idx}, 'type', this.value)" placeholder="${translations["placeholder_relation_type"] || "e.g. Rival, Amant..."}" class="w-full bg-white border border-slate-300 rounded-lg text-xs py-1 px-1.5 focus:border-indigo-500 focus:ring-indigo-500">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-semibold text-slate-400 mb-0.5" data-i18n="relation_desc">${translations["relation_desc"] || "Description de la relation"}</label>
+                                <input type="text" value="${escapeHtml(rel.description || '')}" oninput="updateRelation(${idx}, 'description', this.value)" placeholder="${translations["placeholder_relation_desc"] || "Description..."}" class="w-full bg-white border border-slate-300 rounded-lg text-xs py-1 px-1.5 focus:border-indigo-500 focus:ring-indigo-500">
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            relDiv.innerHTML = `
+                <div class="flex justify-between items-center">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400" data-i18n="character_relations">${translations["character_relations"] || "Relations"}</label>
+                    <button onclick="addRelation()" class="bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 font-bold px-2.5 py-1 rounded-lg text-xs transition-all" data-i18n="add_relation">${translations["add_relation"] || "+ Ajouter relation"}</button>
+                </div>
+                <div class="space-y-2.5">${relationsHtml}</div>
+            `;
+            container.appendChild(relDiv);
+
+            window.addRelation = () => {
+                char.relations.push({ target_id: "", type: "", description: "" });
+                triggerAutoSave();
+                renderCharacterFields(char);
+            };
+            window.removeRelation = (idx) => {
+                char.relations.splice(idx, 1);
+                triggerAutoSave();
+                renderCharacterFields(char);
+            };
+            window.updateRelation = (idx, key, val) => {
+                char.relations[idx][key] = val;
+                triggerAutoSave();
+            };
+
+            // 7. SCÈNES RELIÉES (CHECKLIST OF ALL SCENES IN MANUSCRIPT)
+            const scenesDiv = document.createElement('div');
+            scenesDiv.className = "space-y-2 pt-4 border-t border-slate-100";
+
+            // Collect all scenes
+            const allScenes = [];
+            projectData.manuscript.forEach(chap => {
+                chap.children.forEach(scene => {
+                    allScenes.push({ id: scene.id, title: scene.title, chapterTitle: chap.title });
+                });
+            });
+
+            let scenesChecklistHtml = "";
+            if (allScenes.length === 0) {
+                scenesChecklistHtml = `<div class="text-xs text-slate-400 italic">Aucune scène disponible dans le manuscrit.</div>`;
+            } else {
+                allScenes.forEach(scene => {
+                    const isChecked = char.linked_scenes && char.linked_scenes.includes(scene.id);
+                    scenesChecklistHtml += `
+                        <label class="flex items-center space-x-2 text-xs text-slate-600 hover:text-slate-900 cursor-pointer py-0.5">
+                            <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleLinkedScene('${scene.id}', this.checked)" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                            <span>${escapeHtml(scene.chapterTitle)} : <strong class="text-slate-700">${escapeHtml(scene.title)}</strong></span>
+                        </label>
+                    `;
+                });
+            }
+
+            scenesDiv.innerHTML = `
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400" data-i18n="character_scenes">${translations["character_scenes"] || "Scènes associées"}</label>
+                <div class="max-h-36 overflow-y-auto bg-slate-50 border border-slate-200 p-2.5 rounded-lg space-y-1 shadow-2xs">${scenesChecklistHtml}</div>
+            `;
+            container.appendChild(scenesDiv);
+
+            window.toggleLinkedScene = (sceneId, isChecked) => {
+                if (!char.linked_scenes) char.linked_scenes = [];
+                if (isChecked) {
+                    if (!char.linked_scenes.includes(sceneId)) char.linked_scenes.push(sceneId);
+                } else {
+                    char.linked_scenes = char.linked_scenes.filter(id => id !== sceneId);
+                }
+                triggerAutoSave();
+            };
+
+            // 8. NOTES LIBRES / LORE
+            const notesDiv = document.createElement('div');
+            notesDiv.className = "space-y-1 pt-4 border-t border-slate-100";
+            notesDiv.innerHTML = `
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400" data-i18n="character_notes">${translations["character_notes"] || "Notes libres / Lore"}</label>
+                <textarea id="char-notes" rows="4" class="w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500 shadow-sm resize-none" placeholder="Notes de l'auteur sur son passé, motivations...">${char.notes || ''}</textarea>
+            `;
+            const notesTextarea = notesDiv.querySelector('#char-notes');
+            notesTextarea.addEventListener('input', (e) => {
+                char.notes = e.target.value;
+                triggerAutoSave();
+            });
+            container.appendChild(notesDiv);
+        }
+
+        // Helper to escape HTML characters securely
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
         }
 
         // WORD COUNTERS UPDATES
@@ -1428,9 +1713,16 @@
             const num = projectData.characters.length + 1;
             const newChar = {
                 id: generateId("char"),
+                type: "personnage",
                 name: `${translations["new_character_title"] || "New Character"} ${num}`,
+                aliases: [],
                 role: "Major Character",
-                description: ""
+                description: "",
+                traits: [],
+                appearance: "",
+                notes: "",
+                relations: [],
+                linked_scenes: []
             };
             projectData.characters.push(newChar);
 

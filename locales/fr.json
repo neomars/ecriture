@@ -92,5 +92,21 @@
   "ai_settings_title": "Configuration de l'IA",
   "ai_temperature": "Température de l'IA (Créativité)",
   "ai_model": "Modèle Ollama",
-  "ai_creativity_info": "Une valeur basse (0.2) est plus factuelle, une valeur élevée (0.8+) est plus créative."
+  "ai_creativity_info": "Une valeur basse (0.2) est plus factuelle, une valeur élevée (0.8+) est plus créative.",
+  "character_aliases": "Surnoms / Alias",
+  "character_traits": "Traits de caractère",
+  "character_appearance": "Apparence physique",
+  "character_relations": "Relations",
+  "character_notes": "Notes libres / Lore",
+  "character_scenes": "Scènes reliées",
+  "add_alias": "Ajouter",
+  "add_trait": "Ajouter",
+  "add_relation": "+ Ajouter une relation",
+  "relation_type": "Type de relation",
+  "relation_desc": "Description de la relation",
+  "relation_target": "Personnage cible",
+  "placeholder_new_alias": "Nouveau surnom...",
+  "placeholder_new_trait": "Nouveau trait...",
+  "placeholder_relation_type": "e.g. Rival, Amant, Époux...",
+  "placeholder_relation_desc": "e.g. S'aiment en secret..."
 }

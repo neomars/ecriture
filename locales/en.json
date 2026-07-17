@@ -92,5 +92,21 @@
   "ai_settings_title": "AI Configuration",
   "ai_temperature": "AI Temperature (Creativity)",
   "ai_model": "Ollama Model",
-  "ai_creativity_info": "A lower value (0.2) is more factual, a higher value (0.8+) is more creative."
+  "ai_creativity_info": "A lower value (0.2) is more factual, a higher value (0.8+) is more creative.",
+  "character_aliases": "Aliases / Nicknames",
+  "character_traits": "Personality Traits",
+  "character_appearance": "Physical Appearance",
+  "character_relations": "Relationships",
+  "character_notes": "Author Notes / Lore",
+  "character_scenes": "Linked Scenes",
+  "add_alias": "Add",
+  "add_trait": "Add",
+  "add_relation": "+ Add Relationship",
+  "relation_type": "Relationship Type",
+  "relation_desc": "Relationship Description",
+  "relation_target": "Target Character",
+  "placeholder_new_alias": "New alias...",
+  "placeholder_new_trait": "New trait...",
+  "placeholder_relation_type": "e.g. Rival, Lover, Spouse...",
+  "placeholder_relation_desc": "e.g. Secretly in love..."
 }

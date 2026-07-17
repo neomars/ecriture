@@ -1,22 +1,43 @@
 {
     "characters": [
         {
+            "aliases": [],
+            "appearance": "Yeux sombres et vifs, sourire moqueur. S'habille simplement mais élégamment.",
             "description": "The second of the Bennet daughters. She is intelligent, lively, and quick-witted, but prone to forming quick judgments.",
             "id": "char_1",
+            "linked_scenes": [],
             "name": "Elizabeth Bennet",
-            "role": "Protagonist"
+            "notes": "",
+            "relations": [],
+            "role": "Protagonist",
+            "traits": [],
+            "type": "personnage"
         },
         {
+            "aliases": [],
+            "appearance": "",
             "description": "The eldest Bennet sister, sweet-tempered and beautiful, always thinking the best of everyone.",
             "id": "char_2",
+            "linked_scenes": [],
             "name": "Jane Bennet",
-            "role": "Supporting Character"
+            "notes": "",
+            "relations": [],
+            "role": "Supporting Character",
+            "traits": [],
+            "type": "personnage"
         },
         {
+            "aliases": [],
+            "appearance": "",
             "description": "A wealthy gentleman, proud and socially awkward initially, but highly honorable.",
             "id": "char_3",
+            "linked_scenes": [],
             "name": "Mr. Darcy",
-            "role": "Love Interest"
+            "notes": "",
+            "relations": [],
+            "role": "Love Interest",
+            "traits": [],
+            "type": "personnage"
         }
     ],
     "manuscript": [
