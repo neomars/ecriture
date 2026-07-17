@@ -88,5 +88,9 @@
   "grid_view": "Grid Table",
   "timeline_view": "Visual Chronology",
   "no_characters_yet": "No characters created",
-  "no_cards_yet": "No other plot cards available"
+  "no_cards_yet": "No other plot cards available",
+  "ai_settings_title": "AI Configuration",
+  "ai_temperature": "AI Temperature (Creativity)",
+  "ai_model": "Ollama Model",
+  "ai_creativity_info": "A lower value (0.2) is more factual, a higher value (0.8+) is more creative."
 }

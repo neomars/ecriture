@@ -108,6 +108,8 @@
         ]
     },
     "settings": {
+        "ai_model": "gemma2",
+        "ai_temperature": 0.9,
         "daily_goal": 500,
         "daily_written": 0,
         "lang": "fr",

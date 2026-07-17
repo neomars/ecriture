@@ -188,5 +188,35 @@ class TestEcritureWebApp(unittest.TestCase):
         self.assertIn('message', data)
         self.assertIn('model', data)
 
+    def test_ai_custom_params(self):
+        """Test that /api/ai and /api/ai/chat accept temperature and custom model parameters."""
+        # /api/ai custom parameters
+        resp = self.client.post('/api/ai', json={
+            'tool': 'describe',
+            'text': 'Un sombre château',
+            'temperature': 0.3,
+            'model': 'gemma2'
+        })
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.data)
+        self.assertIn('status', data)
+        self.assertIn('message', data)
+
+        # /api/ai/chat custom parameters
+        payload = {
+            "messages": [
+                {"role": "user", "content": "Peux-tu m'aider ?"}
+            ],
+            "model": "mistral",
+            "temperature": 0.9
+        }
+        response = self.client.post('/api/ai/chat',
+                                    data=json.dumps(payload),
+                                    content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data)
+        self.assertIn('status', data)
+        self.assertIn('message', data)
+
 if __name__ == '__main__':
     unittest.main()

@@ -586,16 +586,19 @@ def handle_ai_tool():
     ]
 
     ollama_url = "http://localhost:11434"
-    selected_model = "llama3"
+    selected_model = payload.get("model", "llama3").strip()
+    temperature = payload.get("temperature", 0.7)
 
-    # 1. Try to find an active model on Ollama
+    # 1. Try to verify/find an active model on Ollama
     try:
         req_tags = urllib.request.Request(f"{ollama_url}/api/tags", method="GET")
         with urllib.request.urlopen(req_tags, timeout=2) as response:
             tags_data = json.loads(response.read().decode('utf-8'))
             models = tags_data.get("models", [])
             if models:
-                selected_model = models[0]["name"]
+                available_names = [m["name"] for m in models]
+                if selected_model not in available_names and f"{selected_model}:latest" not in available_names:
+                    selected_model = models[0]["name"]
     except Exception:
         pass
 
@@ -606,7 +609,7 @@ def handle_ai_tool():
             "messages": messages,
             "stream": False,
             "options": {
-                "temperature": 0.7
+                "temperature": temperature
             }
         }
         req_chat = urllib.request.Request(
@@ -671,11 +674,11 @@ def ai_chat():
 
     payload = request.json or {}
     messages = payload.get("messages", [])
-    model = payload.get("model", "llama3")
+    selected_model = payload.get("model", "llama3").strip()
+    temperature = payload.get("temperature", 0.7)
 
     # 1. Check if Ollama is reachable and find any installed models
     ollama_url = "http://localhost:11434"
-    selected_model = model
 
     try:
         # Check available tags/models to auto-select if user did not specify/fallback
@@ -696,7 +699,10 @@ def ai_chat():
         chat_payload = {
             "model": selected_model,
             "messages": messages,
-            "stream": False
+            "stream": False,
+            "options": {
+                "temperature": temperature
+            }
         }
         req_chat = urllib.request.Request(
             f"{ollama_url}/api/chat",

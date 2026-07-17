@@ -88,5 +88,9 @@
   "grid_view": "Vue Grille",
   "timeline_view": "Trame Visuelle",
   "no_characters_yet": "Aucun personnage créé",
-  "no_cards_yet": "Aucune autre carte d'intrigue"
+  "no_cards_yet": "Aucune autre carte d'intrigue",
+  "ai_settings_title": "Configuration de l'IA",
+  "ai_temperature": "Température de l'IA (Créativité)",
+  "ai_model": "Modèle Ollama",
+  "ai_creativity_info": "Une valeur basse (0.2) est plus factuelle, une valeur élevée (0.8+) est plus créative."
 }
