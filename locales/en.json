@@ -108,5 +108,7 @@
   "placeholder_new_alias": "New alias...",
   "placeholder_new_trait": "New trait...",
   "placeholder_relation_type": "e.g. Rival, Lover, Spouse...",
-  "placeholder_relation_desc": "e.g. Secretly in love..."
+  "placeholder_relation_desc": "e.g. Secretly in love...",
+  "ai_inject_context": "Inject Lore Context",
+  "ai_inject_context_info": "Automatically provides characters and notes associated with the current scene to the AI."
 }

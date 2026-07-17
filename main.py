@@ -51,6 +51,120 @@ def set_active_project_filename(filename):
 active_filename = get_active_project_filename()
 project = NovelProject(os.path.join(PROJECTS_DIR, active_filename))
 
+def get_scene_context(scene_id):
+    """
+    Gathers structured lore context about characters and notes associated with the active scene.
+    A character is associated if linked via the checklist or via a plot card in this scene.
+    A note is associated if its title is mentioned in the scene's title, content, or plot cards.
+    """
+    if not scene_id or not project or not project.data:
+        return ""
+
+    # 1. Collect associated character IDs
+    char_ids = set()
+    for char in project.data.get("characters", []):
+        if scene_id in char.get("linked_scenes", []):
+            char_ids.add(char["id"])
+
+    # Plot cards for this scene
+    for card in project.data.get("plot", {}).get("cards", []):
+        if card.get("scene_id") == scene_id:
+            for c_id in card.get("characters", []):
+                char_ids.add(c_id)
+
+    char_name_map = {c["id"]: c.get("name", "Inconnu") for c in project.data.get("characters", [])}
+
+    char_lore_blocks = []
+    for char in project.data.get("characters", []):
+        if char["id"] in char_ids:
+            name = char.get("name", "Inconnu")
+            role = char.get("role", "")
+            aliases = ", ".join(char.get("aliases", []))
+            traits = ", ".join(char.get("traits", []))
+            appearance = char.get("appearance", "")
+            desc = char.get("description", "")
+            notes = char.get("notes", "")
+
+            rel_strs = []
+            for rel in char.get("relations", []):
+                target_id = rel.get("target_id")
+                target_name = char_name_map.get(target_id, "Inconnu")
+                rel_type = rel.get("type", "")
+                rel_desc = rel.get("description", "")
+
+                parts = []
+                if rel_type:
+                    parts.append(rel_type)
+                if rel_desc:
+                    parts.append(rel_desc)
+                if parts:
+                    rel_strs.append(f"- Relation avec {target_name} : {', '.join(parts)}")
+
+            block = []
+            block.append(f"Personnage : {name}")
+            if role:
+                block.append(f"  Rôle : {role}")
+            if aliases:
+                block.append(f"  Alias/Surnoms : {aliases}")
+            if traits:
+                block.append(f"  Traits de caractère : {traits}")
+            if appearance:
+                block.append(f"  Apparence physique : {appearance}")
+            if desc:
+                block.append(f"  Description : {desc}")
+            if notes:
+                block.append(f"  Notes : {notes}")
+            if rel_strs:
+                block.append("  Relations :\n" + "\n".join(rel_strs))
+
+            char_lore_blocks.append("\n".join(block))
+
+    # 2. Collect associated story notes by scanning scene content, title and plot cards
+    scene_title = ""
+    scene_content = ""
+
+    def find_scene_text(nodes):
+        for n in nodes:
+            if n.get("id") == scene_id:
+                return n.get("title", ""), n.get("content", "")
+            if "children" in n:
+                t, c = find_scene_text(n["children"])
+                if t or c:
+                    return t, c
+        return "", ""
+
+    scene_title, scene_content = find_scene_text(project.data.get("manuscript", []))
+    combined_scene_text = f"{scene_title}\n{scene_content}".lower()
+
+    for card in project.data.get("plot", {}).get("cards", []):
+        if card.get("scene_id") == scene_id:
+            combined_scene_text += f"\n{card.get('title', '')}\n{card.get('content', '')}".lower()
+
+    note_lore_blocks = []
+    for note in project.data.get("story_notes", []):
+        note_title = note.get("title", "")
+        if note_title and note_title.lower() in combined_scene_text:
+            note_type = note.get("type", "")
+            note_content = note.get("content", "")
+
+            block = []
+            block.append(f"Note : {note_title}")
+            if note_type:
+                block.append(f"  Type : {note_type}")
+            if note_content:
+                block.append(f"  Contenu : {note_content}")
+            note_lore_blocks.append("\n".join(block))
+
+    context_parts = []
+    if char_lore_blocks:
+        context_parts.append("=== LORE DES PERSONNAGES ASSOCIÉS À CETTE SCÈNE ===\n" + "\n\n".join(char_lore_blocks))
+    if note_lore_blocks:
+        context_parts.append("=== LORE DES NOTES ASSOCIÉES À CETTE SCÈNE ===\n" + "\n\n".join(note_lore_blocks))
+
+    if context_parts:
+        return "\n\n".join(context_parts)
+    return ""
+
 # Ensure the active project data has a default language setting if not present
 if "lang" not in project.data["settings"]:
     project.data["settings"]["lang"] = "fr"
@@ -565,6 +679,8 @@ def handle_ai_tool():
     tool = payload.get("tool", "describe").lower().strip()
     style = payload.get("style", "elegant").lower().strip()
     text = payload.get("text", "").strip()
+    inject_lore = payload.get("inject_lore_context", True)
+    scene_id = payload.get("scene_id")
 
     if not text:
         return jsonify({"error": "No text selected"}), 400
@@ -578,6 +694,16 @@ def handle_ai_tool():
         system_prompt = EXPAND_PROMPT
     else:
         return jsonify({"error": f"Unknown tool: {tool}"}), 400
+
+    # Prepend Lore context to the system prompt if enabled and context is found
+    if inject_lore and scene_id:
+        lore_ctx = get_scene_context(scene_id)
+        if lore_ctx:
+            system_prompt = (
+                f"{lore_ctx}\n\n"
+                "Consignes de l'assistant :\n"
+                f"{system_prompt}"
+            )
 
     # Build chat messages payload
     messages = [
@@ -676,6 +802,16 @@ def ai_chat():
     messages = payload.get("messages", [])
     selected_model = payload.get("model", "llama3").strip()
     temperature = payload.get("temperature", 0.7)
+    inject_lore = payload.get("inject_lore_context", True)
+    scene_id = payload.get("scene_id")
+
+    # Prepend system message with lore context if enabled and context is found
+    if inject_lore and scene_id:
+        lore_ctx = get_scene_context(scene_id)
+        if lore_ctx:
+            system_msg = f"Voici des informations sur le contexte et le Lore de la scène en cours. Intègre et respecte ces éléments si nécessaire dans vos réponses :\n\n{lore_ctx}"
+            # Insert at the beginning or as a system prompt
+            messages.insert(0, {"role": "system", "content": system_msg})
 
     # 1. Check if Ollama is reachable and find any installed models
     ollama_url = "http://localhost:11434"

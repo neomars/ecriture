@@ -108,5 +108,7 @@
   "placeholder_new_alias": "Nouveau surnom...",
   "placeholder_new_trait": "Nouveau trait...",
   "placeholder_relation_type": "e.g. Rival, Amant, Époux...",
-  "placeholder_relation_desc": "e.g. S'aiment en secret..."
+  "placeholder_relation_desc": "e.g. S'aiment en secret...",
+  "ai_inject_context": "Injecter le contexte du Lore",
+  "ai_inject_context_info": "Fournit automatiquement à l'IA les personnages et notes associés à la scène en cours."
 }
