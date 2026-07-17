@@ -40,19 +40,24 @@
 
 *   **Éditeur de Texte Minimaliste & Distraction-Free** : Conçu pour optimiser la concentration avec des polices élégantes (Georgia), des marges de lecture parfaites et une sauvegarde automatique et silencieuse à chaque frappe.
 *   **Arbre de Navigation Interactif** : Gérez de manière hiérarchique vos chapitres, scènes, fiches de personnages et notes de récit dans la barre latérale gauche. Ordonnez et renommez vos éléments d'un simple clic.
-*   **Grille d'Intrigue & Trame Chronologique Visuelle** : Un espace de planification interactif à double affichage. Vous pouvez alterner entre la **Vue Grille** classique (tableau d'intrigue inspiré de la méthode Snowflake) et la **Trame Visuelle** (frise chronologique horizontale). Reliez graphiquement vos cartes d'intrigue entre elles par des lignes de flux dynamiques (courbes de Bézier SVG) et associez-y vos personnages pour visualiser simplement la structure et le rythme de votre roman.
+*   **Fiches Personnages & Lore de Récit** : Créez des profils détaillés avec pseudonymes/alias, traits de caractère, apparence et notes biographiques. Créez des cartes de relations dynamiques entre personnages et associez-les directement aux scènes via des listes d'apparition interactives. Le lore pertinent est automatiquement injecté dans l'IA pour préserver la cohérence de vos textes.
+*   **Écriture IA Contextuelle & Sélection de Texte** : Un menu contextuel intelligent apparaît sous votre sélection de texte. Utilisez les outils *Décrire*, *Réécrire* (avec styles élégant, dramatique, poétique, humoristique, action) ou *Développer* avec insertion directe, régénération ou annulation.
+*   **Assistant de Chat IA Intelligent** : Chattez avec un assistant d'écriture persistant dans le volet droit. L'IA se connecte à votre serveur local **Ollama** (port 11434). En cas d'indisponibilité d'Ollama, un simulateur interactif hors-ligne intelligent prend le relais pour garantir une expérience fluide.
+*   **Personnalisation des paramètres IA** : Ajustez la température de créativité (de 0.0 à 1.0) et sélectionnez votre modèle Ollama préféré directement depuis les options de l'en-tête.
+*   **Grille d'Intrigue & Trame Chronologique Visuelle** : Un espace de planification interactif à double affichage. Alterner entre la **Vue Grille** classique (tableau d'intrigue inspiré de la méthode Snowflake) et la **Trame Visuelle** (frise chronologique horizontale). Reliez graphiquement vos cartes d'intrigue entre elles par des lignes de flux dynamiques (courbes de Bézier SVG) et associez-y vos personnages pour visualiser la structure de votre roman.
+*   **Exportation Multi-Formats Professionnelle** : Compilez et exportez l'intégralité de votre roman structuré en un clic vers six formats populaires : Word (`.docx`), PDF (`.pdf`), OpenDocument (`.odt`), ePub (`.epub`), Mobipocket (`.mobi`) ou texte brut (`.txt`).
 *   **Suivi des Objectifs & Statistiques** : Fixez des objectifs quotidiens et globaux. Des barres de progression interactives calculent vos mots en temps réel.
 *   **Minuteur de Focus (Focus Timer)** : Un minuteur Pomodoro réglable intégré pour rythmer vos sessions d'écriture intensives.
-*   **Assistant IA Local (Optionnel)** : Un volet d'assistant IA qui se connecte de manière transparente à votre serveur local **Ollama** (port 11434). L'assistant IA peut être complètement désactivé/masqué d'un simple clic via un interrupteur dans l'en-tête, préservant votre espace de travail.
+*   **Barre Assistante Redimensionnable** : Ajustez facilement la largeur du panneau droit à l'aide d'une poignée de redimensionnement réactive, avec persistance automatique de la taille choisie.
 *   **Internationalisation Dynamique** : Basculez instantanément toute l'interface entre le **Français** et l'**Anglais** sans aucun rechargement de page.
 *   **Sécurité & Verrouillage** : Verrouillez vos romans pour empêcher toute modification accidentelle (mode lecture seule avec badges visuels de verrouillage).
-*   **Export Structuré** : Compilez et exportez l'intégralité de votre manuscrit structuré en un fichier `.txt` propre en un clic.
 
 ---
 
 ## 🛠️ Technologies Utilisées
 
 *   **Backend** : Python 3, Flask.
+*   **Exportations** : Python-docx, ReportLab (PDF), formatage de paquets zip binaires natifs pour ODT, ePub, et Mobipocket.
 *   **Stockage des Données** : Format JSON structuré (`projects/` directory) géré par un module de gestion robuste (`project_manager.py`).
 *   **Frontend** : HTML5, Tailwind CSS, JavaScript moderne (Vanilla JS, Single Page Application).
 *   **Localisation** : Fichiers de traduction externes JSON (`locales/fr.json`, `locales/en.json`) pour un découplage total.
@@ -80,9 +85,9 @@ venv\Scripts\activate
 ```
 
 ### Étape 3 : Installer les dépendances
-Installez Flask :
+Installez les dépendances nécessaires au fonctionnement et à l'export :
 ```bash
-pip install flask
+pip install -r requirements.txt
 ```
 
 ### Étape 4 : Lancer le serveur d'application
@@ -99,10 +104,11 @@ Ouvrez votre navigateur web et accédez à :
 ## 📝 Guide d'Utilisation
 
 1.  **Création de Roman** : Cliquez sur le bouton **"+" Nouveau roman** dans l'en-tête pour créer instantanément un nouveau projet.
-2.  **Rédaction** : Sélectionnez n'est-ce pas un élément (Chapitre ou Scène) dans la barre latérale pour commencer à taper dans l'éditeur central. La sauvegarde est automatique !
-3.  **Grille d'Intrigue & Trame Visuelle** : Cliquez sur **Grille d'intrigue** dans l'arbre pour afficher l'espace de planification. Utilisez les onglets **Vue Grille** et **Trame Visuelle** pour alterner entre le tableau et la frise chronologique interactive. Associez des personnages et connectez des cartes entre elles via des lignes de flux graphiques directement depuis le formulaire d'édition d'une carte.
-4.  **Bouton IA** : Activez ou désactivez l'Assistant IA à l'aide de l'interrupteur **Activer l'IA** dans la barre supérieure.
-5.  **Paramètres de Projet** : Cliquez sur **Paramètres du projet** pour changer le titre, définir l'objectif de mots global, verrouiller/déverrouiller le roman, ou le supprimer.
+2.  **Rédaction & IA Contextuelle** : Sélectionnez une Scène pour commencer à taper dans l'éditeur. Surlignez n'importe quel texte pour voir apparaître le menu d'outils d'écriture IA contextuels.
+3.  **Fiches Personnages & Lore** : Ajoutez des fiches de personnages et associez-les à vos scènes. Définissez leurs caractéristiques, ainsi que leurs relations dynamiques.
+4.  **Grille d'Intrigue & Trame Visuelle** : Cliquez sur **Grille d'intrigue** dans l'arbre pour afficher l'espace de planification. Utilisez les onglets **Vue Grille** et **Trame Visuelle** pour alterner entre le tableau et la frise chronologique interactive. Associez des personnages et connectez des cartes entre elles via des lignes de flux graphiques directement depuis le formulaire d'édition d'une carte.
+5.  **Bouton IA** : Activez ou désactivez l'Assistant IA à l'aide de l'interrupteur **Activer l'IA** dans la barre supérieure.
+6.  **Paramètres de Projet** : Cliquez sur **Paramètres du projet** pour changer le titre, définir l'objectif de mots global, verrouiller/déverrouiller le roman, ajuster la température de l'IA, sélectionner le modèle Ollama, ou supprimer le roman.
 
 ---
 
@@ -135,19 +141,24 @@ Ouvrez votre navigateur web et accédez à :
 
 *   **Distraction-Free Text Editor**: Designed to maximize focus with gorgeous typography (Georgia), optimal margins, and silent automatic saving on every keystroke.
 *   **Interactive Navigation Tree**: Hierarchical management of chapters, scenes, characters, and notes in the left sidebar. Edit, rename, or delete elements instantly.
-*   **Plot Grid & Visual Chronological Timeline**: A dual-view interactive plotting workspace. Switch seamlessly between the classic **Grid View** (table layout inspired by the Snowflake method) and the **Visual Timeline** (horizontal flowchart). Graphically connect plot cards with dynamic SVG flowlines, and link characters directly to cards to visually track story flow, pacing, and character presence.
+*   **Rich Character Profiles & Story Lore**: Create detailed character profiles with aliases, traits, physical appearance, and background notes. Define dynamic relationship grids and link characters directly to scene checklists. Character details and notes context are automatically injected into AI prompts for seamless consistency.
+*   **Contextual AI Writing Menu**: Select any text in the editor to bring up a floating smart caret menu. Use tools like *Describe*, *Rewrite* (with elegant, dramatic, poetic, humorous, and action style presets), or *Expand* with support for direct replacements, regeneration, and fine-tuning.
+*   **Smart AI Chat Assistant**: Chat with a persistent writing companion in the right-hand sidebar. Connects seamlessly to a local **Ollama** server (port 11434). Falls back automatically to an offline interactive simulated assistant if Ollama is unreachable.
+*   **Customizable AI Parameters**: Adjust the AI creativity temperature (from 0.0 to 1.0) and choose your preferred Ollama model from the Project Settings panel.
+*   **Plot Grid & Visual Chronological Timeline**: A dual-view interactive plotting workspace. Switch seamlessly between the classic **Grid View** (table layout inspired by the Snowflake method) and the **Visual Timeline** (horizontal flowchart). Graphically connect plot cards with dynamic SVG flowlines, and link characters directly to cards to visually track story flow.
+*   **Professional Multi-Format Document Export**: Compile and export your entire structured novel instantly with one click into six popular formats: Word (`.docx`), PDF (`.pdf`), OpenDocument (`.odt`), ePub (`.epub`), Mobipocket (`.mobi`), or plain text (`.txt`).
 *   **Goals & Statistics Tracker**: Define daily and overall word count goals. Real-time progress bars calculate counts dynamically as you write.
 *   **Focus Timer**: Built-in adjustable Pomodoro timer to pace your writing sprints.
-*   **Local AI Assistant (Optional)**: An AI assistant panel that connects seamlessly to your local **Ollama** server (port 11434). The AI assistant can be completely disabled/hidden with a simple header switch, ensuring a completely offline and distraction-free environment.
+*   **Resizable Assistant Sidebar**: Easily adjust the width of the right panel using a responsive drag handle, with automatic local width persistence.
 *   **Dynamic Localization**: Change the entire interface language instantly between **English** and **French** with zero page reloads.
 *   **Workspace Security**: Lock your novel to prevent accidental edits (read-only mode with clear visual indicator badges).
-*   **Structured Export**: Export and compile your entire structured novel into a clean, plain `.txt` file with one click.
 
 ---
 
 ## 🛠️ Built With
 
 *   **Backend**: Python 3, Flask.
+*   **Exports**: Python-docx, ReportLab (PDF), native zip structural stream packets for ODT, ePub, and Mobipocket.
 *   **Data Storage**: Structured JSON formatted projects (saved under `/projects/` directory) powered by a robust backend manager (`project_manager.py`).
 *   **Frontend**: HTML5, Tailwind CSS, Modern JavaScript (Vanilla JS, Single Page Application style).
 *   **Localization**: Decoupled external translation files (`locales/fr.json`, `locales/en.json`).
@@ -175,9 +186,9 @@ venv\Scripts\activate
 ```
 
 ### Step 3: Install dependencies
-Install Flask:
+Install Flask and export dependencies:
 ```bash
-pip install flask
+pip install -r requirements.txt
 ```
 
 ### Step 4: Run the application server
@@ -194,7 +205,8 @@ Open your favorite web browser and go to:
 ## 📝 User Guide
 
 1.  **Creating Novels**: Click the **"+" New novel / Nouveau roman** button in the top bar to create a fresh project.
-2.  **Drafting**: Click any Chapter or Scene in the navigation tree to open the distraction-free editor. Start writing; your work is auto-saved as you type.
-3.  **Plotting & Timeline**: Access the **Plot Grid** from the sidebar. Toggle between **Grid View** and **Visual Timeline** tabs. Link characters and draw graphical connection flowlines between plot cards directly from the card edit popup to map your story's chronological flow simply.
-4.  **AI Toggle**: Turn the AI assistant on or off using the **Toggle AI / Activer l'IA** switch in the top header.
-5.  **Project Settings**: Adjust project titles, overall word goals, lock/unlock the workspace, or delete the current novel via the **Project settings** modal.
+2.  **Drafting & Contextual AI**: Click any Scene in the navigation tree to open the editor. Highlight any text block to trigger floating smart AI writing tools.
+3.  **Characters & Lore**: Manage full character bios, dynamic relationship networks, and appearances. Check occurrences to link characters to specific scenes.
+4.  **Plotting & Timeline**: Access the **Plot Grid** from the sidebar. Toggle between **Grid View** and **Visual Timeline** tabs. Link characters and draw graphical connection flowlines between plot cards directly from the card edit popup to map your story's chronological flow simply.
+5.  **AI Toggle**: Turn the AI assistant on or off using the **Toggle AI / Activer l'IA** switch in the top header.
+6.  **Project Settings**: Adjust project titles, overall word goals, lock/unlock the workspace, customize AI parameters (temperature, model selection), or delete the current novel via the **Project settings** modal.
