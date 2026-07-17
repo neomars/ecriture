@@ -26,6 +26,7 @@ class NovelProject:
                     "id": "chap_1",
                     "type": "chapter",
                     "title": "Chapter 1",
+                    "summary": "Mr. Bingley, a wealthy single gentleman, rents Netherfield Park, exciting Mrs. Bennet who hopes he will marry one of her five daughters.",
                     "children": [
                         {
                             "id": "scene_1_1",
@@ -39,6 +40,7 @@ class NovelProject:
                     "id": "chap_2",
                     "type": "chapter",
                     "title": "Chapter 2",
+                    "summary": "Mr. Bennet visits Mr. Bingley in secret, surprising his family and demonstrating his affection for them.",
                     "children": [
                         {
                             "id": "scene_2_1",
@@ -95,6 +97,15 @@ class NovelProject:
                     "type": "Location",
                     "content": "The Bennet family estate, entailed to Mr. Collins."
                 }
+            ],
+            "key_events": [
+                {
+                    "id": "evt_1",
+                    "title": "Mr. Bingley Rents Netherfield",
+                    "description": "The news of Netherfield being let to a wealthy bachelor spreads across Hertfordshire.",
+                    "chapter_id": "chap_1",
+                    "characters": []
+                }
             ]
         }
 
@@ -102,6 +113,12 @@ class NovelProject:
         try:
             with open(self.filepath, 'r', encoding='utf-8') as f:
                 self.data = json.load(f)
+            # Normalize loaded data to ensure backward compatibility
+            if "key_events" not in self.data:
+                self.data["key_events"] = []
+            for chap in self.data.get("manuscript", []):
+                if "summary" not in chap:
+                    chap["summary"] = ""
         except Exception as e:
             print(f"Error loading project: {e}")
 
@@ -150,6 +167,7 @@ class NovelProject:
             "id": new_id,
             "type": "chapter",
             "title": title,
+            "summary": "",
             "children": []
         }
         self.data["manuscript"].append(new_chap)
