@@ -113,5 +113,18 @@ class TestNovelProject(unittest.TestCase):
         self.assertIn("links", loaded_card)
         self.assertEqual(loaded_card["links"], ["card_2"])
 
+    def test_le_cid_loading(self):
+        # Check that Le Cid example project loads correctly
+        cid_path = os.path.join("projects", "le_cid_corneille.json")
+        self.assertTrue(os.path.exists(cid_path))
+        cid_proj = NovelProject(cid_path)
+        self.assertEqual(cid_proj.data["settings"]["title"], "Le Cid - Pierre Corneille")
+        self.assertEqual(len(cid_proj.data["manuscript"]), 5) # 5 Acts
+
+        # Check some characters
+        chars = [c["name"] for c in cid_proj.data["characters"]]
+        self.assertIn("Chimène", chars)
+        self.assertIn("Don Rodrigue", chars)
+
 if __name__ == "__main__":
     unittest.main()

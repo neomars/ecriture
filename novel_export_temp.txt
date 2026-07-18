@@ -1,15 +1,256 @@
-=== Pride & Prejudice (Copy) ===
+=== Le Cid - Pierre Corneille ===
 
 
---- Chapter 1 ---
+--- Acte I ---
 
-[Netherfield Park is let at last]
-It is a truth universally acknowledged, that a singleA rich and sensory description of 'man in po': Subtle textures and fine details catch the ambient light, casting delicate shadows that evoke a deep sense of atmospheric presence and quiet contemplation.ssession of a good fortune, must be in want of a wife.
+[Scène 1 : Chimène, Elvire]
+CHIMÈNE.
+Elvire, m'as-tu fait un rapport bien sincère ?
+Ne déguises-tu rien de ce qu'a dit mon père ?
 
-However little known the feelings or views of such a man may be on his first entering a neighborhood, this truth is so well fixed in the minds of the surrounding families, that he is considered the rightful property of some one or other of their daughters.
+ELVIRE.
+Tous mes sens moi-même en sont encor charmés,
+Il estime Rodrigue autant que vous l'aimez,
+Et si je ne m'abuse à lire dans son âme,
+Il vous commandera de répondre à sa flamme.
+
+[Scène 2 : L'Infante, Léonor, Le Page]
+L'INFANTE.
+Page, allez avertir Chimène de ma part
+Qu'aujourd'hui pour me voir elle attend un peu tard,
+Et que mon amitié se plaint de sa paresse.
+
+[Scène 3 : Le Comte, Don Diègue]
+LE COMTE.
+Enfin vous l'emportez, et la faveur du Roi
+Vous élève en un rang qui n'était dû qu'à moi,
+Il vous fait Gouverneur du prince de Castille.
+
+[Scène 4 : Don Diègue]
+DON DIÈGUE.
+Ô rage ! ô désespoir ! ô vieillesse ennemie !
+N'ai-je donc tant vécu que pour cette infamie ?
+Et ne suis-je blanchi dans les travaux guerriers
+Que pour voir en un jour flétrir tant de lauriers ?
+
+[Scène 5 : Don Diègue, Don Rodrigue]
+DON DIÈGUE.
+Rodrigue, as-tu du cœur ?
+
+DON RODRIGUE.
+Tout autre que mon père
+L'éprouverait sur l'heure.
+
+DON DIÈGUE.
+Agréable colère !
+Digne ressentiment à ma douleur bien doux !
+Je reconnais mon sang à ce noble courroux.
+
+[Scène 6 : Don Rodrigue (Monologue)]
+DON RODRIGUE.
+Percé jusques au fond du cœur
+D'une atteinte imprévue aussi bien que mortelle,
+Misérable vengeur d'une juste querelle,
+Et malheureux objet d'une injuste rigueur
+Je demeure immobile, et mon âme abattue
+Cède au coup qui me tue.
 
 
---- Chapter 2 ---
+--- Acte II ---
 
-[We cannot escape the subject]
-Mr. Bennet was among the earliest of those who waited on Mr. Bingley. He had always intended to visit him, though to the last always assuring his wife that he should not go; and till the evening after the visit was paid she had no knowledge of it.
+[Scène 1 : Don Arias, Le Comte]
+LE COMTE.
+Je l'avoue entre nous, mon sang un peu trop chaud
+S'est trop ému d'un mot, et l'a porté trop haut,
+Mais puisque c'en est fait, le coup est sans remède.
+
+[Scène 2 : Le Comte, Don Rodrigue]
+DON RODRIGUE.
+À moi, Comte, deux mots.
+
+LE COMTE.
+Parle.
+
+DON RODRIGUE.
+Ôte-moi d'un doute.
+Connais-tu bien Don Diègue ?
+
+LE COMTE.
+Oui.
+
+DON RODRIGUE.
+Parlons bas, écoute.
+Sais-tu que ce vieillard fut la même vertu,
+La vaillance et l'honneur de son temps ? Le sais-tu ?
+
+[Scène 3 : L'Infante, Chimène, Léonor]
+CHIMÈNE.
+Mon cœur outré d'ennuis n'ose rien espérer.
+Un orage si prompt qui trouble une bonace
+D'un naufrage certain nous porte la menace.
+
+[Scène 4 : L'Infante, Chimène, Léonor, Le Page]
+L'INFANTE.
+Page, cherchez Rodrigue, et l'amenez ici.
+
+LE PAGE.
+Le comte de Gormas et lui...
+
+[Scène 5 : L'Infante, Léonor]
+L'INFANTE.
+Hélas ! Que dans l'esprit je sens d'inquiétude !
+Je pleure ses malheurs, son amant me ravit,
+Mon repos m'abandonne, et ma flamme revit.
+
+[Scène 6 : Don Fernand, Don Arias, Don Sanche]
+DON FERNAND.
+Le Comte est donc si vain et si peu raisonnable !
+Ose-t-il croire encor son crime pardonnable ?
+
+[Scène 7 : Don Fernand, Don Sanche, Don Alonse]
+DON ALONSE.
+Sire, le Comte est mort,
+Don Diègue par son fils a vengé son offense.
+
+[Scène 8 : Don Fernand, Don Diègue, Chimène, Don Sanche...]
+CHIMÈNE.
+Sire, sire, justice.
+
+DON DIÈGUE.
+Ah ! Sire, écoutez-nous.
+
+
+--- Acte III ---
+
+[Scène 1 : Don Rodrigue, Elvire]
+DON RODRIGUE.
+Et je n'y viens aussi que m'offrir à mon juge.
+Ne me regarde plus d'un visage étonné ;
+Je cherche le trpas après l'avoir donné.
+
+Mon juge est mon amour, mon juge est ma Chimène :
+Je mérite la mort de mériter sa haine.
+
+[Scène 2 : Don Sanche, Chimène, Elvire]
+DON SANCHE.
+Oui, Madame, il vous faut de sanglantes victimes :
+Votre colre est juste, et vos pleurs légitimes ;
+
+[Scène 3 : Chimène, Elvire]
+CHIMÈNE.
+Rodrigue m'est bien cher, son intérêt m'afflige ;
+Mon cœur prend son parti ; mais malgré son effort,
+Je sais ce que je suis, et que mon père est mort.
+
+[Scène 4 : Don Rodrigue, Chimène, Elvire]
+DON RODRIGUE.
+Regarde-le plutôt pour exciter ta haine,
+Pour croître ta colère, et pour hâter ma peine.
+
+CHIMÈNE.
+Ah ! Rodrigue, il est vrai, quoique ton ennemie,
+Je ne puis te blâmer d'avoir fui l'infamie ;
+
+[Scène 5 : Don Diègue]
+DON DIÈGUE.
+Rodrigue ne vit plus, ou respire en prison.
+Justes cieux ! Me trompé-je encore à l'apparence,
+Ou si je vois enfin mon unique espérance ?
+
+[Scène 6 : Don Diègue, Don Rodrigue]
+DON DIÈGUE.
+Rodrigue, enfin le ciel permet que je te voie !
+
+DON RODRIGUE.
+Hélas !
+
+DON DIÈGUE.
+Ne mêle point de soupirs à ma joie ;
+Laisse-moi prendre haleine afin de te louer.
+Ma valeur n'a point lieu de te désavouer
+
+
+--- Acte IV ---
+
+[Scène 1 : Chimène, Elvire]
+CHIMÈNE.
+Et la main de Rodrigue a fait tous ces miracles ?
+
+ELVIRE.
+De ses nobles efforts ces deux rois sont le prix :
+Sa main les a vaincus, et sa main les a pris.
+
+[Scène 2 : L'Infante, Chimène, Léonor, Elvire]
+L'INFANTE.
+Ma Chimène, il est vrai qu'il a fait des merveilles.
+
+CHIMÈNE.
+Déjà ce bruit fâcheux a frappé mes oreilles ;
+Et je l'entends partout publier hautement
+Aussi brave guerrier que malheureux amant.
+
+[Scène 3 : Don Fernand, Don Diègue, Don Rodrigue, Don Sanche...]
+DON RODRIGUE.
+Cette obscure clarté qui tombe des étoiles
+Enfin avec le flux nous fait voir trente voiles ;
+L'onde s'enfle dessous, et d'un commun effort
+Les Mores et la mer montent jusques au port.
+
+[Scène 4 : Don Fernand, Don Diègue, Don Rodrigue, Don Arias, Don Alonse, Don Sanche]
+DON ALONSE.
+Sire, Chimène vient vous demander justice.
+
+DON FERNAND.
+La fâcheuse nouvelle, et l'importun devoir !
+
+[Scène 5 : Don Fernand, Don Diègue, Don Arias, Don Sanche, Don Alonse, Chimène, Elvire]
+CHIMÈNE.
+Puisque vous refusez la justice à mes larmes,
+Sire, permettez-moi de recourir aux armes ;
+C'est par là seulement qu'il a su m'outrager,
+Et c'est aussi par là que je me dois venger.
+
+
+--- Acte V ---
+
+[Scène 1 : Don Rodrigue, Chimène]
+CHIMÈNE.
+Sors vainqueur d'un combat dont Chimène est le prix.
+
+DON RODRIGUE.
+Est-il quelque ennemi qu'à présent je ne dompte ?
+
+[Scène 2 : L'Infante (Monologue)]
+L'INFANTE.
+Rodrigue, ta valeur te rend digne de moi ;
+Mais pour être vaillant, tu n'es pas fils de Roi.
+
+[Scène 3 : L'Infante, Léonor]
+L'INFANTE.
+Je n'aime plus Rodrigue, un simple gentilhomme ;
+Non, ce n'est plus ainsi que mon amour le nomme :
+Si j'aime, c'est l'auteur de tant de beaux exploits,
+C'est le valeureux Cid, le maître de deux rois.
+
+[Scène 4 : Chimène, Elvire]
+CHIMÈNE.
+Allez, vengeance, amour, qui troublez mes esprits,
+Vous n'avez point pour moi de douceurs à ce prix ;
+Et toi, puissant moteur du destin qui m'outrage,
+Termine ce combat sans aucun avantage,
+Sans faire aucun des deux ni vaincu ni vainqueur.
+
+[Scène 5 : Don Sanche, Chimène, Elvire]
+CHIMÈNE.
+Perfide, oses-tu bien te montrer à mes yeux,
+Après m'avoir ôté ce que j'aimais le mieux ?
+
+[Scène 6 : Don Fernand, Don Diègue, Don Arias, Don Sanche, Don Alonse, Chimène, Elvire]
+DON FERNAND.
+Chimène, sors d'erreur, ton amant n'est pas mort,
+Et Don Sanche vaincu t'a fait un faux rapport.
+
+[Scène 7 : Don Fernand, Don Diègue, Don Arias, Don Rodrigue, Don Alonse, Don Sanche, L'Infante, Chimène, Léonor, Elvire]
+DON FERNAND.
+Pour vaincre un point d'honneur qui combat contre toi,
+Laisse faire le temps, ta vaillance et ton roi.

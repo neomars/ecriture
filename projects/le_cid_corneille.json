@@ -1,0 +1,479 @@
+{
+    "characters": [
+        {
+            "aliases": [
+                "Chimène"
+            ],
+            "appearance": "Noble demoiselle castillane, portant des habits de deuil dans les derniers actes.",
+            "description": "Fille de Don Gomès, amante de Rodrigue. Elle est tiraillée entre son devoir filial d'obtenir justice pour la mort de son père et son amour passionné pour Rodrigue.",
+            "id": "char_cid_1",
+            "linked_scenes": [
+                "scene_acte1_1",
+                "scene_acte2_3",
+                "scene_acte3_3",
+                "scene_acte3_4",
+                "scene_acte4_1",
+                "scene_acte4_5",
+                "scene_acte5_1",
+                "scene_acte5_7"
+            ],
+            "name": "Chimène",
+            "relations": [
+                {
+                    "description": "L'aime d'un amour tragique et indomptable",
+                    "target_id": "char_cid_5",
+                    "type": "Amante"
+                },
+                {
+                    "description": "Fille dévouée",
+                    "target_id": "char_cid_4",
+                    "type": "Fille"
+                }
+            ],
+            "role": "Fille de Don Gomès, amante de Rodrigue",
+            "traits": [
+                "Loyale",
+                "Passionnée",
+                "Fervente"
+            ]
+        },
+        {
+            "aliases": [
+                "Le Cid",
+                "Rodrigue"
+            ],
+            "appearance": "Jeune guerrier d'une vaillance extraordinaire.",
+            "description": "Jeune cavalier dont l'honneur familial est taché dès le premier acte. Il tue le Comte pour venger son père, devient le héros légendaire Le Cid en sauvant Séville, et offre sa tête à Chimène.",
+            "id": "char_cid_5",
+            "linked_scenes": [
+                "scene_acte1_5",
+                "scene_acte1_6",
+                "scene_acte2_2",
+                "scene_acte3_1",
+                "scene_acte3_4",
+                "scene_acte3_6",
+                "scene_acte4_3",
+                "scene_acte5_1",
+                "scene_acte5_7"
+            ],
+            "name": "Don Rodrigue",
+            "relations": [
+                {
+                    "description": "Prêt à mourir pour satisfaire son honneur",
+                    "target_id": "char_cid_1",
+                    "type": "Amant"
+                },
+                {
+                    "description": "Fils obéissant et protecteur de l'honneur de sa race",
+                    "target_id": "char_cid_3",
+                    "type": "Fils"
+                }
+            ],
+            "role": "Le Cid, fils de Don Diègue, amant de Chimène",
+            "traits": [
+                "Héroïque",
+                "Humble",
+                "Dévoué"
+            ]
+        },
+        {
+            "aliases": [
+                "Diègue"
+            ],
+            "appearance": "Vieillard aux cheveux blancs marqué par d'innombrables batailles passées.",
+            "description": "Ancien guerrier illustre de Castille, récemment nommé gouverneur du Prince. Son impuissance face à l'âge le pousse à confier son épée à son fils après le soufflet du Comte.",
+            "id": "char_cid_3",
+            "linked_scenes": [
+                "scene_acte1_3",
+                "scene_acte1_4",
+                "scene_acte1_5",
+                "scene_acte2_8",
+                "scene_acte3_5",
+                "scene_acte3_6",
+                "scene_acte5_7"
+            ],
+            "name": "Don Diègue",
+            "relations": [],
+            "role": "Père de Rodrigue",
+            "traits": [
+                "Fier",
+                "Ancien",
+                "Inflexible"
+            ]
+        },
+        {
+            "aliases": [
+                "Le Comte"
+            ],
+            "appearance": "Guerrier fort et majestueux dans la force de l'âge.",
+            "description": "Comte de Gormas, le plus fier capitaine de Castille. Incapable de tolérer le choix royal de Don Diègue comme gouverneur, il l'insulte et périt de la main de Rodrigue.",
+            "id": "char_cid_4",
+            "linked_scenes": [
+                "scene_acte1_3",
+                "scene_acte2_1",
+                "scene_acte2_2"
+            ],
+            "name": "Don Gomès",
+            "relations": [],
+            "role": "Le Comte, père de Chimène",
+            "traits": [
+                "Superbe",
+                "Superbe",
+                "Orgueilleux"
+            ]
+        },
+        {
+            "aliases": [
+                "Le Roi",
+                "Fernand"
+            ],
+            "appearance": "Habits royaux solennels de Castille.",
+            "description": "Monarque juste et absolu cherchant à concilier la rigueur des lois avec le salut de son royaume, grandement servi par Le Cid.",
+            "id": "char_cid_6",
+            "linked_scenes": [
+                "scene_acte2_6",
+                "scene_acte2_8",
+                "scene_acte4_4",
+                "scene_acte5_7"
+            ],
+            "name": "Don Fernand",
+            "relations": [],
+            "role": "Premier roi de Castille",
+            "traits": [
+                "Juste",
+                "Souverain",
+                "Conciliant"
+            ]
+        }
+    ],
+    "key_events": [],
+    "manuscript": [
+        {
+            "children": [
+                {
+                    "content": "CHIMÈNE.\nElvire, m'as-tu fait un rapport bien sincère ?\nNe déguises-tu rien de ce qu'a dit mon père ?\n\nELVIRE.\nTous mes sens moi-même en sont encor charmés,\nIl estime Rodrigue autant que vous l'aimez,\nEt si je ne m'abuse à lire dans son âme,\nIl vous commandera de répondre à sa flamme.",
+                    "id": "scene_acte1_1",
+                    "title": "Scène 1 : Chimène, Elvire",
+                    "type": "scene"
+                },
+                {
+                    "content": "L'INFANTE.\nPage, allez avertir Chimène de ma part\nQu'aujourd'hui pour me voir elle attend un peu tard,\nEt que mon amitié se plaint de sa paresse.",
+                    "id": "scene_acte1_2",
+                    "title": "Scène 2 : L'Infante, Léonor, Le Page",
+                    "type": "scene"
+                },
+                {
+                    "content": "LE COMTE.\nEnfin vous l'emportez, et la faveur du Roi\nVous élève en un rang qui n'était dû qu'à moi,\nIl vous fait Gouverneur du prince de Castille.",
+                    "id": "scene_acte1_3",
+                    "title": "Scène 3 : Le Comte, Don Diègue",
+                    "type": "scene"
+                },
+                {
+                    "content": "DON DIÈGUE.\nÔ rage ! ô désespoir ! ô vieillesse ennemie !\nN'ai-je donc tant vécu que pour cette infamie ?\nEt ne suis-je blanchi dans les travaux guerriers\nQue pour voir en un jour flétrir tant de lauriers ?",
+                    "id": "scene_acte1_4",
+                    "title": "Scène 4 : Don Diègue",
+                    "type": "scene"
+                },
+                {
+                    "content": "DON DIÈGUE.\nRodrigue, as-tu du cœur ?\n\nDON RODRIGUE.\nTout autre que mon père\nL'éprouverait sur l'heure.\n\nDON DIÈGUE.\nAgréable colère !\nDigne ressentiment à ma douleur bien doux !\nJe reconnais mon sang à ce noble courroux.",
+                    "id": "scene_acte1_5",
+                    "title": "Scène 5 : Don Diègue, Don Rodrigue",
+                    "type": "scene"
+                },
+                {
+                    "content": "DON RODRIGUE.\nPercé jusques au fond du cœur\nD'une atteinte imprévue aussi bien que mortelle,\nMisérable vengeur d'une juste querelle,\nEt malheureux objet d'une injuste rigueur\nJe demeure immobile, et mon âme abattue\nCède au coup qui me tue.",
+                    "id": "scene_acte1_6",
+                    "title": "Scène 6 : Don Rodrigue (Monologue)",
+                    "type": "scene"
+                }
+            ],
+            "id": "chap_acte1",
+            "summary": "",
+            "title": "Acte I",
+            "type": "chapter"
+        },
+        {
+            "children": [
+                {
+                    "content": "LE COMTE.\nJe l'avoue entre nous, mon sang un peu trop chaud\nS'est trop ému d'un mot, et l'a porté trop haut,\nMais puisque c'en est fait, le coup est sans remède.",
+                    "id": "scene_acte2_1",
+                    "title": "Scène 1 : Don Arias, Le Comte",
+                    "type": "scene"
+                },
+                {
+                    "content": "DON RODRIGUE.\nÀ moi, Comte, deux mots.\n\nLE COMTE.\nParle.\n\nDON RODRIGUE.\nÔte-moi d'un doute.\nConnais-tu bien Don Diègue ?\n\nLE COMTE.\nOui.\n\nDON RODRIGUE.\nParlons bas, écoute.\nSais-tu que ce vieillard fut la même vertu,\nLa vaillance et l'honneur de son temps ? Le sais-tu ?",
+                    "id": "scene_acte2_2",
+                    "title": "Scène 2 : Le Comte, Don Rodrigue",
+                    "type": "scene"
+                },
+                {
+                    "content": "CHIMÈNE.\nMon cœur outré d'ennuis n'ose rien espérer.\nUn orage si prompt qui trouble une bonace\nD'un naufrage certain nous porte la menace.",
+                    "id": "scene_acte2_3",
+                    "title": "Scène 3 : L'Infante, Chimène, Léonor",
+                    "type": "scene"
+                },
+                {
+                    "content": "L'INFANTE.\nPage, cherchez Rodrigue, et l'amenez ici.\n\nLE PAGE.\nLe comte de Gormas et lui...",
+                    "id": "scene_acte2_4",
+                    "title": "Scène 4 : L'Infante, Chimène, Léonor, Le Page",
+                    "type": "scene"
+                },
+                {
+                    "content": "L'INFANTE.\nHélas ! Que dans l'esprit je sens d'inquiétude !\nJe pleure ses malheurs, son amant me ravit,\nMon repos m'abandonne, et ma flamme revit.",
+                    "id": "scene_acte2_5",
+                    "title": "Scène 5 : L'Infante, Léonor",
+                    "type": "scene"
+                },
+                {
+                    "content": "DON FERNAND.\nLe Comte est donc si vain et si peu raisonnable !\nOse-t-il croire encor son crime pardonnable ?",
+                    "id": "scene_acte2_6",
+                    "title": "Scène 6 : Don Fernand, Don Arias, Don Sanche",
+                    "type": "scene"
+                },
+                {
+                    "content": "DON ALONSE.\nSire, le Comte est mort,\nDon Diègue par son fils a vengé son offense.",
+                    "id": "scene_acte2_7",
+                    "title": "Scène 7 : Don Fernand, Don Sanche, Don Alonse",
+                    "type": "scene"
+                },
+                {
+                    "content": "CHIMÈNE.\nSire, sire, justice.\n\nDON DIÈGUE.\nAh ! Sire, écoutez-nous.",
+                    "id": "scene_acte2_8",
+                    "title": "Scène 8 : Don Fernand, Don Diègue, Chimène, Don Sanche...",
+                    "type": "scene"
+                }
+            ],
+            "id": "chap_acte2",
+            "summary": "",
+            "title": "Acte II",
+            "type": "chapter"
+        },
+        {
+            "children": [
+                {
+                    "content": "DON RODRIGUE.\nEt je n'y viens aussi que m'offrir à mon juge.\nNe me regarde plus d'un visage étonné ;\nJe cherche le trpas après l'avoir donné.\n\nMon juge est mon amour, mon juge est ma Chimène :\nJe mérite la mort de mériter sa haine.",
+                    "id": "scene_acte3_1",
+                    "title": "Scène 1 : Don Rodrigue, Elvire",
+                    "type": "scene"
+                },
+                {
+                    "content": "DON SANCHE.\nOui, Madame, il vous faut de sanglantes victimes :\nVotre colre est juste, et vos pleurs légitimes ;",
+                    "id": "scene_acte3_2",
+                    "title": "Scène 2 : Don Sanche, Chimène, Elvire",
+                    "type": "scene"
+                },
+                {
+                    "content": "CHIMÈNE.\nRodrigue m'est bien cher, son intérêt m'afflige ;\nMon cœur prend son parti ; mais malgré son effort,\nJe sais ce que je suis, et que mon père est mort.",
+                    "id": "scene_acte3_3",
+                    "title": "Scène 3 : Chimène, Elvire",
+                    "type": "scene"
+                },
+                {
+                    "content": "DON RODRIGUE.\nRegarde-le plutôt pour exciter ta haine,\nPour croître ta colère, et pour hâter ma peine.\n\nCHIMÈNE.\nAh ! Rodrigue, il est vrai, quoique ton ennemie,\nJe ne puis te blâmer d'avoir fui l'infamie ;",
+                    "id": "scene_acte3_4",
+                    "title": "Scène 4 : Don Rodrigue, Chimène, Elvire",
+                    "type": "scene"
+                },
+                {
+                    "content": "DON DIÈGUE.\nRodrigue ne vit plus, ou respire en prison.\nJustes cieux ! Me trompé-je encore à l'apparence,\nOu si je vois enfin mon unique espérance ?",
+                    "id": "scene_acte3_5",
+                    "title": "Scène 5 : Don Diègue",
+                    "type": "scene"
+                },
+                {
+                    "content": "DON DIÈGUE.\nRodrigue, enfin le ciel permet que je te voie !\n\nDON RODRIGUE.\nHélas !\n\nDON DIÈGUE.\nNe mêle point de soupirs à ma joie ;\nLaisse-moi prendre haleine afin de te louer.\nMa valeur n'a point lieu de te désavouer",
+                    "id": "scene_acte3_6",
+                    "title": "Scène 6 : Don Diègue, Don Rodrigue",
+                    "type": "scene"
+                }
+            ],
+            "id": "chap_acte3",
+            "summary": "",
+            "title": "Acte III",
+            "type": "chapter"
+        },
+        {
+            "children": [
+                {
+                    "content": "CHIMÈNE.\nEt la main de Rodrigue a fait tous ces miracles ?\n\nELVIRE.\nDe ses nobles efforts ces deux rois sont le prix :\nSa main les a vaincus, et sa main les a pris.",
+                    "id": "scene_acte4_1",
+                    "title": "Scène 1 : Chimène, Elvire",
+                    "type": "scene"
+                },
+                {
+                    "content": "L'INFANTE.\nMa Chimène, il est vrai qu'il a fait des merveilles.\n\nCHIMÈNE.\nDéjà ce bruit fâcheux a frappé mes oreilles ;\nEt je l'entends partout publier hautement\nAussi brave guerrier que malheureux amant.",
+                    "id": "scene_acte4_2",
+                    "title": "Scène 2 : L'Infante, Chimène, Léonor, Elvire",
+                    "type": "scene"
+                },
+                {
+                    "content": "DON RODRIGUE.\nCette obscure clarté qui tombe des étoiles\nEnfin avec le flux nous fait voir trente voiles ;\nL'onde s'enfle dessous, et d'un commun effort\nLes Mores et la mer montent jusques au port.",
+                    "id": "scene_acte4_3",
+                    "title": "Scène 3 : Don Fernand, Don Diègue, Don Rodrigue, Don Sanche...",
+                    "type": "scene"
+                },
+                {
+                    "content": "DON ALONSE.\nSire, Chimène vient vous demander justice.\n\nDON FERNAND.\nLa fâcheuse nouvelle, et l'importun devoir !",
+                    "id": "scene_acte4_4",
+                    "title": "Scène 4 : Don Fernand, Don Diègue, Don Rodrigue, Don Arias, Don Alonse, Don Sanche",
+                    "type": "scene"
+                },
+                {
+                    "content": "CHIMÈNE.\nPuisque vous refusez la justice à mes larmes,\nSire, permettez-moi de recourir aux armes ;\nC'est par là seulement qu'il a su m'outrager,\nEt c'est aussi par là que je me dois venger.",
+                    "id": "scene_acte4_5",
+                    "title": "Scène 5 : Don Fernand, Don Diègue, Don Arias, Don Sanche, Don Alonse, Chimène, Elvire",
+                    "type": "scene"
+                }
+            ],
+            "id": "chap_acte4",
+            "summary": "",
+            "title": "Acte IV",
+            "type": "chapter"
+        },
+        {
+            "children": [
+                {
+                    "content": "CHIMÈNE.\nSors vainqueur d'un combat dont Chimène est le prix.\n\nDON RODRIGUE.\nEst-il quelque ennemi qu'à présent je ne dompte ?",
+                    "id": "scene_acte5_1",
+                    "title": "Scène 1 : Don Rodrigue, Chimène",
+                    "type": "scene"
+                },
+                {
+                    "content": "L'INFANTE.\nRodrigue, ta valeur te rend digne de moi ;\nMais pour être vaillant, tu n'es pas fils de Roi.",
+                    "id": "scene_acte5_2",
+                    "title": "Scène 2 : L'Infante (Monologue)",
+                    "type": "scene"
+                },
+                {
+                    "content": "L'INFANTE.\nJe n'aime plus Rodrigue, un simple gentilhomme ;\nNon, ce n'est plus ainsi que mon amour le nomme :\nSi j'aime, c'est l'auteur de tant de beaux exploits,\nC'est le valeureux Cid, le maître de deux rois.",
+                    "id": "scene_acte5_3",
+                    "title": "Scène 3 : L'Infante, Léonor",
+                    "type": "scene"
+                },
+                {
+                    "content": "CHIMÈNE.\nAllez, vengeance, amour, qui troublez mes esprits,\nVous n'avez point pour moi de douceurs à ce prix ;\nEt toi, puissant moteur du destin qui m'outrage,\nTermine ce combat sans aucun avantage,\nSans faire aucun des deux ni vaincu ni vainqueur.",
+                    "id": "scene_acte5_4",
+                    "title": "Scène 4 : Chimène, Elvire",
+                    "type": "scene"
+                },
+                {
+                    "content": "CHIMÈNE.\nPerfide, oses-tu bien te montrer à mes yeux,\nAprès m'avoir ôté ce que j'aimais le mieux ?",
+                    "id": "scene_acte5_5",
+                    "title": "Scène 5 : Don Sanche, Chimène, Elvire",
+                    "type": "scene"
+                },
+                {
+                    "content": "DON FERNAND.\nChimène, sors d'erreur, ton amant n'est pas mort,\nEt Don Sanche vaincu t'a fait un faux rapport.",
+                    "id": "scene_acte5_6",
+                    "title": "Scène 6 : Don Fernand, Don Diègue, Don Arias, Don Sanche, Don Alonse, Chimène, Elvire",
+                    "type": "scene"
+                },
+                {
+                    "content": "DON FERNAND.\nPour vaincre un point d'honneur qui combat contre toi,\nLaisse faire le temps, ta vaillance et ton roi.",
+                    "id": "scene_acte5_7",
+                    "title": "Scène 7 : Don Fernand, Don Diègue, Don Arias, Don Rodrigue, Don Alonse, Don Sanche, L'Infante, Chimène, Léonor, Elvire",
+                    "type": "scene"
+                }
+            ],
+            "id": "chap_acte5",
+            "summary": "",
+            "title": "Acte V",
+            "type": "chapter"
+        }
+    ],
+    "plot": {
+        "cards": [
+            {
+                "characters": [
+                    "char_cid_3",
+                    "char_cid_4"
+                ],
+                "content": "Le Comte de Gormas donne un soufflet à Don Diègue, offensant gravement l'honneur de la famille de Rodrigue.",
+                "id": "card_cid_1",
+                "links": [
+                    "card_cid_2"
+                ],
+                "plotline_id": "pl_cid_1",
+                "scene_id": "scene_acte1_3",
+                "title": "L'Affront du Soufflet"
+            },
+            {
+                "characters": [
+                    "char_cid_1",
+                    "char_cid_3",
+                    "char_cid_5"
+                ],
+                "content": "Don Diègue demande à son fils Rodrigue de le venger. Rodrigue doit choisir entre l'amour de Chimène et l'honneur de son père.",
+                "id": "card_cid_2",
+                "links": [
+                    "card_cid_3"
+                ],
+                "plotline_id": "pl_cid_2",
+                "scene_id": "scene_acte1_5",
+                "title": "Le Dilemme Cornélien"
+            },
+            {
+                "characters": [
+                    "char_cid_4",
+                    "char_cid_5"
+                ],
+                "content": "Rodrigue provoque le Comte en duel et le tue, vengeant ainsi l'honneur de Don Diègue.",
+                "id": "card_cid_3",
+                "links": [
+                    "card_cid_4"
+                ],
+                "plotline_id": "pl_cid_1",
+                "scene_id": "scene_acte2_2",
+                "title": "Le Duel Héroïque"
+            },
+            {
+                "characters": [
+                    "char_cid_5",
+                    "char_cid_6"
+                ],
+                "content": "Rodrigue repousse l'invasion surprise des Maures durant la nuit et capture deux rois, devenant le Cid, sauveur de la patrie.",
+                "id": "card_cid_4",
+                "links": [],
+                "plotline_id": "pl_cid_3",
+                "scene_id": "scene_acte4_3",
+                "title": "L'Invasion des Maures"
+            }
+        ],
+        "plotlines": [
+            {
+                "id": "pl_cid_1",
+                "title": "Honneur & Devoir"
+            },
+            {
+                "id": "pl_cid_2",
+                "title": "Amour & Dilemme"
+            },
+            {
+                "id": "pl_cid_3",
+                "title": "Guerre & Gloire"
+            }
+        ]
+    },
+    "settings": {
+        "daily_goal": 500,
+        "daily_written": 0,
+        "lang": "fr",
+        "overall_goal": 10000,
+        "overall_written": 946,
+        "title": "Le Cid - Pierre Corneille"
+    },
+    "story_notes": [
+        {
+            "content": "La ville de Séville en Andalousie, port fluvial fortifié sur le Guadalquivir où se déroule l'intégralité de l'action de la pièce.",
+            "id": "note_cid_1",
+            "title": "Séville",
+            "type": "Lieu"
+        },
+        {
+            "content": "Le conflit absolu entre la passion amoureuse et le devoir social/familial de l'honneur.",
+            "id": "note_cid_2",
+            "title": "Le Dilemme Cornélien",
+            "type": "Thématique"
+        }
+    ]
+}

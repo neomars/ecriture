@@ -20,6 +20,11 @@ def get_active_project_filename():
             if fn and os.path.exists(os.path.join(PROJECTS_DIR, fn)):
                 return fn
 
+    # Prioritize the Corneille "Le Cid" example as first-time default if it exists
+    if os.path.exists(os.path.join(PROJECTS_DIR, "le_cid_corneille.json")):
+        set_active_project_filename("le_cid_corneille.json")
+        return "le_cid_corneille.json"
+
     # Fallback: scan projects directory or create a default one
     files = [f for f in os.listdir(PROJECTS_DIR) if f.endswith(".json")]
     if files:
