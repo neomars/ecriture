@@ -218,5 +218,14 @@ class TestEcritureWebApp(unittest.TestCase):
         self.assertIn('status', data)
         self.assertIn('message', data)
 
+    def test_ai_models_endpoint(self):
+        """Test that the /api/ai/models endpoint returns the expected model status/list."""
+        response = self.client.get('/api/ai/models')
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data)
+        self.assertIn('status', data)
+        self.assertIn('models', data)
+        self.assertIsInstance(data['models'], list)
+
 if __name__ == '__main__':
     unittest.main()
