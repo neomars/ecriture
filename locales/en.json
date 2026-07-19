@@ -114,5 +114,12 @@
   "add_chapter_title": "Add a chapter or structure page",
   "cat_liminaires": "1. Front matter (before start)",
   "cat_corps": "2. Novel body",
-  "cat_finales": "3. Back matter (after end)"
+  "cat_finales": "3. Back matter (after end)",
+  "layout_settings_title": "Editor Layout & Formatting",
+  "layout_font": "Font",
+  "layout_size": "Font Size",
+  "layout_spacing": "Line Spacing",
+  "layout_align": "Alignment / Justification",
+  "align_left": "Left-aligned",
+  "align_justify": "Justified text"
 }

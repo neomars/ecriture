@@ -114,5 +114,12 @@
   "add_chapter_title": "Ajouter un chapitre ou une page de structure",
   "cat_liminaires": "1. Pages liminaires (avant le début)",
   "cat_corps": "2. Corps du roman",
-  "cat_finales": "3. Pages finales (après la fin)"
+  "cat_finales": "3. Pages finales (après la fin)",
+  "layout_settings_title": "Mise en page de l'éditeur",
+  "layout_font": "Police (Font)",
+  "layout_size": "Taille (Font size)",
+  "layout_spacing": "Interligne (Spacing)",
+  "layout_align": "Justification / Alignement",
+  "align_left": "Alignement à gauche",
+  "align_justify": "Texte justifié"
 }

@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Écriture - Studio d'Écriture de Romans</title>
+    <!-- Google Fonts for Premium Serif Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..700;1,400..700&family=Literata:ital,opsz,wght@0,7..72,200..900;1,7..72,200..900&display=swap" rel="stylesheet">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -453,7 +457,7 @@
 
     <!-- MODAL: PROJECT SETTINGS -->
     <div id="settings-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50">
-        <div class="bg-white w-96 rounded-xl shadow-xl p-6 border border-slate-200">
+        <div class="bg-white w-[420px] max-h-[85vh] overflow-y-auto rounded-xl shadow-xl p-6 border border-slate-200">
             <h3 class="text-lg font-bold text-slate-800 mb-4" data-i18n="project_settings">Paramètres du projet</h3>
 
             <div class="space-y-4 mb-6">
@@ -464,6 +468,49 @@
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1" data-i18n="overall_word_goal">Objectif global (mots)</label>
                     <input type="number" id="settings-goal-input" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+
+                <!-- LAYOUT & TYPOGRAPHY SETTINGS -->
+                <div class="pt-3 border-t border-slate-100">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2" data-i18n="layout_settings_title">Mise en page de l'éditeur</h4>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-600 mb-1" data-i18n="layout_font">Police (Font)</label>
+                            <select id="settings-layout-font" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer">
+                                <option value="Georgia, serif">Georgia</option>
+                                <option value="'Times New Roman', Times, serif">Times New Roman</option>
+                                <option value="'EB Garamond', serif">EB Garamond</option>
+                                <option value="'Literata', serif">Literata</option>
+                                <option value="Arial, sans-serif">Arial</option>
+                                <option value="Helvetica, sans-serif">Helvetica</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-600 mb-1" data-i18n="layout_size">Taille (Font size)</label>
+                            <select id="settings-layout-size" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer">
+                                <option value="11pt">11 pt</option>
+                                <option value="12pt">12 pt (Défaut)</option>
+                                <option value="14pt">14 pt</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-600 mb-1" data-i18n="layout_spacing">Interligne (Spacing)</label>
+                            <select id="settings-layout-spacing" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer">
+                                <option value="1.35">1.35 (Compact)</option>
+                                <option value="1.5">1.5 (Standard)</option>
+                                <option value="1.6">1.6 (Recommandé)</option>
+                                <option value="1.8">1.8 (Manuscrit)</option>
+                                <option value="2.0">2.0 (Double)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-600 mb-1" data-i18n="layout_align">Justification</label>
+                            <select id="settings-layout-align" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer">
+                                <option value="left" data-i18n="align_left">Alignement à gauche</option>
+                                <option value="justify" data-i18n="align_justify">Texte justifié</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- AI CONFIGURATION -->
@@ -890,6 +937,32 @@
             }
         }
 
+        // APPLY USER-DEFINED LAYOUT AND TYPOGRAPHY SETTINGS TO THE EDITOR
+        function applyEditorLayoutSettings() {
+            if (!projectData || !projectData.settings) return;
+            if (!projectData.settings.editor_layout) {
+                // Set defaults: Georgia 12pt, 1.6 spacing, left alignment
+                projectData.settings.editor_layout = {
+                    font_family: "Georgia, serif",
+                    font_size: "12pt",
+                    line_spacing: "1.6",
+                    text_align: "left"
+                };
+            }
+
+            const layout = projectData.settings.editor_layout;
+            const editor = document.getElementById('editor-content');
+            if (editor) {
+                editor.style.fontFamily = layout.font_family || "Georgia, serif";
+                editor.style.fontSize = layout.font_size || "12pt";
+                editor.style.lineHeight = layout.line_spacing || "1.6";
+                editor.style.textAlign = layout.text_align || "left";
+
+                // Also adjust paragraph separation spacing inside textarea
+                editor.style.paddingAfter = "6px";
+            }
+        }
+
         // LOAD ACTIVE PROJECT FROM BACKEND JSON
         async function loadProject() {
             try {
@@ -910,6 +983,9 @@
 
                 // Build navigation pane
                 renderTree();
+
+                // Apply layout configuration to the text canvas
+                applyEditorLayoutSettings();
 
                 // Update settings modals and right sidebar progress goals
                 updateRightSidebar();
@@ -1241,6 +1317,7 @@
                 refreshPlotView();
             }
             applyLockState();
+            applyEditorLayoutSettings();
         }
 
         // DRAG AND DROP HANDLERS FOR CHAPTERS
@@ -2528,6 +2605,21 @@
             document.getElementById('settings-goal-input').value = projectData.settings.overall_goal;
             document.getElementById('settings-lock-input').checked = !!projectData.settings.locked;
 
+            // Set Layout/Typography values
+            if (!projectData.settings.editor_layout) {
+                projectData.settings.editor_layout = {
+                    font_family: "Georgia, serif",
+                    font_size: "12pt",
+                    line_spacing: "1.6",
+                    text_align: "left"
+                };
+            }
+            const layout = projectData.settings.editor_layout;
+            document.getElementById('settings-layout-font').value = layout.font_family || "Georgia, serif";
+            document.getElementById('settings-layout-size').value = layout.font_size || "12pt";
+            document.getElementById('settings-layout-spacing').value = layout.line_spacing || "1.6";
+            document.getElementById('settings-layout-align').value = layout.text_align || "left";
+
             // Set AI values
             const aiTemp = (projectData.settings.ai_temperature !== undefined) ? projectData.settings.ai_temperature : 0.7;
             document.getElementById('settings-ai-temp-input').value = aiTemp;
@@ -2553,6 +2645,15 @@
             projectData.settings.overall_goal = parseInt(document.getElementById('settings-goal-input').value) || 50000;
             projectData.settings.locked = document.getElementById('settings-lock-input').checked;
 
+            // Read Layout/Typography values
+            if (!projectData.settings.editor_layout) {
+                projectData.settings.editor_layout = {};
+            }
+            projectData.settings.editor_layout.font_family = document.getElementById('settings-layout-font').value;
+            projectData.settings.editor_layout.font_size = document.getElementById('settings-layout-size').value;
+            projectData.settings.editor_layout.line_spacing = document.getElementById('settings-layout-spacing').value;
+            projectData.settings.editor_layout.text_align = document.getElementById('settings-layout-align').value;
+
             // Read AI values
             projectData.settings.ai_temperature = parseFloat(document.getElementById('settings-ai-temp-input').value);
             projectData.settings.ai_model = document.getElementById('settings-ai-model-input').value.trim() || "llama3";
@@ -2560,6 +2661,7 @@
 
             closeSettingsModal();
             renderTree();
+            applyEditorLayoutSettings();
             updateRightSidebar();
             await persistProject();
 

@@ -389,6 +389,20 @@
             "summary": "",
             "title": "Acte V",
             "type": "chapter"
+        },
+        {
+            "children": [
+                {
+                    "content": "PROLOGUE\n\n[Scène d'ouverture se déroulant généralement avant le début de l'intrigue principale, posant une ambiance dramatique ou un événement fondateur.]",
+                    "id": "scene_b85qc24e3",
+                    "title": "Prologue",
+                    "type": "scene"
+                }
+            ],
+            "id": "chap_0qfeytjeo",
+            "subType": "prologue",
+            "title": "Prologue",
+            "type": "chapter"
         }
     ],
     "plot": {
@@ -469,8 +483,18 @@
         "daily_written": 0,
         "lang": "fr",
         "overall_goal": 10000,
-        "overall_written": 946,
-        "title": "Le Cid - Pierre Corneille"
+        "overall_written": 966,
+        "title": "Le Cid - Pierre Corneille",
+        "editor_layout": {
+            "font_family": "'EB Garamond', serif",
+            "font_size": "14pt",
+            "line_spacing": "1.8",
+            "text_align": "justify"
+        },
+        "locked": false,
+        "ai_temperature": 0.7,
+        "ai_model": "llama3",
+        "inject_lore_context": true
     },
     "story_notes": [
         {
