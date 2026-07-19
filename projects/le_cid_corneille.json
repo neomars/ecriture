@@ -18,6 +18,7 @@
                 "scene_acte5_7"
             ],
             "name": "Chimène",
+            "notes": "",
             "relations": [
                 {
                     "description": "L'aime d'un amour tragique et indomptable",
@@ -35,7 +36,8 @@
                 "Loyale",
                 "Passionnée",
                 "Fervente"
-            ]
+            ],
+            "type": "personnage"
         },
         {
             "aliases": [
@@ -57,6 +59,7 @@
                 "scene_acte5_7"
             ],
             "name": "Don Rodrigue",
+            "notes": "",
             "relations": [
                 {
                     "description": "Prêt à mourir pour satisfaire son honneur",
@@ -74,7 +77,8 @@
                 "Héroïque",
                 "Humble",
                 "Dévoué"
-            ]
+            ],
+            "type": "personnage"
         },
         {
             "aliases": [
@@ -93,13 +97,15 @@
                 "scene_acte5_7"
             ],
             "name": "Don Diègue",
+            "notes": "",
             "relations": [],
             "role": "Père de Rodrigue",
             "traits": [
                 "Fier",
                 "Ancien",
                 "Inflexible"
-            ]
+            ],
+            "type": "personnage"
         },
         {
             "aliases": [
@@ -114,13 +120,15 @@
                 "scene_acte2_2"
             ],
             "name": "Don Gomès",
+            "notes": "",
             "relations": [],
             "role": "Le Comte, père de Chimène",
             "traits": [
                 "Superbe",
                 "Superbe",
                 "Orgueilleux"
-            ]
+            ],
+            "type": "personnage"
         },
         {
             "aliases": [
@@ -137,13 +145,15 @@
                 "scene_acte5_7"
             ],
             "name": "Don Fernand",
+            "notes": "",
             "relations": [],
             "role": "Premier roi de Castille",
             "traits": [
                 "Juste",
                 "Souverain",
                 "Conciliant"
-            ]
+            ],
+            "type": "personnage"
         }
     ],
     "key_events": [],

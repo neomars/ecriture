@@ -655,6 +655,9 @@
         // Auto-save debounce timer
         let autoSaveTimer = null;
 
+        // Drag and drop state for chapters
+        let draggedChapId = null;
+
         // Pomodoro Focus Timer variables
         let timerDurationMinutes = 15;
         let timerSecondsLeft = 15 * 60;
@@ -999,7 +1002,16 @@
 
                     // Create Chapter node element
                     const chapEl = document.createElement('div');
-                    chapEl.className = "group";
+                    chapEl.className = "group transition-all duration-150 border-t-2 border-b-2 border-transparent";
+                    if (!isLocked) {
+                        chapEl.draggable = true;
+                        chapEl.setAttribute('data-chap-id', chap.id);
+                        chapEl.addEventListener('dragstart', handleChapDragStart);
+                        chapEl.addEventListener('dragover', handleChapDragOver);
+                        chapEl.addEventListener('dragleave', handleChapDragLeave);
+                        chapEl.addEventListener('drop', handleChapDrop);
+                        chapEl.addEventListener('dragend', handleChapDragEnd);
+                    }
 
                     const isChapActive = (activeNodeId === chap.id);
                     const chapButtons = isLocked ? "" : `
@@ -1203,6 +1215,87 @@
                 refreshPlotView();
             }
             applyLockState();
+        }
+
+        // DRAG AND DROP HANDLERS FOR CHAPTERS
+        function handleChapDragStart(e) {
+            draggedChapId = this.getAttribute('data-chap-id');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', draggedChapId);
+            this.classList.add('opacity-50');
+        }
+
+        function handleChapDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+
+            const rect = this.getBoundingClientRect();
+            const midpoint = rect.top + rect.height / 2;
+
+            if (e.clientY < midpoint) {
+                this.classList.add('border-t-indigo-500');
+                this.classList.remove('border-t-transparent', 'border-b-indigo-500');
+                this.classList.add('border-b-transparent');
+            } else {
+                this.classList.add('border-b-indigo-500');
+                this.classList.remove('border-b-transparent', 'border-t-indigo-500');
+                this.classList.add('border-t-transparent');
+            }
+        }
+
+        function handleChapDragLeave(e) {
+            this.classList.remove('border-t-indigo-500', 'border-b-indigo-500');
+            this.classList.add('border-t-transparent', 'border-b-transparent');
+        }
+
+        function handleChapDragEnd(e) {
+            this.classList.remove('opacity-50', 'border-t-indigo-500', 'border-b-indigo-500');
+            this.classList.add('border-t-transparent', 'border-b-transparent');
+            document.querySelectorAll('#manuscript-nodes-list > .group').forEach(el => {
+                el.classList.remove('border-t-indigo-500', 'border-b-indigo-500');
+                el.classList.add('border-t-transparent', 'border-b-transparent');
+            });
+        }
+
+        function handleChapDrop(e) {
+            e.preventDefault();
+            this.classList.remove('border-t-indigo-500', 'border-b-indigo-500');
+            this.classList.add('border-t-transparent', 'border-b-transparent');
+
+            const targetChapId = this.getAttribute('data-chap-id');
+            if (!draggedChapId || draggedChapId === targetChapId) return;
+
+            // Reorder in projectData.manuscript
+            const manuscript = projectData.manuscript;
+            const draggedIdx = manuscript.findIndex(c => c.id === draggedChapId);
+            const targetIdx = manuscript.findIndex(c => c.id === targetChapId);
+
+            if (draggedIdx === -1 || targetIdx === -1) return;
+
+            const rect = this.getBoundingClientRect();
+            const midpoint = rect.top + rect.height / 2;
+
+            // Determine insertion index
+            let newIdx = targetIdx;
+            if (e.clientY >= midpoint) {
+                newIdx = targetIdx + 1;
+            }
+
+            // Remove from old position
+            const [draggedChap] = manuscript.splice(draggedIdx, 1);
+
+            // Adjust target index if old index was before target index
+            let insertIdx = newIdx;
+            if (draggedIdx < newIdx) {
+                insertIdx = newIdx - 1;
+            }
+
+            // Insert at new position
+            manuscript.splice(insertIdx, 0, draggedChap);
+
+            // Save and re-render
+            triggerAutoSave();
+            renderTree();
         }
 
         // SELECT HANDLERS
