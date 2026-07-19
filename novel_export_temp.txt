@@ -4,15 +4,7 @@
 --- Acte I ---
 
 [Scène 1 : Chimène, Elvire]
-CHIMÈNE.
-Elvire, m'as-tu fait un rapport bien sincère ?
-Ne déguises-tu rien de ce qu'a dit mon père ?
-
-ELVIRE.
-Tous mes sens moi-même en sont encor charmés,
-Il estime Rodrigue autant que vous l'aimez,
-Et si je ne m'abuse à lire dans son âme,
-Il vous commandera de répondre à sa flamme.
+Elle aimait regarder le coucher de soleil.
 
 [Scène 2 : L'Infante, Léonor, Le Page]
 L'INFANTE.
@@ -254,3 +246,11 @@ Et Don Sanche vaincu t'a fait un faux rapport.
 DON FERNAND.
 Pour vaincre un point d'honneur qui combat contre toi,
 Laisse faire le temps, ta vaillance et ton roi.
+
+
+--- Prologue ---
+
+[Prologue]
+PROLOGUE
+
+[Scène d'ouverture se déroulant généralement avant le début de l'intrigue principale, posant une ambiance dramatique ou un événement fondateur.]

@@ -9,6 +9,7 @@ SYNONYMS_DATA = {
         "faire": ["accomplir", "réaliser", "concevoir", "créer", "fabriquer", "façonner", "exécuter", "produire", "bâtir", "élaborer"],
         "aller": ["se rendre", "se diriger", "marcher", "s'acheminer", "courir", "s'élancer", "filer", "se propulser"],
         "regarder": ["observer", "contempler", "dévisager", "fixer", "scruter", "mirer", "toiser", "examiner", "épier", "guetter"],
+        "contempler": ["regarder", "observer", "dévisager", "fixer", "scruter", "mirer", "toiser", "examiner", "épier", "guetter"],
         "voir": ["apercevoir", "distinguer", "discerner", "remarquer", "constater", "observer", "repérer", "entrevoir"],
         "prendre": ["saisir", "empoigner", "capturer", "dérober", "s'emparer de", "acquérir", "confisquer", "attraper"],
         "donner": ["offrir", "accorder", "octroyer", "conférer", "remettre", "léguer", "distribuer", "procurer", "céder"],
@@ -131,14 +132,29 @@ def get_synonyms(word, lang="fr"):
     """Lookup and return synonyms list for a word, or empty list if none found."""
     lang_key = "fr" if lang == "fr" else "en"
 
-    # 1. Direct match
     w_clean = word.lower().strip(".,!?;:\"'()[]{}«»")
-    if w_clean in SYNONYMS_DATA[lang_key]:
-        return SYNONYMS_DATA[lang_key][w_clean]
-
-    # 2. Normalized match
     norm = normalize_word(word, lang_key)
-    if norm in SYNONYMS_DATA[lang_key]:
-        return SYNONYMS_DATA[lang_key][norm]
 
-    return []
+    results = []
+
+    # 1. Direct or normalized match in keys
+    if w_clean in SYNONYMS_DATA[lang_key]:
+        results.extend(SYNONYMS_DATA[lang_key][w_clean])
+    elif norm in SYNONYMS_DATA[lang_key]:
+        results.extend(SYNONYMS_DATA[lang_key][norm])
+
+    # 2. Bidirectional match (check if word is a value in any list of synonyms)
+    for key, values in SYNONYMS_DATA[lang_key].items():
+        # Match either exact or normalized representation in lists of synonyms
+        normalized_values = [v.lower().strip(".,!?;:\"'()[]{}«»") for v in values]
+        if w_clean in normalized_values or norm in normalized_values:
+            # Add the key itself if it is not the searched word
+            if key not in results and key != w_clean and key != norm:
+                results.append(key)
+            # Add other synonyms from this list
+            for val in values:
+                val_clean = val.lower().strip(".,!?;:\"'()[]{}«»")
+                if val not in results and val_clean != w_clean and val_clean != norm:
+                    results.append(val)
+
+    return results
