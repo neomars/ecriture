@@ -205,6 +205,18 @@
 
             <!-- Contextual AI Selection Menu -->
             <div id="ai-selection-menu" class="hidden absolute bg-slate-900 text-white rounded-lg shadow-xl px-3 py-1.5 flex items-center space-x-2 text-xs font-semibold z-50 transition-all duration-150">
+                <!-- Synonyms Dropdown Trigger -->
+                <div class="relative border-r border-slate-700 pr-2" id="synonyms-dropdown-wrapper">
+                    <button onclick="toggleSynonymsDropdown(event)" class="hover:text-indigo-300 flex items-center space-x-1 transition-colors">
+                        <span>📖</span>
+                        <span data-i18n="synonyms_btn">Synonymes</span>
+                        <span>▾</span>
+                    </button>
+                    <!-- Synonyms list dropdown (rendered dynamically on click) -->
+                    <div id="synonyms-dropdown-menu" class="absolute hidden left-0 top-full mt-1.5 w-48 bg-slate-800 text-slate-100 rounded shadow-lg py-2 border border-slate-700 z-50 max-h-48 overflow-y-auto px-2 space-y-1">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
                 <!-- Describe Button -->
                 <button onclick="triggerContextAI('describe')" class="hover:text-indigo-300 flex items-center space-x-1 border-r border-slate-700 pr-2 transition-colors">
                     <span>🔍</span>
@@ -755,11 +767,17 @@
                     rewriteMenu.classList.add('hidden');
                 }
 
+                const synonymsMenu = document.getElementById('synonyms-dropdown-menu');
+                if (synonymsMenu && !e.target.closest('#synonyms-dropdown-wrapper')) {
+                    synonymsMenu.classList.add('hidden');
+                }
+
                 // Hide selection menu if clicked outside selection and selection menu
                 const selectionMenu = document.getElementById('ai-selection-menu');
                 if (selectionMenu && !e.target.closest('#ai-selection-menu') && !e.target.closest('#editor-content')) {
                     selectionMenu.classList.add('hidden');
                     if (rewriteMenu) rewriteMenu.classList.add('hidden');
+                    if (synonymsMenu) synonymsMenu.classList.add('hidden');
                 }
             });
 
@@ -2305,6 +2323,10 @@
                         return;
                     }
                     menu.classList.add('hidden');
+                    const rewriteMenu = document.getElementById('ai-rewrite-dropdown-menu');
+                    if (rewriteMenu) rewriteMenu.classList.add('hidden');
+                    const synonymsMenu = document.getElementById('synonyms-dropdown-menu');
+                    if (synonymsMenu) synonymsMenu.classList.add('hidden');
                 }, 150);
             }
         }
@@ -2319,6 +2341,93 @@
             if (menu) {
                 menu.classList.toggle('hidden');
             }
+        }
+
+        function toggleSynonymsDropdown(event) {
+            event.stopPropagation();
+            const menu = document.getElementById('synonyms-dropdown-menu');
+            if (!menu) return;
+
+            const isHidden = menu.classList.contains('hidden');
+
+            // Hide rewrite dropdown if open
+            const rewriteMenu = document.getElementById('ai-rewrite-dropdown-menu');
+            if (rewriteMenu) rewriteMenu.classList.add('hidden');
+
+            if (isHidden) {
+                menu.classList.remove('hidden');
+                loadSynonymsForSelection();
+            } else {
+                menu.classList.add('hidden');
+            }
+        }
+
+        async function loadSynonymsForSelection() {
+            const menu = document.getElementById('synonyms-dropdown-menu');
+            if (!menu) return;
+
+            const selectedText = activeSelection.text.trim();
+            if (!selectedText) {
+                menu.innerHTML = `<div class="text-[10px] text-slate-400 p-2 italic">${activeLang === 'fr' ? 'Sélectionner un mot' : 'Select a word'}</div>`;
+                return;
+            }
+
+            menu.innerHTML = `<div class="text-[10px] text-slate-400 p-2 italic">${activeLang === 'fr' ? 'Recherche...' : 'Searching...'}</div>`;
+
+            try {
+                const res = await fetch('/api/synonyms', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ word: selectedText, lang: activeLang })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    const synonyms = data.synonyms || [];
+
+                    if (synonyms.length === 0) {
+                        menu.innerHTML = `<div class="text-[10px] text-slate-400 p-2 italic">${activeLang === 'fr' ? 'Aucun synonyme' : 'No synonyms found'}</div>`;
+                    } else {
+                        menu.innerHTML = synonyms.map(syn => `
+                            <button onclick="applySynonymReplacement('${escapeHtml(syn)}')" class="w-full text-left px-2.5 py-1.5 hover:bg-slate-700 text-xs font-semibold rounded-md transition-colors block truncate">
+                                ${escapeHtml(syn)}
+                            </button>
+                        `).join('');
+                    }
+                } else {
+                    menu.innerHTML = `<div class="text-[10px] text-red-400 p-2 italic">${activeLang === 'fr' ? 'Erreur de chargement' : 'Loading error'}</div>`;
+                }
+            } catch (err) {
+                console.error("Synonyms load error:", err);
+                menu.innerHTML = `<div class="text-[10px] text-red-400 p-2 italic">${activeLang === 'fr' ? 'Erreur connexion' : 'Network error'}</div>`;
+            }
+        }
+
+        function applySynonymReplacement(synonym) {
+            const editor = document.getElementById('editor-content');
+            if (!editor) return;
+
+            const val = editor.value;
+            const start = activeSelection.start;
+            const end = activeSelection.end;
+
+            // Perform replacement
+            editor.value = val.substring(0, start) + synonym + val.substring(end);
+
+            // Reposition cursor
+            const newCursorPos = start + synonym.length;
+            editor.setSelectionRange(newCursorPos, newCursorPos);
+            editor.focus();
+
+            // Trigger updates and persistence
+            onEditorInput('content', editor.value);
+
+            // Close dropdown and menu
+            const selectionMenu = document.getElementById('ai-selection-menu');
+            if (selectionMenu) selectionMenu.classList.add('hidden');
+
+            const synonymsMenu = document.getElementById('synonyms-dropdown-menu');
+            if (synonymsMenu) synonymsMenu.classList.add('hidden');
         }
 
         async function triggerContextAI(tool, style = "") {

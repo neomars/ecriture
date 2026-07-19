@@ -1,4 +1,22 @@
 {
+    "settings": {
+        "ai_model": "llama3",
+        "ai_temperature": 0.7,
+        "daily_goal": 500,
+        "daily_written": 0,
+        "editor_layout": {
+            "font_family": "'EB Garamond', serif",
+            "font_size": "14pt",
+            "line_spacing": "1.8",
+            "text_align": "justify"
+        },
+        "inject_lore_context": true,
+        "lang": "fr",
+        "locked": false,
+        "overall_goal": 10000,
+        "overall_written": 920,
+        "title": "Le Cid - Pierre Corneille"
+    },
     "characters": [
         {
             "aliases": [
@@ -161,7 +179,7 @@
         {
             "children": [
                 {
-                    "content": "CHIMÈNE.\nElvire, m'as-tu fait un rapport bien sincère ?\nNe déguises-tu rien de ce qu'a dit mon père ?\n\nELVIRE.\nTous mes sens moi-même en sont encor charmés,\nIl estime Rodrigue autant que vous l'aimez,\nEt si je ne m'abuse à lire dans son âme,\nIl vous commandera de répondre à sa flamme.",
+                    "content": "Elle aimait contempler le coucher de soleil.",
                     "id": "scene_acte1_1",
                     "title": "Scène 1 : Chimène, Elvire",
                     "type": "scene"
@@ -401,6 +419,7 @@
             ],
             "id": "chap_0qfeytjeo",
             "subType": "prologue",
+            "summary": "",
             "title": "Prologue",
             "type": "chapter"
         }
@@ -477,24 +496,6 @@
                 "title": "Guerre & Gloire"
             }
         ]
-    },
-    "settings": {
-        "daily_goal": 500,
-        "daily_written": 0,
-        "lang": "fr",
-        "overall_goal": 10000,
-        "overall_written": 966,
-        "title": "Le Cid - Pierre Corneille",
-        "editor_layout": {
-            "font_family": "'EB Garamond', serif",
-            "font_size": "14pt",
-            "line_spacing": "1.8",
-            "text_align": "justify"
-        },
-        "locked": false,
-        "ai_temperature": 0.7,
-        "ai_model": "llama3",
-        "inject_lore_context": true
     },
     "story_notes": [
         {

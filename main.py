@@ -2,6 +2,7 @@ import os
 import json
 from flask import Flask, jsonify, request, send_file, render_template
 from project_manager import NovelProject
+from synonyms_db import get_synonyms
 
 app = Flask(__name__, template_folder='templates')
 
@@ -333,6 +334,19 @@ def get_locale(lang):
         return jsonify(translations)
     except Exception as e:
         return jsonify({"error": f"Failed to load translations: {str(e)}"}), 500
+
+@app.route('/api/synonyms', methods=['POST'])
+def api_synonyms():
+    """Returns a list of curated synonyms for a given word and language."""
+    payload = request.get_json(silent=True) or {}
+    word = payload.get("word", "").strip()
+    lang = payload.get("lang", "fr").strip()
+
+    if not word:
+        return jsonify({"synonyms": []})
+
+    syns = get_synonyms(word, lang)
+    return jsonify({"synonyms": syns})
 
 @app.route('/api/export', methods=['POST'])
 def export_draft():

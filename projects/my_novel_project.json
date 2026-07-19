@@ -1,4 +1,16 @@
 {
+    "settings": {
+        "ai_model": "gemma2",
+        "ai_temperature": 0.9,
+        "daily_goal": 500,
+        "daily_written": 0,
+        "inject_lore_context": true,
+        "lang": "fr",
+        "locked": false,
+        "overall_goal": 50000,
+        "overall_written": 146,
+        "title": "Pride & Prejudice (Copy)"
+    },
     "characters": [
         {
             "aliases": [],
@@ -130,18 +142,6 @@
                 "title": "Class"
             }
         ]
-    },
-    "settings": {
-        "ai_model": "gemma2",
-        "ai_temperature": 0.9,
-        "daily_goal": 500,
-        "daily_written": 0,
-        "inject_lore_context": true,
-        "lang": "fr",
-        "locked": false,
-        "overall_goal": 50000,
-        "overall_written": 146,
-        "title": "Pride & Prejudice (Copy)"
     },
     "story_notes": [
         {

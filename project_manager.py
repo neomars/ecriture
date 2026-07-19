@@ -128,6 +128,16 @@ class NovelProject:
         try:
             # Recalculate word counts
             self.recalculate_word_counts()
+
+            # Reorder keys so "settings" is at the very top of the JSON file
+            ordered_data = {}
+            if "settings" in self.data:
+                ordered_data["settings"] = self.data["settings"]
+            for k, v in self.data.items():
+                if k != "settings":
+                    ordered_data[k] = v
+            self.data = ordered_data
+
             with open(self.filepath, 'w', encoding='utf-8') as f:
                 json.dump(self.data, f, ensure_ascii=False, indent=4)
         except Exception as e:
