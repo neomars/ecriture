@@ -110,5 +110,9 @@
   "placeholder_relation_type": "e.g. Rival, Lover, Spouse...",
   "placeholder_relation_desc": "e.g. Secretly in love...",
   "ai_inject_context": "Inject Lore Context",
-  "ai_inject_context_info": "Automatically provides characters and notes associated with the current scene to the AI."
+  "ai_inject_context_info": "Automatically provides characters and notes associated with the current scene to the AI.",
+  "add_chapter_title": "Add a chapter or structure page",
+  "cat_liminaires": "1. Front matter (before start)",
+  "cat_corps": "2. Novel body",
+  "cat_finales": "3. Back matter (after end)"
 }

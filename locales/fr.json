@@ -110,5 +110,9 @@
   "placeholder_relation_type": "e.g. Rival, Amant, Époux...",
   "placeholder_relation_desc": "e.g. S'aiment en secret...",
   "ai_inject_context": "Injecter le contexte du Lore",
-  "ai_inject_context_info": "Fournit automatiquement à l'IA les personnages et notes associés à la scène en cours."
+  "ai_inject_context_info": "Fournit automatiquement à l'IA les personnages et notes associés à la scène en cours.",
+  "add_chapter_title": "Ajouter un chapitre ou une page de structure",
+  "cat_liminaires": "1. Pages liminaires (avant le début)",
+  "cat_corps": "2. Corps du roman",
+  "cat_finales": "3. Pages finales (après la fin)"
 }

@@ -531,6 +531,32 @@
         </div>
     </div>
 
+    <!-- MODAL: ADD CHAPTER TYPE SELECTOR -->
+    <div id="chapter-type-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50">
+        <div class="bg-white w-[640px] max-w-2xl rounded-xl shadow-xl p-6 border border-slate-200 flex flex-col max-h-[85vh]">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                <h3 class="text-lg font-bold text-slate-800" data-i18n="add_chapter_title">Ajouter un nouveau chapitre</h3>
+                <button onclick="closeChapterTypeModal()" class="text-slate-400 hover:text-slate-600">✕</button>
+            </div>
+
+            <!-- Category Tabs -->
+            <div class="flex space-x-1 bg-slate-100 p-1 rounded-lg mb-4 text-xs shrink-0">
+                <button id="tab-category-liminaires" onclick="selectChapterCategory('liminaires')" class="flex-1 py-1.5 rounded-md font-semibold transition-all bg-white text-slate-800 shadow-xs" data-i18n="cat_liminaires">1. Pages liminaires</button>
+                <button id="tab-category-corps" onclick="selectChapterCategory('corps')" class="flex-1 py-1.5 rounded-md font-semibold transition-all text-slate-500 hover:text-slate-800" data-i18n="cat_corps">2. Corps du roman</button>
+                <button id="tab-category-finales" onclick="selectChapterCategory('finales')" class="flex-1 py-1.5 rounded-md font-semibold transition-all text-slate-500 hover:text-slate-800" data-i18n="cat_finales">3. Pages finales</button>
+            </div>
+
+            <!-- Cards Scrollable Area -->
+            <div id="chapter-cards-grid" class="grid grid-cols-2 gap-3 overflow-y-auto pr-1 flex-1 py-1" style="max-height: 400px;">
+                <!-- Dynamically populated via JS -->
+            </div>
+
+            <div class="flex justify-end pt-4 border-t border-slate-100 mt-4 shrink-0">
+                <button onclick="closeChapterTypeModal()" class="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-700 transition-colors" data-i18n="cancel">Annuler</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL: ABOUT -->
     <div id="about-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50">
         <div class="bg-white w-96 rounded-xl shadow-xl p-6 border border-slate-200 text-center">
@@ -1739,20 +1765,332 @@
             return `${prefix}_${Math.random().toString(36).substr(2, 9)}`;
         }
 
-        function addNewChapter() {
-            const num = projectData.manuscript.length + 1;
-            const newTitle = `${translations["new_chapter_title"] || "New Chapter"} ${num}`;
+        // DATASET FOR SPECIAL CHAPTER TYPES
+        const CHAPTER_TYPES = {
+            "page_titre": {
+                emoji: "📝",
+                category: "liminaires",
+                title_fr: "Page de titre",
+                title_en: "Title Page",
+                desc_fr: "Titre + sous-titre + auteur",
+                desc_en: "Title + subtitle + author",
+                default_title_fr: "Page de Titre",
+                default_title_en: "Title Page",
+                template_fr: "[TITRE DU ROMAN]\n[SOUS-TITRE (OPTIONNEL)]\n\n\nÉcrit par [NOM DE L'AUTEUR]",
+                template_en: "[NOVEL TITLE]\n[SUBTITLE (OPTIONAL)]\n\n\nWritten by [AUTHOR NAME]"
+            },
+            "copyright": {
+                emoji: "⚖️",
+                category: "liminaires",
+                title_fr: "Page de copyright / mentions légales",
+                title_en: "Copyright Page / Legal notes",
+                desc_fr: "Droits d'auteur, ISBN, année, maison d'édition",
+                desc_en: "Copyright, ISBN, year, publisher",
+                default_title_fr: "Copyright",
+                default_title_en: "Copyright",
+                template_fr: "© [ANNÉE] [NOM DE L'AUTEUR]. Tous droits réservés.\n\nISBN : [ISBN-13]\nMaison d'édition : [NOM DE LA MAISON D'ÉDITION]\n\nAucune partie de ce livre ne peut être reproduite ou transmise sous quelque forme ou par quelque moyen que ce soit, électronique ou mécanique, y compris la photocopie, l'enregistrement ou par tout système de stockage et de récupération d'informations, sans l'autorisation écrite de l'auteur.",
+                template_en: "© [YEAR] [AUTHOR NAME]. All rights reserved.\n\nISBN: [ISBN-13]\nPublisher: [PUBLISHER NAME]\n\nNo part of this book may be reproduced or transmitted in any form or by any means, electronic or mechanical, including photocopying, recording, or by any information storage and retrieval system, without written permission from the author."
+            },
+            "dedicace": {
+                emoji: "💝",
+                category: "liminaires",
+                title_fr: "Dédicace",
+                title_en: "Dedication",
+                desc_fr: "Citation ou hommage personnel en ouverture",
+                desc_en: "Opening quote or personal tribute",
+                default_title_fr: "Dédicace",
+                default_title_en: "Dedication",
+                template_fr: "À [Nom de la personne],\n\n[Votre dédicace personnelle ici, par exemple : pour m'avoir toujours soutenu et inspiré tout au long de cette aventure.]",
+                template_en: "To [Person's Name],\n\n[Your personal dedication here, e.g.: for always supporting and inspiring me throughout this journey.]"
+            },
+            "epigraphe": {
+                emoji: "💬",
+                category: "liminaires",
+                title_fr: "Épigraphe",
+                title_en: "Epigraph",
+                desc_fr: "Citation en ouverture du livre",
+                desc_en: "Citation in opening of the book",
+                default_title_fr: "Épigraphe",
+                default_title_en: "Epigraph",
+                template_fr: "\"Le secret de commencer est de s'y mettre.\"\n— Mark Twain",
+                template_en: "\"The secret of getting ahead is getting started.\"\n— Mark Twain"
+            },
+            "preface": {
+                emoji: "✍️",
+                category: "liminaires",
+                title_fr: "Préface / Avant-propos",
+                title_en: "Preface / Foreword",
+                desc_fr: "Texte de présentation rédigé par l'auteur",
+                desc_en: "Presentation text written by the author",
+                default_title_fr: "Préface",
+                default_title_en: "Preface",
+                template_fr: "PRÉFACE\n\n[Écrivez ici votre préface. Expliquez le contexte de l'œuvre, votre inspiration, les motivations qui vous ont poussé à écrire ce livre, ou tout message préalable à l'intention de vos lecteurs.]",
+                template_en: "PREFACE\n\n[Write your preface here. Explain the context of the work, your inspiration, the motivations that drove you to write this book, or any introductory message for your readers.]"
+            },
+            "preambule": {
+                emoji: "🌌",
+                category: "liminaires",
+                title_fr: "Préambule",
+                title_en: "Preamble",
+                desc_fr: "Texte court posant l'univers ou un événement antérieur",
+                desc_en: "Short text setting up the universe or prior event",
+                default_title_fr: "Préambule",
+                default_title_en: "Preamble",
+                template_fr: "PRÉAMBULE\n\n[Le préambule présente brièvement l'univers ou un événement marquant survenu antérieurement au début de l'intrigue principale.]",
+                template_en: "PREAMBLE\n\n[The preamble briefly introduces the universe or a significant event that occurred prior to the start of the main plot.]"
+            },
+            "introduction": {
+                emoji: "📘",
+                category: "liminaires",
+                title_fr: "Introduction",
+                title_en: "Introduction",
+                desc_fr: "Surtout pour la non-fiction ou romans littéraires",
+                desc_en: "Mainly for non-fiction or literary novels",
+                default_title_fr: "Introduction",
+                default_title_en: "Introduction",
+                template_fr: "INTRODUCTION\n\n[Introduction générale posant les thèmes majeurs du roman, particulièrement adapté pour la non-fiction ou les œuvres littéraires complexes.]",
+                template_en: "INTRODUCTION\n\n[General introduction establishing the major themes of the book, particularly suitable for non-fiction or complex literary works.]"
+            },
+            "table_matieres": {
+                emoji: "📊",
+                category: "liminaires",
+                title_fr: "Table des matières",
+                title_en: "Table of Contents",
+                desc_fr: "Générée automatiquement lors de l'export final",
+                desc_en: "Automatically generated during final export",
+                default_title_fr: "Table des Matières",
+                default_title_en: "Table of Contents",
+                template_fr: "TABLE DES MATIÈRES (GÉNÉRÉE AUTOMATIQUEMENT)\n\n[La table des matières sera générée dynamiquement lors de la publication ou de l'export final.]",
+                template_en: "TABLE OF CONTENTS (AUTOMATICALLY GENERATED)\n\n[The table of contents will be generated dynamically during publication or final export.]"
+            },
+            "prologue": {
+                emoji: "🎬",
+                category: "corps",
+                title_fr: "Prologue",
+                title_en: "Prologue",
+                desc_fr: "Scène d'ouverture se passant avant l'histoire principale",
+                desc_en: "Opening scene taking place before the main story",
+                default_title_fr: "Prologue",
+                default_title_en: "Prologue",
+                template_fr: "PROLOGUE\n\n[Scène d'ouverture se déroulant généralement avant le début de l'intrigue principale, posant une ambiance dramatique ou un événement fondateur.]",
+                template_en: "PROLOGUE\n\n[Opening scene usually taking place before the main plot starts, setting a dramatic mood or seminal event.]"
+            },
+            "chapitre_ouverture": {
+                emoji: "🔑",
+                category: "corps",
+                title_fr: "Chapitre d'ouverture / Incipit",
+                title_en: "Opening Chapter / Incipit",
+                desc_fr: "Premier chapitre posant le protagoniste et la situation",
+                desc_en: "First chapter setting up protagonist and initial situation",
+                default_title_fr: "Chapitre d'ouverture",
+                default_title_en: "Opening Chapter",
+                template_fr: "[Entrez ici le texte de votre scène d'ouverture. L'incipit a pour but de capter l'intérêt du lecteur, d'introduire le protagoniste et de poser les bases de la situation initiale.]",
+                template_en: "[Enter your opening scene text here. The incipit aims to capture reader interest, introduce the protagonist, and establish the initial situation.]"
+            },
+            "chapitre_standard": {
+                emoji: "📖",
+                category: "corps",
+                title_fr: "Chapitre",
+                title_en: "Chapter",
+                desc_fr: "Le cœur et le corps principal du roman",
+                desc_en: "The heart and main body of the novel",
+                default_title_fr: "Chapitre",
+                default_title_en: "Chapter",
+                template_fr: "[Entrez ici le texte de votre scène. Développez l'intrigue, les dialogues et les péripéties de vos personnages.]",
+                template_en: "[Enter your scene text here. Develop the plot, dialogue, and adventures of your characters.]"
+            },
+            "epilogue": {
+                emoji: "🏁",
+                category: "finales",
+                title_fr: "Épilogue",
+                title_en: "Epilogue",
+                desc_fr: "Scène finale après la résolution de l'intrigue",
+                desc_en: "Final scene after the resolution of the plot",
+                default_title_fr: "Épilogue",
+                default_title_en: "Epilogue",
+                template_fr: "ÉPILOGUE\n\n[Scène de clôture se déroulant après la résolution de l'intrigue, montrant l'avenir des personnages ou offrant une conclusion finale à l'histoire.]",
+                template_en: "EPILOGUE\n\n[Closing scene taking place after plot resolution, showing the characters' future or offering a final conclusion to the story.]"
+            },
+            "remerciements": {
+                emoji: "🙏",
+                category: "finales",
+                title_fr: "Remerciements",
+                title_en: "Acknowledgments",
+                desc_fr: "Remerciements à votre entourage et relecteurs",
+                desc_en: "Thanks to helpers, family and editors",
+                default_title_fr: "Remerciements",
+                default_title_en: "Acknowledgments",
+                template_fr: "REMERCIEMENTS\n\n[Prenez un moment pour remercier les personnes qui vous ont aidé à concevoir, écrire, corriger et publier ce roman (famille, amis, relecteurs, bêta-lecteurs, éditeurs, etc.).]",
+                template_en: "ACKNOWLEDGMENTS\n\n[Take a moment to thank the people who helped you design, write, edit, and publish this book (family, friends, editors, beta readers, etc.).]"
+            },
+            "biographie_auteur": {
+                emoji: "🧑‍💻",
+                category: "finales",
+                title_fr: "Biographie de l'auteur",
+                title_en: "Author Biography",
+                desc_fr: "Présentation de l'auteur et de ses œuvres",
+                desc_en: "Brief presentation of the author and works",
+                default_title_fr: "Biographie de l'Auteur",
+                default_title_en: "About the Author",
+                template_fr: "À PROPOS DE L'AUTEUR\n\n[Écrivez une brève notice biographique. Présentez votre parcours, vos autres œuvres, vos passions et comment les lecteurs peuvent vous suivre ou vous contacter.]",
+                template_en: "ABOUT THE AUTHOR\n\n[Write a brief biographical note. Present your background, other works, passions, and how readers can follow or contact you.]"
+            },
+            "notes_auteur": {
+                emoji: "📝",
+                category: "finales",
+                title_fr: "Notes de l'auteur",
+                title_en: "Author Notes",
+                desc_fr: "Explications, sources documentaires ou historiques",
+                desc_en: "Explanations, documentary or historical sources",
+                default_title_fr: "Notes de l'Auteur",
+                default_title_en: "Author Notes",
+                template_fr: "NOTES DE L'AUTEUR\n\n[Fournissez ici des explications complémentaires, des sources historiques ou de recherche, ou des détails sur les choix artistiques effectués durant l'écriture.]",
+                template_en: "AUTHOR NOTES\n\n[Provide additional explanations, historical or research sources, or details about artistic choices made during writing.]"
+            },
+            "glossaire": {
+                emoji: "🔤",
+                category: "finales",
+                title_fr: "Glossaire",
+                title_en: "Glossary",
+                desc_fr: "Pour les univers imaginaires, fantasy, SF ou historiques",
+                desc_en: "For fictional, fantasy, sci-fi or historical lore",
+                default_title_fr: "Glossaire",
+                default_title_en: "Glossary",
+                template_fr: "GLOSSAIRE\n\nTerme 1 : Définition ou explication du terme dans votre univers.\nTerme 2 : Définition ou explication...",
+                template_en: "GLOSSARY\n\nTerm 1: Definition or explanation of the term in your universe.\nTerm 2: Definition or explanation..."
+            },
+            "annexes": {
+                emoji: "🗺️",
+                category: "finales",
+                title_fr: "Annexes",
+                title_en: "Appendices",
+                desc_fr: "Cartes, arbres généalogiques, chronologie",
+                desc_en: "Maps, family trees, detailed chronologies",
+                default_title_fr: "Annexes",
+                default_title_en: "Appendices",
+                template_fr: "ANNEXES\n\n[Ajoutez ici des éléments complémentaires pour enrichir votre œuvre : chronologies détaillées, arbres généalogiques décrits, listes de dynasties ou descriptions de documents fictifs.]",
+                template_en: "APPENDICES\n\n[Add supplementary elements to enrich your work here: detailed timelines, family trees, list of dynasties, or fictional document descriptions.]"
+            },
+            "index": {
+                emoji: "🔍",
+                category: "finales",
+                title_fr: "Index",
+                title_en: "Index",
+                desc_fr: "Index alphabétique (rare en pure fiction)",
+                desc_en: "Alphabetical index of terms (rare in pure fiction)",
+                default_title_fr: "Index",
+                default_title_en: "Index",
+                template_fr: "INDEX\n\n[Index alphabétique des notions clés ou des personnages importants.]",
+                template_en: "INDEX\n\n[Alphabetical index of key terms or important characters.]"
+            },
+            "teaser": {
+                emoji: "🔥",
+                category: "finales",
+                title_fr: "Teaser / Extrait du prochain tome",
+                title_en: "Teaser / Next Volume Extract",
+                desc_fr: "Extrait exclusif pour fidéliser vos lecteurs",
+                desc_en: "Exclusive extract to hook your readers",
+                default_title_fr: "Teaser - Prochain Tome",
+                default_title_en: "Teaser - Next Book",
+                template_fr: "EXTRAIT EXCLUSIF DU TOME SUIVANT\n\n[Insérez ici les premières lignes ou un chapitre d'accroche de votre prochain roman pour donner envie aux lecteurs de lire la suite de votre série.]",
+                template_en: "EXCLUSIVE EXTRACT FROM NEXT VOLUME\n\n[Insert the first lines or hook chapter of your next novel here to entice readers to follow your series.]"
+            }
+        };
+
+        let activeChapterCategory = "liminaires";
+
+        function openChapterTypeModal() {
+            document.getElementById('chapter-type-modal').classList.remove('hidden');
+            selectChapterCategory('liminaires');
+        }
+
+        function closeChapterTypeModal() {
+            document.getElementById('chapter-type-modal').classList.add('hidden');
+        }
+
+        function selectChapterCategory(category) {
+            activeChapterCategory = category;
+
+            // Highlight active tab
+            const categories = ['liminaires', 'corps', 'finales'];
+            categories.forEach(cat => {
+                const tab = document.getElementById(`tab-category-${cat}`);
+                if (cat === category) {
+                    tab.className = "flex-1 py-1.5 rounded-md font-semibold transition-all bg-white text-slate-800 shadow-xs";
+                } else {
+                    tab.className = "flex-1 py-1.5 rounded-md font-semibold transition-all text-slate-500 hover:text-slate-800";
+                }
+            });
+
+            // Render the grid of cards
+            const grid = document.getElementById('chapter-cards-grid');
+            grid.innerHTML = "";
+
+            Object.keys(CHAPTER_TYPES).forEach(key => {
+                const item = CHAPTER_TYPES[key];
+                if (item.category !== category) return;
+
+                const title = activeLang === 'fr' ? item.title_fr : item.title_en;
+                const desc = activeLang === 'fr' ? item.desc_fr : item.desc_en;
+
+                const card = document.createElement('div');
+                card.className = "flex items-start space-x-3 p-3 bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 rounded-lg cursor-pointer transition-all";
+                card.onclick = () => createSpecialChapter(key);
+
+                card.innerHTML = `
+                    <span class="text-2xl shrink-0">${item.emoji}</span>
+                    <div class="min-w-0">
+                        <h4 class="text-xs font-bold text-slate-800">${title}</h4>
+                        <p class="text-[10px] text-slate-500 mt-0.5 leading-tight">${desc}</p>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function createSpecialChapter(subType) {
+            const item = CHAPTER_TYPES[subType];
+            if (!item) return;
+
+            const isFr = (activeLang === 'fr');
+
+            // Generate customized Title
+            let defaultTitle = isFr ? item.default_title_fr : item.default_title_en;
+            if (subType === "chapitre_standard" || subType === "chapitre_ouverture" || subType === "chapter") {
+                const count = projectData.manuscript.filter(c => c.subType === "chapitre_standard" || c.subType === "chapitre_ouverture" || c.subType === "chapter").length + 1;
+                defaultTitle = `${defaultTitle} ${count}`;
+            }
+
             const newChap = {
                 id: generateId("chap"),
                 type: "chapter",
-                title: newTitle,
+                subType: subType,
+                title: defaultTitle,
                 children: []
             };
+
+            // Create initial scene containing formatted content template
+            const defaultSceneTitle = isFr ? item.default_title_fr : item.default_title_en;
+            const contentTemplate = isFr ? item.template_fr : item.template_en;
+
+            const newScene = {
+                id: generateId("scene"),
+                type: "scene",
+                title: defaultSceneTitle,
+                content: contentTemplate
+            };
+
+            newChap.children.push(newScene);
             projectData.manuscript.push(newChap);
 
             renderTree();
-            selectChapter(newChap.id);
+            selectScene(newScene.id);
             persistProject();
+            closeChapterTypeModal();
+        }
+
+        function addNewChapter() {
+            openChapterTypeModal();
         }
 
         function addNewScene() {
