@@ -75,6 +75,12 @@
                 </select>
             </div>
 
+            <!-- Relecture Button -->
+            <button onclick="openRelectureModal()" class="bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg text-sm font-semibold shadow-sm transition-all flex items-center space-x-1.5">
+                <span>🔎</span>
+                <span data-i18n="relecture_btn">Relecture</span>
+            </button>
+
             <!-- Export with Format Dropdown -->
             <div class="relative inline-block text-left" id="export-dropdown-wrapper">
                 <button onclick="toggleExportDropdown(event)" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm font-semibold shadow-sm transition-all flex items-center space-x-1">
@@ -213,7 +219,7 @@
                         <span>▾</span>
                     </button>
                     <!-- Synonyms list dropdown (rendered dynamically on click) -->
-                    <div id="synonyms-dropdown-menu" class="absolute hidden left-0 top-full mt-1.5 w-64 bg-slate-800 text-slate-100 rounded-lg shadow-2xl py-2.5 border border-slate-700 z-50 max-h-72 overflow-y-auto px-2.5 space-y-1">
+                    <div id="synonyms-dropdown-menu" class="absolute hidden left-0 top-full mt-1.5 w-48 bg-slate-800 text-slate-100 rounded shadow-lg py-2 border border-slate-700 z-50 max-h-48 overflow-y-auto px-2 space-y-1">
                         <!-- Loaded dynamically -->
                     </div>
                 </div>
@@ -623,6 +629,86 @@
             <h3 class="text-lg font-bold text-slate-800 mb-2" data-i18n="about">À propos</h3>
             <div class="text-sm text-slate-500 mb-6" data-i18n="about_text">Écriture v1.0 - Un environnement d'écriture et de planification moderne et sans distraction.</div>
             <button onclick="closeAboutModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-semibold shadow-sm transition-all w-full" data-i18n="cancel">Fermer</button>
+        </div>
+    </div>
+
+    <!-- MODAL: RELECTURE (PROOFREADING WORKSPACE) -->
+    <div id="relecture-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="bg-white w-[900px] max-w-full rounded-2xl shadow-2xl border border-slate-200 flex flex-col h-[85vh] max-h-[800px] overflow-hidden">
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <div class="flex items-center space-x-2">
+                    <span class="text-xl">🔎</span>
+                    <div>
+                        <h3 class="text-base font-bold text-slate-800">Atelier de Relecture & Correction</h3>
+                        <p class="text-[11px] text-slate-400" id="relecture-active-scene-title">Scène : ...</p>
+                    </div>
+                </div>
+                <button onclick="closeRelectureModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <!-- Modal Body (Two-columns) -->
+            <div class="flex flex-1 overflow-hidden">
+                <!-- Left Sidebar Navigation -->
+                <div class="w-60 bg-slate-50 border-r border-slate-100 p-4 flex flex-col space-y-1.5 overflow-y-auto">
+                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 mb-1">Catégories d'analyse</div>
+
+                    <button id="relecture-tab-rep" onclick="switchRelectureTab('rep')" class="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold flex items-center space-x-2 transition-all bg-indigo-50 text-indigo-700">
+                        <span>🔄</span>
+                        <span class="truncate">Répétitions & Mots faibles</span>
+                    </button>
+
+                    <button id="relecture-tab-rythme" onclick="switchRelectureTab('rythme')" class="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold flex items-center space-x-2 transition-all text-slate-600 hover:bg-slate-100">
+                        <span>⚡</span>
+                        <span class="truncate">Rythme & Structure</span>
+                    </button>
+
+                    <button id="relecture-tab-style" onclick="switchRelectureTab('style')" class="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold flex items-center space-x-2 transition-all text-slate-600 hover:bg-slate-100">
+                        <span>📝</span>
+                        <span class="truncate">Style & Prose (IA)</span>
+                    </button>
+
+                    <button id="relecture-tab-coherence" onclick="switchRelectureTab('coherence')" class="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold flex items-center space-x-2 transition-all text-slate-600 hover:bg-slate-100">
+                        <span>👥</span>
+                        <span class="truncate">Cohérence (IA)</span>
+                    </button>
+
+                    <button id="relecture-tab-typo" onclick="switchRelectureTab('typo')" class="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold flex items-center space-x-2 transition-all text-slate-600 hover:bg-slate-100">
+                        <span>✍️</span>
+                        <span class="truncate">Typographie & Règles</span>
+                    </button>
+                </div>
+
+                <!-- Right Content Area -->
+                <div class="flex-1 p-6 flex flex-col overflow-hidden bg-white">
+                    <!-- Statistics Bar -->
+                    <div class="grid grid-cols-4 gap-3 mb-6 bg-slate-50 border border-slate-100 rounded-xl p-3 text-center">
+                        <div>
+                            <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Mots</div>
+                            <div id="relecture-stat-words" class="text-sm font-extrabold text-slate-700">0</div>
+                        </div>
+                        <div>
+                            <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Richesse lexicale</div>
+                            <div id="relecture-stat-vocab" class="text-sm font-extrabold text-slate-700">0%</div>
+                        </div>
+                        <div>
+                            <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Paragraphes</div>
+                            <div id="relecture-stat-paragraphs" class="text-sm font-extrabold text-slate-700">0</div>
+                        </div>
+                        <div>
+                            <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Ratio Dialogue</div>
+                            <div id="relecture-stat-dialogue" class="text-sm font-extrabold text-slate-700">0%</div>
+                        </div>
+                    </div>
+
+                    <!-- Scrollable Results -->
+                    <div id="relecture-results-container" class="flex-1 overflow-y-auto pr-1 space-y-3 text-sm text-slate-600">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -2384,62 +2470,16 @@
                 if (res.ok) {
                     const data = await res.json();
                     const synonyms = data.synonyms || [];
-                    const details = data.details || [];
 
-                    let htmlContent = '';
-
-                    // Render lexique details if present
-                    if (details.length > 0) {
-                        const cgramMap = {
-                            'VER': 'Verbe',
-                            'NOM': 'Nom',
-                            'ADJ': 'Adjectif',
-                            'ADV': 'Adverbe',
-                            'PRE': 'Préposition',
-                            'ART': 'Article',
-                            'CON': 'Conjonction',
-                            'PRO': 'Pronom',
-                            'ONO': 'Onomatopée',
-                            'AUX': 'Auxiliaire'
-                        };
-
-                        htmlContent += details.map(det => {
-                            const prettyCgram = cgramMap[det.cgram] || det.cgram;
-                            const genderStr = det.genre ? (det.genre === 'm' ? 'masc.' : 'fém.') : '';
-                            const numberStr = det.nombre ? (det.nombre === 's' ? 'sing.' : 'plur.') : '';
-                            const agreement = [genderStr, numberStr].filter(Boolean).join(' ');
-
-                            return `
-                                <div class="bg-slate-900/80 rounded-md p-2 text-[10px] text-slate-300 space-y-1 border border-indigo-950 mb-2">
-                                    <div class="flex justify-between items-center font-bold text-indigo-300">
-                                        <span class="truncate">${escapeHtml(det.lemme)}</span>
-                                        <span class="text-[8px] bg-indigo-900/80 text-indigo-200 px-1 py-0.5 rounded uppercase font-mono">${escapeHtml(prettyCgram)}</span>
-                                    </div>
-                                    ${agreement ? `<div class="text-[9px] text-slate-400">${escapeHtml(agreement)}</div>` : ''}
-                                    ${det.phon ? `<div class="text-[9px] text-slate-400">Phonétique : <span class="font-mono text-indigo-200">/${escapeHtml(det.phon)}/</span></div>` : ''}
-                                    ${det.infover ? `<div class="text-[9px] text-slate-400">Forme : <span class="text-slate-300 font-mono">${escapeHtml(det.infover)}</span></div>` : ''}
-                                    ${det.freqlivres > 0 ? `<div class="text-[9px] text-slate-400">Fréquence : <span class="text-indigo-400 font-semibold">${det.freqlivres}</span> <span class="text-[8px] text-slate-500">/M</span></div>` : ''}
-                                </div>
-                            `;
-                        }).join('');
-
-                        if (synonyms.length > 0) {
-                            htmlContent += `<div class="text-[10px] font-bold text-indigo-400 px-1 pb-1 uppercase tracking-wider">${activeLang === 'fr' ? 'Synonymes :' : 'Synonyms:'}</div>`;
-                        }
-                    }
-
-                    // Render synonyms buttons
                     if (synonyms.length === 0) {
-                        htmlContent += `<div class="text-[10px] text-slate-400 p-2 italic">${activeLang === 'fr' ? 'Aucun synonyme trouvé' : 'No synonyms found'}</div>`;
+                        menu.innerHTML = `<div class="text-[10px] text-slate-400 p-2 italic">${activeLang === 'fr' ? 'Aucun synonyme' : 'No synonyms found'}</div>`;
                     } else {
-                        htmlContent += synonyms.map(syn => `
-                            <button onclick="applySynonymReplacement('${escapeHtml(syn)}')" class="w-full text-left px-2.5 py-1.5 hover:bg-slate-700 hover:text-white text-xs font-semibold rounded-md transition-colors block truncate">
-                                • ${escapeHtml(syn)}
+                        menu.innerHTML = synonyms.map(syn => `
+                            <button onclick="applySynonymReplacement('${escapeHtml(syn)}')" class="w-full text-left px-2.5 py-1.5 hover:bg-slate-700 text-xs font-semibold rounded-md transition-colors block truncate">
+                                ${escapeHtml(syn)}
                             </button>
                         `).join('');
                     }
-
-                    menu.innerHTML = htmlContent;
                 } else {
                     menu.innerHTML = `<div class="text-[10px] text-red-400 p-2 italic">${activeLang === 'fr' ? 'Erreur de chargement' : 'Loading error'}</div>`;
                 }
@@ -2752,6 +2792,383 @@
             });
 
             selectEl.value = activeModel;
+        }
+
+        // ATELIER DE RELECTURE (PROOFREADING WORKSPACE)
+        let relectureReport = null;
+        let activeRelectureTab = "rep";
+
+        function openRelectureModal() {
+            if (activeNodeType !== "scene" || !activeNodeId) {
+                alert(activeLang === "fr" ? "Veuillez sélectionner ou ouvrir une scène d'abord." : "Please select or open a scene first.");
+                return;
+            }
+
+            // Set title
+            const activeNode = findNodeById(projectData.manuscript, activeNodeId);
+            const title = activeNode ? activeNode.title : "...";
+            document.getElementById('relecture-active-scene-title').innerText = `${activeLang === "fr" ? "Scène :" : "Scene:"} ${title}`;
+
+            document.getElementById('relecture-modal').classList.remove('hidden');
+            activeRelectureTab = "rep";
+            relectureReport = null;
+
+            // Update tab button styles
+            switchRelectureTab("rep");
+        }
+
+        function closeRelectureModal() {
+            document.getElementById('relecture-modal').classList.add('hidden');
+        }
+
+        function switchRelectureTab(tab) {
+            activeRelectureTab = tab;
+
+            // Define all tab ids
+            const tabs = ["rep", "rythme", "style", "coherence", "typo"];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`relecture-tab-${t}`);
+                if (btn) {
+                    if (t === tab) {
+                        btn.className = "w-full text-left px-3 py-2 rounded-lg text-xs font-semibold flex items-center space-x-2 transition-all bg-indigo-50 text-indigo-700";
+                    } else {
+                        btn.className = "w-full text-left px-3 py-2 rounded-lg text-xs font-semibold flex items-center space-x-2 transition-all text-slate-600 hover:bg-slate-100";
+                    }
+                }
+            });
+
+            loadAndRenderRelectureTab();
+        }
+
+        async function loadAndRenderRelectureTab() {
+            const container = document.getElementById('relecture-results-container');
+            if (!container) return;
+
+            // Show main stats if we don't have report yet
+            if (!relectureReport && (activeRelectureTab === "rep" || activeRelectureTab === "rythme" || activeRelectureTab === "typo")) {
+                container.innerHTML = `<div class="text-slate-400 italic text-xs flex items-center space-x-2"><span>🔄</span><span>${activeLang === "fr" ? "Analyse linguistique de la scène..." : "Performing scene analysis..."}</span></div>`;
+                try {
+                    const res = await fetch('/api/relecture/analyze', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ scene_id: activeNodeId, lang: activeLang })
+                    });
+                    if (res.ok) {
+                        relectureReport = await res.json();
+                        // Populate stats
+                        document.getElementById('relecture-stat-words').innerText = relectureReport.stats.word_count;
+                        document.getElementById('relecture-stat-vocab').innerText = `${relectureReport.stats.vocabulary_richness}%`;
+                        document.getElementById('relecture-stat-paragraphs').innerText = relectureReport.stats.paragraph_count;
+                        document.getElementById('relecture-stat-dialogue').innerText = `${relectureReport.stats.dialogue_ratio}%`;
+                    } else {
+                        container.innerHTML = `<div class="text-red-500 text-xs">${activeLang === "fr" ? "Erreur lors de l'analyse." : "Failed to run analysis."}</div>`;
+                        return;
+                    }
+                } catch (e) {
+                    console.error("Relecture analyze error:", e);
+                    container.innerHTML = `<div class="text-red-500 text-xs">${activeLang === "fr" ? "Erreur de connexion." : "Connection error."}</div>`;
+                    return;
+                }
+            }
+
+            renderActiveRelectureTab();
+        }
+
+        async function renderActiveRelectureTab() {
+            const container = document.getElementById('relecture-results-container');
+            if (!container) return;
+
+            if (activeRelectureTab === "rep") {
+                let html = '<div class="space-y-4">';
+
+                // Repetitions
+                const reps = relectureReport.repetitions || [];
+                const ment_advs = relectureReport.ment_adverbs || [];
+                const weak_verbs = relectureReport.weak_verbs || [];
+                const fillers = relectureReport.fillers || [];
+                const tags = relectureReport.dialogue_tags || [];
+
+                if (reps.length === 0 && ment_advs.length === 0 && weak_verbs.length === 0 && fillers.length === 0 && tags.length === 0) {
+                    html += `<div class="text-emerald-600 bg-emerald-50 rounded-xl p-4 border border-emerald-100 font-semibold flex items-center space-x-2"><span>✨</span><span>${activeLang === "fr" ? "Excellente prose ! Aucune répétition majeure ni verbe faible identifié." : "Perfect prose! No repetitions or weak verbs found."}</span></div>`;
+                } else {
+                    // Repetitions Section
+                    if (reps.length > 0) {
+                        html += `<div><h4 class="font-bold text-slate-700 mb-2 flex items-center space-x-1.5 text-xs uppercase tracking-wider text-indigo-600"><span>🔄</span><span>Répétitions locales (Mots > 3 lett.)</span></h4><div class="space-y-2">`;
+                        reps.forEach((r, idx) => {
+                            html += `
+                                <div class="bg-slate-50 border border-slate-100 rounded-lg p-3 hover:shadow-xs transition-all">
+                                    <div class="flex justify-between items-start mb-1">
+                                        <div class="text-xs font-bold text-slate-800 flex items-center space-x-1.5">
+                                            <span class="bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded font-mono">${escapeHtml(r.word)}</span>
+                                            <span class="text-slate-400 font-normal">répété ${r.count} fois (Paragraphe ${r.paragraph_index + 1})</span>
+                                        </div>
+                                        <button onclick="relectureShowSynonyms('${escapeHtml(r.word)}', 'rep_syn_${idx}')" class="text-[10px] text-indigo-600 hover:underline font-bold">🔍 Trouver un synonyme</button>
+                                    </div>
+                                    <p class="text-[11px] text-slate-500 italic mb-2">"${escapeHtml(r.suggestion)}"</p>
+                                    <div id="rep_syn_${idx}" class="hidden mt-2 border-t border-slate-100 pt-2 flex flex-wrap gap-1.5 font-sans"></div>
+                                </div>
+                            `;
+                        });
+                        html += `</div></div>`;
+                    }
+
+                    // Weak Verbs Section
+                    if (weak_verbs.length > 0) {
+                        html += `<div class="mt-4"><h4 class="font-bold text-slate-700 mb-2 flex items-center space-x-1.5 text-xs uppercase tracking-wider text-indigo-600"><span>📉</span><span>Verbes faibles (Lemmes: être, avoir, aller, faire, dire, voir, savoir)</span></h4><div class="space-y-2">`;
+                        weak_verbs.forEach((v, idx) => {
+                            html += `
+                                <div class="bg-slate-50 border border-slate-100 rounded-lg p-3">
+                                    <div class="flex justify-between items-start mb-1">
+                                        <div class="text-xs font-bold text-slate-800 flex items-center space-x-1.5">
+                                            <span class="bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded font-mono">${escapeHtml(v.word)}</span>
+                                            <span class="text-slate-400 font-normal">(lemme: ${escapeHtml(v.lemma)}, Paragraphe ${v.paragraph_index + 1})</span>
+                                        </div>
+                                        <button onclick="relectureShowSynonyms('${escapeHtml(v.word)}', 'weak_syn_${idx}')" class="text-[10px] text-indigo-600 hover:underline font-bold">🔍 Trouver un synonyme</button>
+                                    </div>
+                                    <p class="text-[11px] text-slate-500 italic mb-2">"${escapeHtml(v.suggestion)}"</p>
+                                    <div id="weak_syn_${idx}" class="hidden mt-2 border-t border-slate-100 pt-2 flex flex-wrap gap-1.5 font-sans"></div>
+                                </div>
+                            `;
+                        });
+                        html += `</div></div>`;
+                    }
+
+                    // Adverbs in -ment Section
+                    if (ment_advs.length > 0) {
+                        html += `<div class="mt-4"><h4 class="font-bold text-slate-700 mb-2 flex items-center space-x-1.5 text-xs uppercase tracking-wider text-indigo-600"><span>🧪</span><span>Adverbes en -ment (fréquents & souvent faibles)</span></h4><div class="space-y-2">`;
+                        ment_advs.forEach((a, idx) => {
+                            html += `
+                                <div class="bg-slate-50 border border-slate-100 rounded-lg p-3">
+                                    <div class="flex justify-between items-start mb-1">
+                                        <div class="text-xs font-bold text-slate-800">
+                                            <span class="bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded font-mono">${escapeHtml(a.word)}</span>
+                                            <span class="text-slate-400 font-normal ml-1">(Paragraphe ${a.paragraph_index + 1})</span>
+                                        </div>
+                                        <button onclick="relectureShowSynonyms('${escapeHtml(a.word)}', 'ment_syn_${idx}')" class="text-[10px] text-indigo-600 hover:underline font-bold">🔍 Trouver un synonyme</button>
+                                    </div>
+                                    <p class="text-[11px] text-slate-500 italic mb-2">"${escapeHtml(a.suggestion)}"</p>
+                                    <div id="ment_syn_${idx}" class="hidden mt-2 border-t border-slate-100 pt-2 flex flex-wrap gap-1.5 font-sans"></div>
+                                </div>
+                            `;
+                        });
+                        html += `</div></div>`;
+                    }
+
+                    // Filler/Weak words Section
+                    if (fillers.length > 0) {
+                        html += `<div class="mt-4"><h4 class="font-bold text-slate-700 mb-2 flex items-center space-x-1.5 text-xs uppercase tracking-wider text-indigo-600"><span>🗑️</span><span>Mots faibles & remplisseurs</span></h4><div class="space-y-2">`;
+                        fillers.forEach((f) => {
+                            html += `
+                                <div class="bg-slate-50 border border-slate-100 rounded-lg p-3">
+                                    <div class="text-xs font-bold text-slate-800 mb-1">
+                                        <span class="bg-slate-200 text-slate-800 px-1.5 py-0.5 rounded font-mono">${escapeHtml(f.word)}</span>
+                                        <span class="text-slate-400 font-normal ml-1">(Paragraphe ${f.paragraph_index + 1})</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-500 italic">"${escapeHtml(f.suggestion)}"</p>
+                                </div>
+                            `;
+                        });
+                        html += `</div></div>`;
+                    }
+
+                    // Dialogue Tags Section
+                    if (tags.length > 0) {
+                        html += `<div class="mt-4"><h4 class="font-bold text-slate-700 mb-2 flex items-center space-x-1.5 text-xs uppercase tracking-wider text-indigo-600"><span>💬</span><span>Tags de dialogues répétitifs</span></h4><div class="space-y-2">`;
+                        tags.forEach((t) => {
+                            html += `
+                                <div class="bg-slate-50 border border-slate-100 rounded-lg p-3">
+                                    <div class="text-xs font-bold text-slate-800 mb-1">
+                                        <span class="bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded font-mono">${escapeHtml(t.tag)}</span>
+                                        <span class="text-slate-400 font-normal ml-1">(Paragraphe ${t.paragraph_index + 1})</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-500 italic">"${escapeHtml(t.suggestion)}"</p>
+                                </div>
+                            `;
+                        });
+                        html += `</div></div>`;
+                    }
+                }
+
+                html += '</div>';
+                container.innerHTML = html;
+
+            } else if (activeRelectureTab === "rythme") {
+                let html = '<div class="space-y-4">';
+                const flags = relectureReport.pacing_flags || [];
+
+                html += `
+                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-4 space-y-2 text-xs">
+                        <h4 class="font-bold text-slate-800 text-sm">💡 Comprendre le Pacing narratif</h4>
+                        <p class="text-slate-500">Un bon rythme alterne entre des moments de narration dense (descriptions, introspections) pour ralentir la scène et des dialogues rapides pour l'accélérer. Les fins de scènes doivent idéalement se terminer par une tension ouverte pour donner envie au lecteur de continuer sa lecture.</p>
+                    </div>
+                `;
+
+                if (flags.length === 0) {
+                    html += `<div class="text-emerald-600 bg-emerald-50 rounded-xl p-4 border border-emerald-100 font-semibold flex items-center space-x-2"><span>✨</span><span>Rythme excellent et équilibré dans cette scène.</span></div>`;
+                } else {
+                    html += `<div class="space-y-2">`;
+                    flags.forEach(f => {
+                        html += `
+                            <div class="bg-slate-50 border border-slate-100 rounded-lg p-3 flex items-start space-x-2.5">
+                                <span class="text-lg">⚡</span>
+                                <div>
+                                    <div class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-0.5">${f.paragraph_index >= 0 ? `Paragraphe ${f.paragraph_index + 1}` : 'Global'}</div>
+                                    <p class="text-xs text-slate-600">${escapeHtml(f.suggestion)}</p>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += `</div>`;
+                }
+
+                html += '</div>';
+                container.innerHTML = html;
+
+            } else if (activeRelectureTab === "typo") {
+                let html = '<div class="space-y-4">';
+                const flags = relectureReport.grammar_flags || [];
+
+                if (flags.length === 0) {
+                    html += `<div class="text-emerald-600 bg-emerald-50 rounded-xl p-4 border border-emerald-100 font-semibold flex items-center space-x-2"><span>✨</span><span>Mise en page et typographie impeccables. Aucune erreur relevée.</span></div>`;
+                } else {
+                    html += `<div class="space-y-2">`;
+                    flags.forEach(f => {
+                        html += `
+                            <div class="bg-slate-50 border border-slate-100 rounded-lg p-3 flex items-start space-x-2.5">
+                                <span class="text-lg">✍️</span>
+                                <div>
+                                    <div class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-0.5">Paragraphe ${f.paragraph_index + 1} - ${escapeHtml(f.text)}</div>
+                                    <p class="text-xs text-slate-600">${escapeHtml(f.suggestion)}</p>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += `</div>`;
+                }
+
+                html += '</div>';
+                container.innerHTML = html;
+
+            } else {
+                // Style and Coherence (deep AI review categories)
+                container.innerHTML = `
+                    <div class="text-center py-12 flex flex-col items-center justify-center space-y-4">
+                        <span class="text-4xl animate-bounce">🤖</span>
+                        <div class="text-xs text-slate-500 font-medium max-w-sm">
+                            ${activeLang === "fr" ? "L'IA va lancer un diagnostic narratif approfondi de la prose de votre scène (Show vs Tell, Cohérence des personnages, Allitérations, Clichés, POV etc.)." : "The AI will perform a deep narrative diagnosis of your scene prose (Show vs Tell, Character consistency, clichés, POV jumps etc.)."}
+                        </div>
+                        <button onclick="triggerRelectureAI('${activeRelectureTab}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl text-xs font-bold shadow-sm transition-all flex items-center space-x-1.5">
+                            <span>🚀</span>
+                            <span>${activeLang === "fr" ? "Lancer l'analyse IA" : "Run AI Review"}</span>
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        async function triggerRelectureAI(category) {
+            const container = document.getElementById('relecture-results-container');
+            if (!container) return;
+
+            container.innerHTML = `
+                <div class="text-center py-12 flex flex-col items-center justify-center space-y-4">
+                    <span class="text-4xl animate-spin">⏳</span>
+                    <div class="text-xs text-indigo-600 font-bold">
+                        ${activeLang === "fr" ? "Analyse IA en cours... Veuillez patienter" : "AI Review in progress... Please wait"}
+                    </div>
+                </div>
+            `;
+
+            try {
+                const res = await fetch('/api/relecture/ai', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ scene_id: activeNodeId, category, lang: activeLang })
+                });
+                if (res.ok) {
+                    const data = await res.json();
+
+                    // Render Markdown
+                    const formatted = formatMarkdownToHTML(data.feedback);
+                    container.innerHTML = `
+                        <div class="bg-indigo-50/50 border border-indigo-100 rounded-xl p-4 mb-4 text-xs flex justify-between items-center text-indigo-900">
+                            <span>🤖 Analyse générée par le modèle : <strong>${escapeHtml(data.model)}</strong></span>
+                            ${data.status === 'offline_fallback' ? `<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold uppercase text-[9px]">${activeLang === 'fr' ? 'Mode Local / Hors ligne' : 'Offline local mode'}</span>` : ''}
+                        </div>
+                        <div class="prose prose-indigo max-w-full text-xs text-slate-700 leading-relaxed bg-white border border-slate-100 rounded-2xl p-5 shadow-xs overflow-y-auto max-h-[500px]">
+                            ${formatted}
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = `<div class="text-red-500 text-xs">${activeLang === "fr" ? "Une erreur est survenue pendant la génération." : "An error occurred during generating."}</div>`;
+                }
+            } catch (e) {
+                console.error("Relecture AI error:", e);
+                container.innerHTML = `<div class="text-red-500 text-xs">${activeLang === "fr" ? "Erreur réseau." : "Network error."}</div>`;
+            }
+        }
+
+        async function relectureShowSynonyms(word, placeholderId) {
+            const el = document.getElementById(placeholderId);
+            if (!el) return;
+
+            if (!el.classList.contains('hidden')) {
+                el.classList.add('hidden');
+                return;
+            }
+
+            el.innerHTML = `<span class="text-[10px] text-slate-400 italic">${activeLang === 'fr' ? 'Recherche...' : 'Searching...'}</span>`;
+            el.classList.remove('hidden');
+
+            try {
+                const res = await fetch('/api/synonyms', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ word, lang: activeLang })
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    const synonyms = data.synonyms || [];
+                    if (synonyms.length === 0) {
+                        el.innerHTML = `<span class="text-[10px] text-slate-400 italic">${activeLang === 'fr' ? 'Aucun synonyme trouvé.' : 'No synonyms found.'}</span>`;
+                    } else {
+                        el.innerHTML = synonyms.slice(0, 8).map(syn => `
+                            <button onclick="relectureReplaceWord('${escapeHtml(word)}', '${escapeHtml(syn)}')" class="bg-white hover:bg-indigo-600 hover:text-white border border-slate-200 text-[10px] px-2 py-1 rounded font-semibold text-slate-700 transition-colors shadow-xs">
+                                ${escapeHtml(syn)}
+                            </button>
+                        `).join('');
+                    }
+                } else {
+                    el.innerHTML = `<span class="text-[10px] text-red-500 italic">Erreur.</span>`;
+                }
+            } catch (e) {
+                console.error("Show synonyms error:", e);
+                el.innerHTML = `<span class="text-[10px] text-red-500 italic">Erreur.</span>`;
+            }
+        }
+
+        function relectureReplaceWord(originalWord, newWord) {
+            const editor = document.getElementById('editor-content');
+            if (!editor) return;
+
+            const originalVal = editor.value;
+            // Case-insensitive, replaces first occurrence of the word with boundaries
+            const escapedWord = originalWord.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+            const regex = new RegExp(`\\b${escapedWord}\\b`, 'i');
+
+            const newVal = originalVal.replace(regex, newWord);
+            if (originalVal === newVal) {
+                editor.value = originalVal.replace(originalWord, newWord);
+            } else {
+                editor.value = newVal;
+            }
+
+            // Trigger input change to trigger auto-saving
+            onEditorInput('content', editor.value);
+
+            // Refresh analysis report instantly on the fly!
+            relectureReport = null;
+            loadAndRenderRelectureTab();
         }
 
         // MODAL MANAGEMENT: SETTINGS

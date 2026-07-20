@@ -343,19 +343,10 @@ def api_synonyms():
     lang = payload.get("lang", "fr").strip()
 
     if not word:
-        return jsonify({"synonyms": [], "details": []})
+        return jsonify({"synonyms": []})
 
-    # Query synonyms and details, integrating the lexique.sql SQLite helper
-    try:
-        from lexique_helper import get_synonyms_of_lemma_or_word, get_word_details
-        syns = get_synonyms_of_lemma_or_word(word, lang)
-        details = get_word_details(word)
-    except Exception as e:
-        print(f"Error in api_synonyms (using fallback): {e}")
-        syns = get_synonyms(word, lang)
-        details = []
-
-    return jsonify({"synonyms": syns, "details": details})
+    syns = get_synonyms(word, lang)
+    return jsonify({"synonyms": syns})
 
 @app.route('/api/export', methods=['POST'])
 def export_draft():
@@ -942,6 +933,48 @@ def get_ollama_models():
             "status": "offline",
             "models": []
         })
+
+@app.route('/api/relecture/analyze', methods=['POST'])
+def api_relecture_analyze():
+    """Performs deep morphological, syntactic and structural relecture analysis."""
+    payload = request.get_json(silent=True) or {}
+    scene_id = payload.get("scene_id", "").strip()
+    lang = payload.get("lang", "fr").strip()
+
+    # Locate scene in project
+    global project
+    node = project.find_node(scene_id)
+    if not node:
+        return jsonify({"error": "Scene not found"}), 404
+
+    text = node.get("content", "").strip()
+    from relecture_analyzer import analyze_scene_text
+    report = analyze_scene_text(text, lang)
+    return jsonify(report)
+
+@app.route('/api/relecture/ai', methods=['POST'])
+def api_relecture_ai():
+    """Executes high-fidelity AI narrative review for style, coherence or pacing."""
+    payload = request.get_json(silent=True) or {}
+    scene_id = payload.get("scene_id", "").strip()
+    category = payload.get("category", "style").strip()
+    lang = payload.get("lang", "fr").strip()
+
+    # Locate scene in project
+    global project
+    node = project.find_node(scene_id)
+    if not node:
+        return jsonify({"error": "Scene not found"}), 404
+
+    text = node.get("content", "").strip()
+
+    # AI custom model parameters
+    ai_model = project.data["settings"].get("ai_model", "llama3")
+    ai_temp = project.data["settings"].get("ai_temperature", 0.7)
+
+    from relecture_ai import run_relecture_ai
+    result = run_relecture_ai(category, text, lang=lang, model=ai_model, temperature=ai_temp)
+    return jsonify(result)
 
 if __name__ == "__main__":
     # Start the local development web server on port 5000
