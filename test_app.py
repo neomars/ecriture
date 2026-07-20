@@ -227,5 +227,29 @@ class TestEcritureWebApp(unittest.TestCase):
         self.assertIn('models', data)
         self.assertIsInstance(data['models'], list)
 
+    def test_synonyms_endpoint(self):
+        """Test the synonyms endpoint which integrates lexique.sql lemmatization."""
+        # Empty input
+        resp = self.client.post('/api/synonyms', json={'word': '', 'lang': 'fr'})
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.data)
+        self.assertEqual(data['synonyms'], [])
+
+        # Verb in conjugated form (e.g., 'contemplait' -> 'contempler')
+        resp = self.client.post('/api/synonyms', json={'word': 'contemplait', 'lang': 'fr'})
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.data)
+        self.assertIn('regarder', data['synonyms'])
+        self.assertIn('observer', data['synonyms'])
+        self.assertTrue(len(data['details']) > 0)
+        self.assertEqual(data['details'][0]['lemme'], 'contempler')
+        self.assertEqual(data['details'][0]['cgram'], 'VER')
+
+        # English lookup
+        resp = self.client.post('/api/synonyms', json={'word': 'happy', 'lang': 'en'})
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.data)
+        self.assertIn('joyful', data['synonyms'])
+
 if __name__ == '__main__':
     unittest.main()

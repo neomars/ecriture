@@ -213,7 +213,7 @@
                         <span>▾</span>
                     </button>
                     <!-- Synonyms list dropdown (rendered dynamically on click) -->
-                    <div id="synonyms-dropdown-menu" class="absolute hidden left-0 top-full mt-1.5 w-48 bg-slate-800 text-slate-100 rounded shadow-lg py-2 border border-slate-700 z-50 max-h-48 overflow-y-auto px-2 space-y-1">
+                    <div id="synonyms-dropdown-menu" class="absolute hidden left-0 top-full mt-1.5 w-64 bg-slate-800 text-slate-100 rounded-lg shadow-2xl py-2.5 border border-slate-700 z-50 max-h-72 overflow-y-auto px-2.5 space-y-1">
                         <!-- Loaded dynamically -->
                     </div>
                 </div>
@@ -2384,16 +2384,62 @@
                 if (res.ok) {
                     const data = await res.json();
                     const synonyms = data.synonyms || [];
+                    const details = data.details || [];
 
+                    let htmlContent = '';
+
+                    // Render lexique details if present
+                    if (details.length > 0) {
+                        const cgramMap = {
+                            'VER': 'Verbe',
+                            'NOM': 'Nom',
+                            'ADJ': 'Adjectif',
+                            'ADV': 'Adverbe',
+                            'PRE': 'Préposition',
+                            'ART': 'Article',
+                            'CON': 'Conjonction',
+                            'PRO': 'Pronom',
+                            'ONO': 'Onomatopée',
+                            'AUX': 'Auxiliaire'
+                        };
+
+                        htmlContent += details.map(det => {
+                            const prettyCgram = cgramMap[det.cgram] || det.cgram;
+                            const genderStr = det.genre ? (det.genre === 'm' ? 'masc.' : 'fém.') : '';
+                            const numberStr = det.nombre ? (det.nombre === 's' ? 'sing.' : 'plur.') : '';
+                            const agreement = [genderStr, numberStr].filter(Boolean).join(' ');
+
+                            return `
+                                <div class="bg-slate-900/80 rounded-md p-2 text-[10px] text-slate-300 space-y-1 border border-indigo-950 mb-2">
+                                    <div class="flex justify-between items-center font-bold text-indigo-300">
+                                        <span class="truncate">${escapeHtml(det.lemme)}</span>
+                                        <span class="text-[8px] bg-indigo-900/80 text-indigo-200 px-1 py-0.5 rounded uppercase font-mono">${escapeHtml(prettyCgram)}</span>
+                                    </div>
+                                    ${agreement ? `<div class="text-[9px] text-slate-400">${escapeHtml(agreement)}</div>` : ''}
+                                    ${det.phon ? `<div class="text-[9px] text-slate-400">Phonétique : <span class="font-mono text-indigo-200">/${escapeHtml(det.phon)}/</span></div>` : ''}
+                                    ${det.infover ? `<div class="text-[9px] text-slate-400">Forme : <span class="text-slate-300 font-mono">${escapeHtml(det.infover)}</span></div>` : ''}
+                                    ${det.freqlivres > 0 ? `<div class="text-[9px] text-slate-400">Fréquence : <span class="text-indigo-400 font-semibold">${det.freqlivres}</span> <span class="text-[8px] text-slate-500">/M</span></div>` : ''}
+                                </div>
+                            `;
+                        }).join('');
+
+                        if (synonyms.length > 0) {
+                            htmlContent += `<div class="text-[10px] font-bold text-indigo-400 px-1 pb-1 uppercase tracking-wider">${activeLang === 'fr' ? 'Synonymes :' : 'Synonyms:'}</div>`;
+                        }
+                    }
+
+                    // Render synonyms buttons
                     if (synonyms.length === 0) {
-                        menu.innerHTML = `<div class="text-[10px] text-slate-400 p-2 italic">${activeLang === 'fr' ? 'Aucun synonyme' : 'No synonyms found'}</div>`;
+                        htmlContent += `<div class="text-[10px] text-slate-400 p-2 italic">${activeLang === 'fr' ? 'Aucun synonyme trouvé' : 'No synonyms found'}</div>`;
                     } else {
-                        menu.innerHTML = synonyms.map(syn => `
-                            <button onclick="applySynonymReplacement('${escapeHtml(syn)}')" class="w-full text-left px-2.5 py-1.5 hover:bg-slate-700 text-xs font-semibold rounded-md transition-colors block truncate">
-                                ${escapeHtml(syn)}
+                        htmlContent += synonyms.map(syn => `
+                            <button onclick="applySynonymReplacement('${escapeHtml(syn)}')" class="w-full text-left px-2.5 py-1.5 hover:bg-slate-700 hover:text-white text-xs font-semibold rounded-md transition-colors block truncate">
+                                • ${escapeHtml(syn)}
                             </button>
                         `).join('');
                     }
+
+                    menu.innerHTML = htmlContent;
                 } else {
                     menu.innerHTML = `<div class="text-[10px] text-red-400 p-2 italic">${activeLang === 'fr' ? 'Erreur de chargement' : 'Loading error'}</div>`;
                 }

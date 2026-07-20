@@ -343,10 +343,19 @@ def api_synonyms():
     lang = payload.get("lang", "fr").strip()
 
     if not word:
-        return jsonify({"synonyms": []})
+        return jsonify({"synonyms": [], "details": []})
 
-    syns = get_synonyms(word, lang)
-    return jsonify({"synonyms": syns})
+    # Query synonyms and details, integrating the lexique.sql SQLite helper
+    try:
+        from lexique_helper import get_synonyms_of_lemma_or_word, get_word_details
+        syns = get_synonyms_of_lemma_or_word(word, lang)
+        details = get_word_details(word)
+    except Exception as e:
+        print(f"Error in api_synonyms (using fallback): {e}")
+        syns = get_synonyms(word, lang)
+        details = []
+
+    return jsonify({"synonyms": syns, "details": details})
 
 @app.route('/api/export', methods=['POST'])
 def export_draft():
