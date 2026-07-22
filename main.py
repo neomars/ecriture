@@ -3,8 +3,10 @@ import json
 from flask import Flask, jsonify, request, send_file, render_template
 from project_manager import NovelProject
 from synonyms_db import get_synonyms
+from ai_client import OllamaClient
 
 app = Flask(__name__, template_folder='templates')
+ollama_client = OllamaClient()
 
 PROJECTS_DIR = "projects"
 ACTIVE_CONFIG_FILE = "active_project.txt"
@@ -690,8 +692,6 @@ def export_draft():
 @app.route('/api/ai', methods=['POST'])
 def handle_ai_tool():
     """Handles contextual AI writing tools: Describe, Rewrite, and Expand."""
-    import urllib.request
-    import urllib.error
     from ai_prompts import DESCRIBE_PROMPT, REWRITE_PROMPT, EXPAND_PROMPT
 
     payload = request.json or {}
@@ -700,6 +700,8 @@ def handle_ai_tool():
     text = payload.get("text", "").strip()
     inject_lore = payload.get("inject_lore_context", True)
     scene_id = payload.get("scene_id")
+    selected_model = payload.get("model", "llama3").strip()
+    temperature = payload.get("temperature", 0.7)
 
     if not text:
         return jsonify({"error": "No text selected"}), 400
@@ -730,93 +732,27 @@ def handle_ai_tool():
         {"role": "user", "content": text}
     ]
 
-    ollama_url = "http://localhost:11434"
-    selected_model = payload.get("model", "llama3").strip()
-    temperature = payload.get("temperature", 0.7)
-
-    # 1. Try to verify/find an active model on Ollama
     try:
-        req_tags = urllib.request.Request(f"{ollama_url}/api/tags", method="GET")
-        with urllib.request.urlopen(req_tags, timeout=2) as response:
-            tags_data = json.loads(response.read().decode('utf-8'))
-            models = tags_data.get("models", [])
-            if models:
-                available_names = [m["name"] for m in models]
-                if selected_model not in available_names and f"{selected_model}:latest" not in available_names:
-                    selected_model = models[0]["name"]
+        res = ollama_client.chat(messages=messages, model=selected_model, temperature=temperature, timeout=15)
+        return jsonify(res)
     except Exception:
-        pass
-
-    # 2. Call Ollama
-    try:
-        chat_payload = {
-            "model": selected_model,
-            "messages": messages,
-            "stream": False,
-            "options": {
-                "temperature": temperature
-            }
-        }
-        req_chat = urllib.request.Request(
-            f"{ollama_url}/api/chat",
-            data=json.dumps(chat_payload).encode('utf-8'),
-            headers={'Content-Type': 'application/json'},
-            method="POST"
-        )
-        with urllib.request.urlopen(req_chat, timeout=15) as response:
-            chat_response = json.loads(response.read().decode('utf-8'))
-            assistant_message = chat_response.get("message", {}).get("content", "").strip()
-            return jsonify({
-                "status": "success",
-                "message": assistant_message,
-                "model": selected_model
-            })
-    except Exception:
-        # Fallback interactive simulation based on the tool
         is_french = any(word in text.lower() for word in ["le", "la", "les", "une", "un", "est", "et", "de", "je", "tu", "il"])
-
-        if tool == "describe":
-            if is_french:
-                simulated_output = f"Une description riche et sensorielle de « {text} » : Des nuances subtiles se détachent, capturant la lumière changeante avec une précision artistique, éveillant un sentiment profond d'émerveillement et de mystère."
-            else:
-                simulated_output = f"A rich and sensory description of '{text}': Subtle textures and fine details catch the ambient light, casting delicate shadows that evoke a deep sense of atmospheric presence and quiet contemplation."
-        elif tool == "rewrite":
-            if is_french:
-                style_fr = {
-                    "elegant": f"Version élégante de « {text} » : Une formulation raffinée, drapée de tournures mélodieuses et d'un vocabulaire choisi avec le plus grand soin.",
-                    "dramatic": f"Version dramatique de « {text} » : Soudain, l'air devint lourd de menaces. Chaque mot résonnait comme un coup de tonnerre sur le point d'éclater, scellant à jamais leur destin tragique.",
-                    "poetic": f"Version poétique de « {text} » : Comme un murmure d'étoiles filantes glissant sur le velours de la nuit, les mots dansent et s'envolent au gré des songes.",
-                    "humorous": f"Version humoristique de « {text} » : Bon, d'accord, « {text} »... Mais en plus rigolo, avec un zeste d'ironie et deux cuillères à soupe d'auto-dérision !",
-                    "action": f"Version action de « {text} » : Impact immédiat. Le souffle court. Pas un instant à perdre. Tout s'accélère à un rythme effréné !"
-                }
-                simulated_output = style_fr.get(style, style_fr["elegant"])
-            else:
-                style_en = {
-                    "elegant": f"Elegant version of '{text}': A polished expression, woven with sophisticated syntax and literary precision.",
-                    "dramatic": f"Dramatic version of '{text}': Suddenly, a suffocating tension filled the room, matching the perilous stakes of this critical hour.",
-                    "poetic": f"Poetic version of '{text}': Like starlight kissing the dark surface of a sleeping lake, the words shimmer with ethereal grace.",
-                    "humorous": f"Humorous version of '{text}': Well, let's add a playful twist to '{text}'—with a dash of wit and a side of healthy sarcasm!",
-                    "action": f"Action version of '{text}': High-octane response. Heart pounding. Every second counted. Move or die!"
-                }
-                simulated_output = style_en.get(style, style_en["elegant"])
-        else:  # expand
-            if is_french:
-                simulated_output = f"« {text} » de manière plus développée : Nous pouvons explorer l'arrière-plan avec soin, en ajoutant des détails descriptifs substantiels, en ralentissant le rythme et en enrichissant les émotions intérieures des personnages présents."
-            else:
-                simulated_output = f"Expanded version of '{text}': Elaborating further on this moment, we unfold layers of quiet thoughts and sensory nuances, breathing full dimension into the atmosphere and pacing of the narrative."
-
+        lang = "fr" if is_french else "en"
+        fallback_msg = ollama_client.get_fallback_response(
+            category=tool,
+            text_or_messages=text,
+            style=style,
+            lang=lang
+        )
         return jsonify({
             "status": "offline_fallback",
-            "message": simulated_output,
+            "message": fallback_msg,
             "model": "Simulation"
         })
 
 @app.route('/api/ai/chat', methods=['POST'])
 def ai_chat():
     """Proxy or fallback endpoint for a local Ollama AI assistant."""
-    import urllib.request
-    import urllib.error
-
     payload = request.json or {}
     messages = payload.get("messages", [])
     selected_model = payload.get("model", "llama3").strip()
@@ -829,86 +765,20 @@ def ai_chat():
         lore_ctx = get_scene_context(scene_id)
         if lore_ctx:
             system_msg = f"Voici des informations sur le contexte et le Lore de la scène en cours. Intègre et respecte ces éléments si nécessaire dans vos réponses :\n\n{lore_ctx}"
-            # Insert at the beginning or as a system prompt
             messages.insert(0, {"role": "system", "content": system_msg})
 
-    # 1. Check if Ollama is reachable and find any installed models
-    ollama_url = "http://localhost:11434"
-
     try:
-        # Check available tags/models to auto-select if user did not specify/fallback
-        req_tags = urllib.request.Request(f"{ollama_url}/api/tags", method="GET")
-        with urllib.request.urlopen(req_tags, timeout=2) as response:
-            tags_data = json.loads(response.read().decode('utf-8'))
-            models = tags_data.get("models", [])
-            if models:
-                available_names = [m["name"] for m in models]
-                if selected_model not in available_names and f"{selected_model}:latest" not in available_names:
-                    selected_model = models[0]["name"]
+        res = ollama_client.chat(messages=messages, model=selected_model, temperature=temperature, timeout=15)
+        return jsonify(res)
     except Exception:
-        # If we can't reach Ollama, trigger fallback/simulation mode
-        pass
-
-    # 2. Try querying Ollama chat endpoint
-    try:
-        chat_payload = {
-            "model": selected_model,
-            "messages": messages,
-            "stream": False,
-            "options": {
-                "temperature": temperature
-            }
-        }
-        req_chat = urllib.request.Request(
-            f"{ollama_url}/api/chat",
-            data=json.dumps(chat_payload).encode('utf-8'),
-            headers={'Content-Type': 'application/json'},
-            method="POST"
+        fallback_msg = ollama_client.get_fallback_response(
+            category="chat",
+            text_or_messages=messages,
+            lang=project.data["settings"].get("lang", "fr")
         )
-        with urllib.request.urlopen(req_chat, timeout=15) as response:
-            chat_response = json.loads(response.read().decode('utf-8'))
-            assistant_message = chat_response.get("message", {}).get("content", "")
-            return jsonify({
-                "status": "success",
-                "message": assistant_message,
-                "model": selected_model
-            })
-    except Exception as e:
-        # Graceful fallback simulation
-        user_text = ""
-        if messages:
-            user_text = messages[-1].get("content", "").lower()
-
-        # Build simulated responses based on keywords
-        if any(kw in user_text for kw in ["plan", "intrigue", "plot"]):
-            simulation = (
-                "[Assistant IA (Ollama Simulation - Hors ligne)]\n"
-                "Pour structurer votre intrigue, je vous suggère de suivre le schéma narratif :\n"
-                "1. Situation initiale : Présentation du protagoniste et du cadre.\n"
-                "2. Élément déclencheur : Un bouleversement majeur.\n"
-                "3. Péripéties : Obstacles et évolution des personnages.\n"
-                "4. Climax : Le point de tension maximale.\n"
-                "5. Dénouement : Résolution de l'intrigue."
-            )
-        elif any(kw in user_text for kw in ["personnage", "character", "heros", "héro"]):
-            simulation = (
-                "[Assistant IA (Ollama Simulation - Hors ligne)]\n"
-                "Voici quelques idées pour approfondir un personnage :\n"
-                "- Quel est son plus grand secret ?\n"
-                "- Quelle est sa motivation principale (désir profond vs. besoin inconscient) ?\n"
-                "- Ajoutez un défaut physique ou une habitude unique pour le rendre mémorable."
-            )
-        else:
-            simulation = (
-                "[Assistant IA (Ollama Simulation - Hors ligne)]\n"
-                "Bonjour ! Je suis votre assistant d'écriture Écriture.\n"
-                "Ollama semble être hors ligne sur http://localhost:11434.\n"
-                "Voici une suggestion pour continuer : déterminez l'enjeu principal de votre scène actuelle !"
-            )
-
         return jsonify({
             "status": "offline_fallback",
-            "message": simulation,
+            "message": fallback_msg,
             "model": "Simulation"
         })
 
@@ -937,9 +807,6 @@ def get_ollama_models():
 @app.route('/api/relecture/ai', methods=['POST'])
 def api_relecture_ai():
     """AI relecture assistance: Style & Prose or Cohérence."""
-    import urllib.request
-    import urllib.error
-
     payload = request.json or {}
     category = payload.get("category", "style").lower().strip()
     text = payload.get("text", "").strip()
@@ -989,89 +856,20 @@ def api_relecture_ai():
         {"role": "user", "content": text}
     ]
 
-    ollama_url = "http://localhost:11434"
-
-    # 1. Try to find/verify active model on Ollama
     try:
-        req_tags = urllib.request.Request(f"{ollama_url}/api/tags", method="GET")
-        with urllib.request.urlopen(req_tags, timeout=2) as response:
-            tags_data = json.loads(response.read().decode('utf-8'))
-            models = tags_data.get("models", [])
-            if models:
-                available_names = [m["name"] for m in models]
-                if selected_model not in available_names and f"{selected_model}:latest" not in available_names:
-                    selected_model = models[0]["name"]
+        res = ollama_client.chat(messages=messages, model=selected_model, temperature=temperature, timeout=25)
+        # Rename 'message' key to 'feedback' for front-end compatibility
+        res["feedback"] = res.pop("message")
+        return jsonify(res)
     except Exception:
-        pass
-
-    # 2. Call Ollama
-    try:
-        chat_payload = {
-            "model": selected_model,
-            "messages": messages,
-            "stream": False,
-            "options": {
-                "temperature": temperature
-            }
-        }
-        req_chat = urllib.request.Request(
-            f"{ollama_url}/api/chat",
-            data=json.dumps(chat_payload).encode('utf-8'),
-            headers={'Content-Type': 'application/json'},
-            method="POST"
+        fallback_msg = ollama_client.get_fallback_response(
+            category=f"relecture_{category}",
+            text_or_messages=text,
+            lang=lang
         )
-        with urllib.request.urlopen(req_chat, timeout=25) as response:
-            chat_response = json.loads(response.read().decode('utf-8'))
-            feedback = chat_response.get("message", {}).get("content", "").strip()
-            return jsonify({
-                "status": "success",
-                "feedback": feedback,
-                "model": selected_model
-            })
-    except Exception as e:
-        # Graceful fallback simulation tailored to the selected category and language
-        if category == "style":
-            if lang == "fr":
-                simulated_feedback = (
-                    "**Analyse de Style & Prose (Simulation hors ligne) :**\n\n"
-                    "1. **Richesse du vocabulaire :** Votre prose présente une belle fluidité, mais certains verbes ternes "
-                    "(comme *faire*, *dire*, *regarder*) gagneraient à être remplacés par des synonymes plus imagés "
-                    "(comme *concevoir*, *déclarer*, *contempler*).\n"
-                    "2. **Rythme et musicalité :** Les phrases ont des longueurs variées, créant une cadence agréable. "
-                    "Essayez de resserrer la ponctuation dans les moments de tension pour accentuer le suspense.\n"
-                    "3. **Suggestions de style :** Évitez les adverbes redondants (ex: *marcher lentement* peut devenir *flâner*)."
-                )
-            else:
-                simulated_feedback = (
-                    "**Style & Prose Analysis (Offline Simulation):**\n\n"
-                    "1. **Vocabulary richness:** Your prose flow is excellent, but several common verbs "
-                    "(like *do*, *say*, *look*) could be replaced with more evocative synonyms "
-                    "(like *craft*, *declare*, *gaze*).\n"
-                    "2. **Pacing & Cadence:** The sentence lengths are well-balanced. Try shortening clauses "
-                    "during highly dramatic action beats to enhance momentum.\n"
-                    "3. **Style Suggestions:** Cut down on unnecessary adverbs (e.g., *walking slowly* can be *sauntering*)."
-                )
-        else: # coherence
-            if lang == "fr":
-                simulated_feedback = (
-                    "**Analyse de Cohérence (Simulation hors ligne) :**\n\n"
-                    "1. **Cohérence des actions :** Aucun anachronisme ou contradiction majeure n'a été détecté dans le déroulement de la scène.\n"
-                    "2. **Comportement des personnages :** Les réactions psychologiques des personnages sont plausibles et alignées "
-                    "avec le lore et les traits définis dans leurs fiches.\n"
-                    "3. **Logique spatio-temporelle :** Les déplacements des protagonistes dans le décor restent fluides et logiques."
-                )
-            else:
-                simulated_feedback = (
-                    "**Coherence Analysis (Offline Simulation):**\n\n"
-                    "1. **Action Consistency:** No narrative anachronisms or glaring contradictions detected in this scene.\n"
-                    "2. **Character Motivations:** Character decisions and physical actions align well "
-                    "with their established lore and traits.\n"
-                    "3. **Spatial & Temporal Logic:** The sequence of movements and descriptions of scenery maintain a solid sense of space."
-                )
-
         return jsonify({
             "status": "offline_fallback",
-            "feedback": simulated_feedback,
+            "feedback": fallback_msg,
             "model": "Simulation"
         })
 
