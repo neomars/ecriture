@@ -14,7 +14,7 @@
         "lang": "fr",
         "locked": false,
         "overall_goal": 10000,
-        "overall_written": 940,
+        "overall_written": 920,
         "title": "Le Cid - Pierre Corneille"
     },
     "characters": [
@@ -179,7 +179,7 @@
         {
             "children": [
                 {
-                    "content": "Elle aimait contempler le coucher de soleil.  Soudain, elle dit de manière extrêmement rapide et elle était un peu fatiguée de tout cela. Elle voulait juste partir.",
+                    "content": "Elle aimait regarder le coucher de soleil.",
                     "id": "scene_acte1_1",
                     "title": "Scène 1 : Chimène, Elvire",
                     "type": "scene"
