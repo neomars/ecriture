@@ -636,6 +636,139 @@
         </div>
     </div>
 
+    <!-- MODAL: RELECTURE WORKSHOP -->
+    <div id="relecture-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50">
+        <div class="bg-white w-[800px] max-w-4xl rounded-xl shadow-xl p-6 border border-slate-200 flex flex-col max-h-[90vh]">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4 shrink-0">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center space-x-2">
+                    <span>🔍</span> <span data-i18n="relecture_modal_title">Atelier de Relecture & Correction</span>
+                </h3>
+                <button onclick="closeRelectureModal()" class="text-slate-400 hover:text-slate-600">✕</button>
+            </div>
+
+            <!-- Header Section: select scene & scope -->
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-slate-50 p-3 rounded-lg mb-4 shrink-0 border border-slate-100">
+                <div class="flex items-center space-x-2">
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider" data-i18n="relecture_scene_label">Scène :</span>
+                    <span id="relecture-active-scene-title" class="text-sm font-semibold text-slate-800">-</span>
+                </div>
+                <!-- Scope Selector -->
+                <div class="flex items-center space-x-2">
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Portée d'analyse / Scope :</span>
+                    <select id="relecture-scope-select" onchange="changeRelectureScope(this.value)" class="bg-white border border-slate-300 text-slate-700 text-xs rounded-lg p-1.5 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="scene">Scène actuelle / Current Scene</option>
+                        <option value="chapter">Chapitre entier / Entire Chapter</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="grid grid-cols-4 gap-4 mb-4 shrink-0">
+                <div class="bg-slate-50 border border-slate-200/60 p-3 rounded-lg text-center">
+                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider" data-i18n="stat_words">MOTS</div>
+                    <div id="relecture-stat-words" class="text-lg font-bold text-slate-700 mt-1">0</div>
+                </div>
+                <div class="bg-slate-50 border border-slate-200/60 p-3 rounded-lg text-center">
+                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider" data-i18n="stat_richness">RICHESSE LEXICALE</div>
+                    <div id="relecture-stat-richness" class="text-lg font-bold text-slate-700 mt-1">0%</div>
+                </div>
+                <div class="bg-slate-50 border border-slate-200/60 p-3 rounded-lg text-center">
+                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider" data-i18n="stat_paragraphs">PARAGRAPHES</div>
+                    <div id="relecture-stat-paragraphs" class="text-lg font-bold text-slate-700 mt-1">0</div>
+                </div>
+                <div class="bg-slate-50 border border-slate-200/60 p-3 rounded-lg text-center">
+                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider" data-i18n="stat_dialogue_ratio">RATIO DIALOGUE</div>
+                    <div id="relecture-stat-dialogue" class="text-lg font-bold text-slate-700 mt-1">0%</div>
+                </div>
+            </div>
+
+            <!-- Main Split Workspace -->
+            <div class="flex flex-1 overflow-hidden min-h-0 gap-4 mb-4">
+                <!-- Left: Categories and actions -->
+                <div class="w-56 flex flex-col shrink-0 border-r border-slate-100 pr-4 space-y-2">
+                    <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2" data-i18n="relecture_categories_title">CATÉGORIES D'ANALYSE</h4>
+
+                    <button id="relecture-btn-repetitions" onclick="selectRelectureCategory('repetitions')" class="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-all flex items-center space-x-2">
+                        <span>🔄</span> <span data-i18n="cat_repetitions">Répétitions & Mots faibles</span>
+                    </button>
+                    <button id="relecture-btn-rythme" onclick="selectRelectureCategory('rythme')" class="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all flex items-center space-x-2">
+                        <span>⏳</span> <span data-i18n="cat_rythme">Rythme & Structure</span>
+                    </button>
+                    <button id="relecture-btn-style" onclick="selectRelectureCategory('style')" class="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all flex items-center space-x-2">
+                        <span>💅</span> <span data-i18n="cat_style">Style & Prose (IA)</span>
+                    </button>
+                    <button id="relecture-btn-coherence" onclick="selectRelectureCategory('coherence')" class="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all flex items-center space-x-2">
+                        <span>🧩</span> <span data-i18n="cat_coherence">Cohérence (IA)</span>
+                    </button>
+                </div>
+
+                <!-- Right: Analysis Display / Text Interaction -->
+                <div class="flex-1 flex flex-col min-h-0 bg-slate-50 rounded-xl border border-slate-200/60 p-4 overflow-y-auto">
+                    <!-- repetitions pane -->
+                    <div id="relecture-pane-repetitions" class="space-y-4">
+                        <p class="text-xs text-slate-500 italic mb-2">Cliquez sur un mot répété pour voir ses synonymes et le remplacer directement.</p>
+                        <div id="relecture-repetitions-list" class="flex flex-wrap gap-2 mb-4">
+                            <!-- Filled dynamically with repetitions -->
+                        </div>
+                        <div id="relecture-repetition-synonyms-container" class="hidden bg-white p-3 rounded-lg border border-indigo-100 shadow-sm space-y-2">
+                            <div class="text-xs font-bold text-indigo-700 flex items-center space-x-2">
+                                <span>📖</span> <span>Synonymes de : <span id="relecture-selected-rep-word" class="underline">word</span></span>
+                            </div>
+                            <div id="relecture-rep-synonyms-list" class="flex flex-wrap gap-1.5 pt-1">
+                                <!-- Filled dynamically -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- rythme pane -->
+                    <div id="relecture-pane-rythme" class="hidden space-y-3 text-xs text-slate-700 font-sans">
+                        <h4 class="font-bold text-slate-800">Analyse de rythme des phrases</h4>
+                        <div class="space-y-2 leading-relaxed">
+                            <p><strong>Phrases courtes (&lt; 10 mots) :</strong> Favorisent la tension dramatique, l'action rapide ou la confusion émotionnelle.</p>
+                            <p><strong>Phrases moyennes (10-25 mots) :</strong> Forment la base narrative standard, propice à la description fluide.</p>
+                            <p><strong>Phrases longues (&gt; 25 mots) :</strong> Adaptées aux flux de pensée complexes, aux descriptions contemplatives et à la poésie rythmique.</p>
+                        </div>
+                        <div class="border-t border-slate-200 pt-3 mt-3">
+                            <div class="font-bold mb-2">Statistiques de vos phrases dans cette scène :</div>
+                            <div class="grid grid-cols-3 gap-2">
+                                <div class="bg-white p-2 rounded border text-center">
+                                    <div class="text-[10px] text-slate-400 font-bold uppercase">Courtes</div>
+                                    <div id="relecture-pacing-short" class="text-sm font-bold text-slate-700 mt-1">0</div>
+                                </div>
+                                <div class="bg-white p-2 rounded border text-center">
+                                    <div class="text-[10px] text-slate-400 font-bold uppercase">Moyennes</div>
+                                    <div id="relecture-pacing-medium" class="text-sm font-bold text-slate-700 mt-1">0</div>
+                                </div>
+                                <div class="bg-white p-2 rounded border text-center">
+                                    <div class="text-[10px] text-slate-400 font-bold uppercase">Longues</div>
+                                    <div id="relecture-pacing-long" class="text-sm font-bold text-slate-700 mt-1">0</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- style/coherence/AI feedback pane -->
+                    <div id="relecture-pane-ai" class="hidden flex flex-col flex-1 min-h-0">
+                        <div class="flex items-center justify-between mb-3 shrink-0">
+                            <span id="relecture-ai-title" class="text-xs font-bold text-indigo-700 uppercase tracking-wider">Style & Prose</span>
+                            <button onclick="runAiRelecture()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-1 px-3 rounded-lg text-xs shadow-sm transition-all flex items-center space-x-1">
+                                <span>🤖</span> <span>Lancer l'analyse / Analyze</span>
+                            </button>
+                        </div>
+                        <div class="flex-1 overflow-y-auto bg-white p-3.5 rounded-lg border border-slate-200/80 text-xs text-slate-700 leading-relaxed font-sans whitespace-pre-wrap min-h-[200px]" id="relecture-ai-feedback">
+                            Pour lancer l'analyse intelligente de style ou de cohérence, cliquez sur le bouton ci-dessus.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer buttons -->
+            <div class="flex justify-end pt-4 border-t border-slate-100 shrink-0">
+                <button onclick="closeRelectureModal()" class="px-5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-semibold transition-all" data-i18n="cancel">Fermer</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL: PLOT CARD EDIT -->
     <div id="plot-card-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50">
         <div class="bg-white w-[500px] max-w-full rounded-xl shadow-xl p-6 border border-slate-200 flex flex-col max-h-[90vh]">
@@ -791,12 +924,19 @@
                 }
             });
 
-            // Listen for text selection inside the editor
-            const editorContent = document.getElementById('editor-content');
-            if (editorContent) {
-                editorContent.addEventListener('mouseup', handleTextSelection);
-                editorContent.addEventListener('keyup', handleTextSelection);
-            }
+            // Listen for text selection inside the editor using delegation to survive dynamic editor recreations
+            document.addEventListener('mouseup', function(e) {
+                const editor = document.getElementById('editor-content');
+                if (editor && e.target === editor) {
+                    handleTextSelection(e);
+                }
+            });
+            document.addEventListener('keyup', function(e) {
+                const editor = document.getElementById('editor-content');
+                if (editor && e.target === editor) {
+                    handleTextSelection(e);
+                }
+            });
 
             // Initialize AI option from localStorage
             const storedAiVal = localStorage.getItem('ai-enabled');
@@ -2951,6 +3091,388 @@
         }
         function closeAboutModal() {
             document.getElementById('about-modal').classList.add('hidden');
+        }
+
+        // --- RELECTURE MODAL CONTROL LOGIC ---
+        let activeRelectureCategory = "repetitions";
+        let activeRelectureScope = "scene";
+
+        function openRelectureModal() {
+            if (!activeNodeId || activeNodeType !== "scene") {
+                alert(activeLang === 'fr' ? "Veuillez sélectionner une scène du manuscrit pour ouvrir l'Atelier de Relecture." : "Please select a manuscript scene to open the Proofreading Workshop.");
+                return;
+            }
+
+            // Show modal
+            document.getElementById('relecture-modal').classList.remove('hidden');
+
+            // Set active scene title
+            const activeNode = findNodeById(activeNodeId);
+            document.getElementById('relecture-active-scene-title').innerText = activeNode ? activeNode.title : "-";
+
+            // Default scope and category
+            activeRelectureScope = "scene";
+            document.getElementById('relecture-scope-select').value = "scene";
+            selectRelectureCategory('repetitions');
+
+            // Run stats and repetitions calculations
+            updateRelectureStatsAndPanes();
+        }
+
+        function closeRelectureModal() {
+            document.getElementById('relecture-modal').classList.add('hidden');
+        }
+
+        function changeRelectureScope(scope) {
+            activeRelectureScope = scope;
+            // Hide synonym list when scope changes
+            const container = document.getElementById('relecture-repetition-synonyms-container');
+            if (container) container.classList.add('hidden');
+            updateRelectureStatsAndPanes();
+        }
+
+        function getChapterText() {
+            const chapter = findParentChapter(activeNodeId);
+            if (!chapter || !chapter.children) return "";
+            return chapter.children.map(scene => scene.content || "").join("\n\n");
+        }
+
+        const STOPWORDS = {
+            fr: new Set(["dans", "pour", "avec", "mais", "dans", "elle", "elles", "vous", "nous", "leur", "leurs", "cette", "cettes", "ceux", "celles", "notre", "votre", "leurs", "donc", "alors", "plus", "moins", "très", "tout", "tous", "toute", "toutes", "sans", "comme", "mais", "puis", "quand", "si", "bien", "fait", "faire", "dire", "avoir", "être", "étiez", "était", "étaient", "sommes", "êtes", "sont", "suis", "es", "est", "avez", "avons", "ont", "avais", "avait", "avaient", "quel", "quelle", "quelles", "quels", "ceci", "cela", "celui", "celle", "ceux", "dont", "avec", "sans", "sous", "vers", "chez"]),
+            en: new Set(["with", "from", "they", "them", "their", "will", "would", "about", "there", "their", "these", "those", "this", "that", "then", "than", "thence", "when", "where", "what", "which", "while", "here", "have", "been", "were", "was", "is", "are", "am", "had", "has", "does", "done", "doing", "make", "made", "some", "more", "most", "many", "much", "very", "also", "just", "like", "even", "only", "well", "down", "under", "over", "into", "your", "them", "their", "theirs"])
+        };
+
+        function countWords(text) {
+            if (!text) return 0;
+            const clean = text.trim().replace(/[./,!?;:\"'()\[\]{}«»\-\—]/g, " ");
+            const words = clean.split(/\s+/).filter(w => w.length > 0);
+            return words.length;
+        }
+
+        function calculateLexicalRichness(text) {
+            if (!text) return 0;
+            const clean = text.trim().toLowerCase().replace(/[./,!?;:\"'()\[\]{}«»\-\—]/g, " ");
+            const words = clean.split(/\s+/).filter(w => w.length > 0);
+            if (words.length === 0) return 0;
+            const uniqueWords = new Set(words);
+            return Math.round((uniqueWords.size / words.length) * 100);
+        }
+
+        function countParagraphs(text) {
+            if (!text) return 0;
+            return text.split('\n').filter(p => p.trim().length > 0).length;
+        }
+
+        function calculateDialogueRatio(text) {
+            if (!text) return 0;
+            const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            if (lines.length === 0) return 0;
+            let dialogueCount = 0;
+            lines.forEach(l => {
+                if (l.startsWith('-') || l.startsWith('—') || l.startsWith('«') || l.startsWith('"') || l.startsWith('“')) {
+                    dialogueCount++;
+                }
+            });
+            return Math.round((dialogueCount / lines.length) * 100);
+        }
+
+        function getSceneRepetitions(text, lang) {
+            if (!text) return [];
+            const clean = text.trim().toLowerCase().replace(/[./,!?;:\"'()\[\]{}«»\-\—\n\r]/g, " ");
+            const words = clean.split(/\s+/).filter(w => w.length > 3);
+            const counts = {};
+            const langKey = lang === "fr" ? "fr" : "en";
+            const stopset = STOPWORDS[langKey] || new Set();
+
+            words.forEach(w => {
+                if (!stopset.has(w)) {
+                    counts[w] = (counts[w] || 0) + 1;
+                }
+            });
+
+            const reps = [];
+            for (const [word, count] of Object.entries(counts)) {
+                if (count >= 2) {
+                    reps.push({ word, count });
+                }
+            }
+            // Sort by count descending
+            reps.sort((a, b) => b.count - a.count);
+            return reps;
+        }
+
+        async function selectRepetitionWord(word) {
+            const container = document.getElementById('relecture-repetition-synonyms-container');
+            const wordSpan = document.getElementById('relecture-selected-rep-word');
+            const listContainer = document.getElementById('relecture-rep-synonyms-list');
+
+            if (!container || !wordSpan || !listContainer) return;
+
+            wordSpan.innerText = word;
+            container.classList.remove('hidden');
+            listContainer.innerHTML = `<span class="text-xs text-slate-400 italic">Recherche de synonymes... / Searching...</span>`;
+
+            try {
+                const response = await fetch('/api/synonyms', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ word: word, lang: activeLang })
+                });
+                const data = await response.json();
+
+                listContainer.innerHTML = "";
+                const synonyms = data.synonyms || [];
+
+                if (synonyms.length === 0) {
+                    listContainer.innerHTML = `<span class="text-xs text-slate-400 italic">Aucun synonyme trouvé / No synonyms found</span>`;
+                } else {
+                    synonyms.forEach(syn => {
+                        const btn = document.createElement('button');
+                        btn.className = "bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold px-2.5 py-1 rounded border border-indigo-200 transition-all mb-1 mr-1";
+                        btn.innerText = syn;
+                        btn.onclick = () => replaceRepetition(word, syn);
+                        listContainer.appendChild(btn);
+                    });
+                }
+            } catch (err) {
+                listContainer.innerHTML = `<span class="text-xs text-red-500">Erreur lors de la recherche / Error searching</span>`;
+            }
+        }
+
+        function replaceRepetition(oldWord, newWord) {
+            const escapedWord = oldWord.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+            const regex = new RegExp("(?<=^|[^a-zA-Z0-9àâäéèêëîïôöùûüçÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ])" + escapedWord + "(?=$|[^a-zA-Z0-9àâäéèêëîïôöùûüçÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ])", "gi");
+
+            if (activeRelectureScope === "scene") {
+                if (!activeNodeId || activeNodeType !== "scene") return;
+                const editor = document.getElementById('editor-content');
+                if (!editor) return;
+
+                let content = editor.value;
+                content = content.replace(regex, newWord);
+                editor.value = content;
+                onSceneBlockInput(activeNodeId, 'content', content);
+                autoResizeTextarea(editor);
+            } else {
+                // Replace in all scenes of the parent chapter
+                const chapter = findParentChapter(activeNodeId);
+                if (chapter && chapter.children) {
+                    chapter.children.forEach(scene => {
+                        if (scene.content) {
+                            scene.content = scene.content.replace(regex, newWord);
+                        }
+                    });
+                    refreshActiveWorkspace();
+                    persistProject();
+                }
+            }
+
+            // Hide synonym box and refresh stats and panes
+            document.getElementById('relecture-repetition-synonyms-container').classList.add('hidden');
+            updateRelectureStatsAndPanes();
+        }
+
+        function updatePacingStats(text) {
+            const shortEl = document.getElementById('relecture-pacing-short');
+            const mediumEl = document.getElementById('relecture-pacing-medium');
+            const longEl = document.getElementById('relecture-pacing-long');
+            if (!shortEl || !mediumEl || !longEl) return;
+
+            if (!text) {
+                shortEl.innerText = "0";
+                mediumEl.innerText = "0";
+                longEl.innerText = "0";
+                return;
+            }
+
+            const sentences = text.split(/[.?!]+/).map(s => s.trim()).filter(s => s.length > 0);
+            let shortCount = 0;
+            let mediumCount = 0;
+            let longCount = 0;
+
+            sentences.forEach(s => {
+                const words = s.split(/\s+/).filter(w => w.length > 0).length;
+                if (words < 10) {
+                    shortCount++;
+                } else if (words <= 25) {
+                    mediumCount++;
+                } else {
+                    longCount++;
+                }
+            });
+
+            shortEl.innerText = shortCount;
+            mediumEl.innerText = mediumCount;
+            longEl.innerText = longCount;
+        }
+
+        function selectRelectureCategory(cat) {
+            activeRelectureCategory = cat;
+
+            // Highlight active button
+            const buttons = ["repetitions", "rythme", "style", "coherence"];
+            buttons.forEach(b => {
+                const btn = document.getElementById(`relecture-btn-${b}`);
+                if (btn) {
+                    if (b === cat) {
+                        btn.className = "w-full text-left px-3 py-2 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-all flex items-center space-x-2";
+                    } else {
+                        btn.className = "w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all flex items-center space-x-2";
+                    }
+                }
+            });
+
+            // Show/hide panes
+            const repetitionsPane = document.getElementById('relecture-pane-repetitions');
+            const rythmePane = document.getElementById('relecture-pane-rythme');
+            const aiPane = document.getElementById('relecture-pane-ai');
+
+            if (cat === "repetitions") {
+                repetitionsPane.classList.remove('hidden');
+                rythmePane.classList.add('hidden');
+                aiPane.classList.add('hidden');
+            } else if (cat === "rythme") {
+                repetitionsPane.classList.add('hidden');
+                rythmePane.classList.remove('hidden');
+                aiPane.classList.add('hidden');
+            } else {
+                repetitionsPane.classList.add('hidden');
+                rythmePane.classList.add('hidden');
+                aiPane.classList.remove('hidden');
+
+                // Update AI Title based on selected AI category
+                const titleEl = document.getElementById('relecture-ai-title');
+                if (titleEl) {
+                    titleEl.innerText = cat === "style" ? "Style & Prose (IA)" : "Cohérence (IA)";
+                }
+
+                const feedbackEl = document.getElementById('relecture-ai-feedback');
+                if (feedbackEl) {
+                    feedbackEl.innerText = cat === "style"
+                        ? (activeLang === 'fr' ? "Pour lancer l'analyse intelligente de style et prose, cliquez sur le bouton ci-dessus." : "To run the style and prose smart analysis, click the button above.")
+                        : (activeLang === 'fr' ? "Pour lancer l'analyse intelligente de cohérence narrative, cliquez sur le bouton ci-dessus." : "To run the narrative coherence smart analysis, click the button above.");
+                }
+            }
+        }
+
+        async function runAiRelecture() {
+            const feedbackEl = document.getElementById('relecture-ai-feedback');
+            if (!feedbackEl) return;
+
+            let text = "";
+            if (activeRelectureScope === "scene") {
+                const editor = document.getElementById('editor-content');
+                text = editor ? editor.value : "";
+            } else {
+                text = getChapterText();
+            }
+
+            if (!text || !text.trim()) {
+                feedbackEl.innerText = activeLang === 'fr' ? "Texte vide ou introuvable pour lancer l'analyse." : "Empty or missing text to analyze.";
+                return;
+            }
+
+            feedbackEl.innerText = activeLang === 'fr' ? "Analyse en cours par l'IA... Veuillez patienter." : "AI analysis in progress... Please wait.";
+
+            try {
+                const response = await fetch('/api/relecture/ai', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        category: activeRelectureCategory, // "style" or "coherence"
+                        text: text,
+                        temperature: (projectData.settings.ai_temperature !== undefined) ? projectData.settings.ai_temperature : 0.7,
+                        model: projectData.settings.ai_model || "llama3",
+                        lang: activeLang
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    feedbackEl.innerText = data.feedback;
+                } else {
+                    feedbackEl.innerText = activeLang === 'fr' ? "Erreur : Impossible d'obtenir un retour de l'IA." : "Error: Could not retrieve feedback from AI.";
+                }
+            } catch (err) {
+                feedbackEl.innerText = activeLang === 'fr' ? "Erreur de connexion réseau." : "Network connection error.";
+            }
+        }
+
+        function autoCorrectTypography() {
+            const correctText = (txt) => {
+                if (activeLang === 'fr') {
+                    txt = txt.replace(/([^ \u00A0])([?!:;])/g, '$1 $2');
+                    txt = txt.replace(/"([^"]+)"/g, '« $1 »');
+                    txt = txt.replace(/\.\.\./g, '…');
+                } else {
+                    txt = txt.replace(/"([^"]+)"/g, '“$1”');
+                    txt = txt.replace(/'([^']+)'/g, '‘$1’');
+                    txt = txt.replace(/\.\.\./g, '…');
+                }
+                return txt;
+            };
+
+            if (activeRelectureScope === "scene") {
+                if (!activeNodeId || activeNodeType !== "scene") return;
+                const editor = document.getElementById('editor-content');
+                if (!editor) return;
+
+                editor.value = correctText(editor.value);
+                onSceneBlockInput(activeNodeId, 'content', editor.value);
+                autoResizeTextarea(editor);
+            } else {
+                const chapter = findParentChapter(activeNodeId);
+                if (chapter && chapter.children) {
+                    chapter.children.forEach(scene => {
+                        if (scene.content) {
+                            scene.content = correctText(scene.content);
+                        }
+                    });
+                    refreshActiveWorkspace();
+                    persistProject();
+                }
+            }
+
+            updateRelectureStatsAndPanes();
+        }
+
+        function updateRelectureStatsAndPanes() {
+            let text = "";
+            if (activeRelectureScope === "scene") {
+                const editor = document.getElementById('editor-content');
+                text = editor ? editor.value : "";
+            } else {
+                text = getChapterText();
+            }
+
+            const wordCount = countWords(text);
+            const richness = calculateLexicalRichness(text);
+            const paraCount = countParagraphs(text);
+            const dialogue = calculateDialogueRatio(text);
+
+            document.getElementById('relecture-stat-words').innerText = wordCount;
+            document.getElementById('relecture-stat-richness').innerText = richness + "%";
+            document.getElementById('relecture-stat-paragraphs').innerText = paraCount;
+            document.getElementById('relecture-stat-dialogue').innerText = dialogue + "%";
+
+            const reps = getSceneRepetitions(text, activeLang);
+            const repsListContainer = document.getElementById('relecture-repetitions-list');
+            if (repsListContainer) {
+                repsListContainer.innerHTML = "";
+                if (reps.length === 0) {
+                    repsListContainer.innerHTML = `<span class="text-xs text-slate-400 italic">Aucune répétition détectée / No repetitions detected</span>`;
+                } else {
+                    reps.forEach(item => {
+                        const btn = document.createElement('button');
+                        btn.className = "bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold px-2 py-1 rounded border border-rose-200 transition-all flex items-center space-x-1 mb-1 mr-1";
+                        btn.innerHTML = `<span>${item.word}</span> <span class="bg-rose-200/60 px-1 rounded text-[10px]">${item.count}</span>`;
+                        btn.onclick = () => selectRepetitionWord(item.word);
+                        repsListContainer.appendChild(btn);
+                    });
+                }
+            }
+
+            updatePacingStats(text);
         }
 
         // POMODORO TIMER MANAGEMENT
