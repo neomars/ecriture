@@ -69,6 +69,8 @@ SYNONYMS_DATA = {
     }
 }
 
+import os
+
 def normalize_word(word, lang):
     """Normalized conversion (lemmatization) to query key."""
     if not word:
@@ -78,6 +80,21 @@ def normalize_word(word, lang):
     w = word.lower().strip(".,!?;:\"'()[]{}«»")
 
     if lang == "fr":
+        # Try querying the sqlite lexique database first
+        db_path = "lexique.db"
+        if os.path.exists(db_path):
+            try:
+                import sqlite3
+                conn = sqlite3.connect(db_path)
+                cursor = conn.cursor()
+                cursor.execute("SELECT lemme FROM lexique WHERE ortho = ? LIMIT 1", (w,))
+                row = cursor.fetchone()
+                conn.close()
+                if row and row[0]:
+                    return row[0].lower().strip()
+            except Exception:
+                pass
+
         # Handle simple plural ending 's' or 'x'
         if w.endswith("s") and len(w) > 3:
             if w[:-1] in SYNONYMS_DATA["fr"]:

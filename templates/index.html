@@ -308,13 +308,9 @@
             <!-- EDITOR VIEW -->
             <div id="editor-view" class="flex-1 flex flex-col overflow-hidden h-full">
                 <!-- Centered distraction-free layout -->
-                <div class="flex-1 overflow-y-auto px-12 py-10 flex flex-col items-center h-full">
-                    <div class="w-full max-w-2xl flex-1 flex flex-col h-full">
-                        <!-- Chapter or Scene title input -->
-                        <input type="text" id="editor-title" oninput="onEditorInput('title', this.value)" placeholder="Titre..." class="w-full text-3xl font-bold font-georgia border-none outline-none focus:ring-0 text-slate-900 placeholder-slate-300 pb-4 mb-6 border-b border-slate-100 shrink-0">
-
-                        <!-- Rich text-area drafting canvas -->
-                        <textarea id="editor-content" oninput="onEditorInput('content', this.value)" data-i18n-placeholder="editor_placeholder" placeholder="Commencez votre écriture ici..." class="w-full flex-1 resize-none font-georgia text-lg leading-relaxed text-slate-800 border-none outline-none focus:ring-0 placeholder-slate-300 bg-transparent min-h-[300px]"></textarea>
+                <div class="flex-1 overflow-y-auto px-12 py-10 flex flex-col items-center h-full" id="editor-scroll-container">
+                    <div class="w-full max-w-2xl flex-1 flex flex-col h-full" id="editor-layout-wrapper">
+                        <!-- Stake of Chapter Header and Scene Blocks will be dynamically rendered here -->
                     </div>
                 </div>
 
@@ -684,87 +680,6 @@
                     <button onclick="closePlotCardModal()" class="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-700 transition-colors" data-i18n="cancel">Annuler</button>
                     <button onclick="savePlotCard()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-all" data-i18n="save">Enregistrer</button>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: RELECTURE -->
-    <div id="relecture-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50">
-        <div class="bg-white w-[900px] max-w-full rounded-xl shadow-xl p-6 border border-slate-200 flex flex-col h-[85vh] max-h-[85vh]">
-            <!-- Header -->
-            <div class="flex items-center justify-between pb-4 border-b border-slate-200 shrink-0">
-                <div>
-                    <h3 class="text-xl font-bold text-slate-800 flex items-center space-x-2">
-                        <span>🔎</span>
-                        <span data-i18n="relecture_modal_title">Atelier de Relecture & Correction</span>
-                    </h3>
-                    <p class="text-sm text-slate-500 mt-1">
-                        <span data-i18n="relecture_scene_label">Scène :</span>
-                        <span id="relecture-scene-title" class="font-semibold text-slate-700">-</span>
-                    </p>
-                </div>
-                <button onclick="closeRelectureModal()" class="text-slate-400 hover:text-slate-600 text-2xl transition-colors">&times;</button>
-            </div>
-
-            <!-- Modal Content (Two Columns) -->
-            <div class="flex flex-1 overflow-hidden py-4 space-x-6">
-                <!-- Left Column: Categories -->
-                <div class="w-64 flex flex-col space-y-1.5 border-r border-slate-200 pr-4 shrink-0">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2" data-i18n="relecture_categories_title">CATÉGORIES D'ANALYSE</span>
-                    <button onclick="switchRelectureTab('repetitions')" id="relecture-tab-repetitions" class="flex items-center space-x-3 w-full px-3 py-2 text-sm rounded-lg font-medium transition-all text-slate-700 bg-slate-100 hover:bg-slate-200">
-                        <span>🔄</span>
-                        <span data-i18n="cat_repetitions">Répétitions & Mots faibles</span>
-                    </button>
-                    <button onclick="switchRelectureTab('rythme')" id="relecture-tab-rythme" class="flex items-center space-x-3 w-full px-3 py-2 text-sm rounded-lg font-medium transition-all text-slate-700 hover:bg-slate-100">
-                        <span>⚡</span>
-                        <span data-i18n="cat_rythme">Rythme & Structure</span>
-                    </button>
-                    <button onclick="switchRelectureTab('style')" id="relecture-tab-style" class="flex items-center space-x-3 w-full px-3 py-2 text-sm rounded-lg font-medium transition-all text-slate-700 hover:bg-slate-100">
-                        <span>📝</span>
-                        <span data-i18n="cat_style">Style & Prose (IA)</span>
-                    </button>
-                    <button onclick="switchRelectureTab('coherence')" id="relecture-tab-coherence" class="flex items-center space-x-3 w-full px-3 py-2 text-sm rounded-lg font-medium transition-all text-slate-700 hover:bg-slate-100">
-                        <span>👥</span>
-                        <span data-i18n="cat_coherence">Cohérence (IA)</span>
-                    </button>
-                    <button onclick="switchRelectureTab('typographie')" id="relecture-tab-typographie" class="flex items-center space-x-3 w-full px-3 py-2 text-sm rounded-lg font-medium transition-all text-slate-700 hover:bg-slate-100">
-                        <span>✍️</span>
-                        <span data-i18n="cat_typographie">Typographie & Règles</span>
-                    </button>
-                </div>
-
-                <!-- Right Column: Main Analysis Panel -->
-                <div class="flex-1 flex flex-col overflow-hidden h-full">
-                    <!-- Statistics Top Block -->
-                    <div class="grid grid-cols-4 gap-4 bg-slate-50 border border-slate-100 rounded-xl p-4 mb-4 text-center shrink-0">
-                        <div>
-                            <span class="block text-[10px] font-bold text-slate-400 tracking-wider" data-i18n="stat_words">MOTS</span>
-                            <span id="relecture-stat-words" class="text-lg font-bold text-slate-700">-</span>
-                        </div>
-                        <div>
-                            <span class="block text-[10px] font-bold text-slate-400 tracking-wider" data-i18n="stat_richness">RICHESSE LEXICALE</span>
-                            <span id="relecture-stat-richness" class="text-lg font-bold text-slate-700">-</span>
-                        </div>
-                        <div>
-                            <span class="block text-[10px] font-bold text-slate-400 tracking-wider" data-i18n="stat_paragraphs">PARAGRAPHES</span>
-                            <span id="relecture-stat-paragraphs" class="text-lg font-bold text-slate-700">-</span>
-                        </div>
-                        <div>
-                            <span class="block text-[10px] font-bold text-slate-400 tracking-wider" data-i18n="stat_dialogue_ratio">RATIO DIALOGUE</span>
-                            <span id="relecture-stat-dialogue" class="text-lg font-bold text-slate-700">-</span>
-                        </div>
-                    </div>
-
-                    <!-- Selected Category Content Container -->
-                    <div id="relecture-analysis-container" class="flex-1 overflow-y-auto pr-1 text-sm text-slate-600 space-y-4">
-                        <!-- Dynamic Content will be injected here -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Close / Action Footer -->
-            <div class="flex justify-end pt-4 border-t border-slate-200 shrink-0">
-                <button onclick="closeRelectureModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-semibold shadow-sm transition-all" data-i18n="cancel">Fermer</button>
             </div>
         </div>
     </div>
@@ -1381,25 +1296,146 @@
             }
         }
 
+        function findParentChapter(sceneId) {
+            for (const chap of projectData.manuscript) {
+                if (chap.children) {
+                    for (const scene of chap.children) {
+                        if (scene.id === sceneId) {
+                            return chap;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        function autoResizeTextarea(el) {
+            el.style.height = 'auto';
+            el.style.height = el.scrollHeight + 'px';
+        }
+
+        function onChapterBlockInput(chapId, field, val) {
+            const node = findNodeById(chapId);
+            if (node) {
+                node[field] = val;
+                triggerAutoSave();
+                // Live update tree title
+                const treeTitleEl = document.querySelector(`[data-chap-id="${chapId}"] .chap-title`);
+                if (treeTitleEl) treeTitleEl.innerText = val;
+            }
+        }
+
+        function onSceneBlockInput(sceneId, field, val) {
+            const node = findNodeById(sceneId);
+            if (node) {
+                node[field] = val;
+                triggerAutoSave();
+                if (field === 'title') {
+                    // Live update tree title
+                    const treeTitleEl = document.querySelector(`[data-scene-id="${sceneId}"] .scene-title`);
+                    if (treeTitleEl) treeTitleEl.innerText = val;
+                }
+                updateEditorWordsCount();
+            }
+        }
+
+        function onSceneBlockFocus(sceneId) {
+            // Restore previous active textarea's id if any
+            const previousActive = document.getElementById('editor-content');
+            if (previousActive && previousActive.getAttribute('data-scene-id') !== sceneId) {
+                const oldId = previousActive.getAttribute('data-scene-id');
+                previousActive.id = `editor-content-${oldId}`;
+            }
+
+            // Assign 'editor-content' id to focused textarea
+            const currentTextarea = document.getElementById(`editor-content-${sceneId}`);
+            if (currentTextarea) {
+                currentTextarea.id = 'editor-content';
+            }
+
+            // Update active node state & highlights
+            if (activeNodeId !== sceneId) {
+                activeNodeId = sceneId;
+                activeNodeType = "scene";
+                renderTree();
+                updateEditorWordsCount();
+            }
+        }
+
         // ACTIVE WORKSPACE REFRESH
         function refreshActiveWorkspace() {
-            if (activeNodeType === "scene") {
-                const node = findNodeById(activeNodeId);
-                if (node) {
-                    switchView('editor');
-                    document.getElementById('editor-title').value = node.title;
-                    document.getElementById('editor-content').value = node.content || "";
-                    updateEditorWordsCount(node.content || "");
+            if (activeNodeType === "scene" || activeNodeType === "chapter") {
+                let chapter = null;
+                let targetSceneId = null;
+
+                if (activeNodeType === "scene") {
+                    targetSceneId = activeNodeId;
+                    chapter = findParentChapter(targetSceneId);
+                } else {
+                    chapter = findNodeById(activeNodeId);
                 }
-            } else if (activeNodeType === "chapter") {
-                const node = findNodeById(activeNodeId);
-                if (node) {
+
+                if (chapter) {
                     switchView('editor');
-                    document.getElementById('editor-title').value = node.title;
-                    // Gather scenes overview as chapter content
-                    const scenesOverview = node.children.map(s => `- ${s.title}`).join('\n');
-                    document.getElementById('editor-content').value = scenesOverview || "No scenes in this chapter yet.";
-                    updateEditorWordsCount(scenesOverview);
+                    const wrapper = document.getElementById('editor-layout-wrapper');
+
+                    // Render Chapter header & scenes stacked
+                    let html = `
+                        <!-- Chapter Header -->
+                        <div class="chapter-header-block mb-10 pb-4 border-b border-slate-200 shrink-0">
+                            <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider">Chapitre / Chapter</span>
+                            <input type="text" id="editor-title" value="${escapeHtml(chapter.title)}" oninput="onChapterBlockInput('${chapter.id}', 'title', this.value)" placeholder="Titre du chapitre..." class="w-full text-3xl font-bold font-georgia border-none outline-none focus:ring-0 text-slate-900 placeholder-slate-300 bg-transparent mt-1">
+                        </div>
+                    `;
+
+                    chapter.children = chapter.children || [];
+                    if (chapter.children.length === 0) {
+                        html += `
+                            <div class="text-slate-400 italic text-sm text-center py-10">
+                                Aucune scène dans ce chapitre. Créez-en une pour commencer à rédiger !
+                            </div>
+                        `;
+                    } else {
+                        chapter.children.forEach(scene => {
+                            const isCurrentActive = (scene.id === targetSceneId);
+                            const textareaId = isCurrentActive ? 'editor-content' : `editor-content-${scene.id}`;
+                            html += `
+                                <div id="scene-block-${scene.id}" class="scene-block mb-12 pb-12 border-b border-slate-100">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Scène / Scene</span>
+                                    </div>
+                                    <input type="text" value="${escapeHtml(scene.title)}" oninput="onSceneBlockInput('${scene.id}', 'title', this.value)" placeholder="Titre de la scène..." class="w-full text-2xl font-bold font-georgia border-none outline-none focus:ring-0 text-slate-800 placeholder-slate-300 pb-2 mb-4 bg-transparent">
+                                    <textarea id="${textareaId}" data-scene-id="${scene.id}" onfocus="onSceneBlockFocus('${scene.id}')" oninput="onSceneBlockInput('${scene.id}', 'content', this.value); autoResizeTextarea(this)" placeholder="Commencez à rédiger votre scène ici..." class="w-full resize-none font-georgia text-lg leading-relaxed text-slate-800 border-none outline-none focus:ring-0 placeholder-slate-300 bg-transparent min-h-[150px]">${escapeHtml(scene.content || "")}</textarea>
+                                </div>
+                            `;
+                        });
+                    }
+
+                    wrapper.innerHTML = html;
+
+                    // Compute textareas heights and scroll to active
+                    setTimeout(() => {
+                        // Trigger auto-resize on all textareas
+                        const textareas = wrapper.querySelectorAll('textarea');
+                        textareas.forEach(ta => autoResizeTextarea(ta));
+
+                        // Navigation scrolling
+                        if (targetSceneId) {
+                            const activeBlock = document.getElementById(`scene-block-${targetSceneId}`);
+                            if (activeBlock) {
+                                activeBlock.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                // Focus active scene input
+                                const activeTa = document.getElementById('editor-content');
+                                if (activeTa) activeTa.focus();
+                            }
+                        } else {
+                            // Sliced at chapter level, scroll to top of editor container
+                            const scrollContainer = document.getElementById('editor-scroll-container');
+                            if (scrollContainer) scrollContainer.scrollTop = 0;
+                        }
+                        updateEditorWordsCount();
+                    }, 50);
+
                 }
             } else if (activeNodeType === "character") {
                 let char = projectData.characters.find(c => c.id === activeNodeId);
@@ -1902,6 +1938,10 @@
 
         // WORD COUNTERS UPDATES
         function updateEditorWordsCount(text) {
+            if (text === undefined) {
+                const el = document.getElementById('editor-content');
+                text = el ? (el.value || "") : "";
+            }
             const cleanText = text.trim();
             const words = cleanText ? cleanText.split(/\s+/).length : 0;
             const chars = text.length;
@@ -3670,426 +3710,6 @@
             }
 
             renderChat();
-        }
-
-        // RELECTURE & CORRECTION WORKSPACE LOGIC
-        let currentRelectureTab = "repetitions";
-
-        function openRelectureModal() {
-            const editor = document.getElementById('editor-content');
-            if (!editor) return;
-
-            const text = editor.value || "";
-            const words = text.trim() ? text.trim().split(/\s+/).length : 0;
-            const paragraphs = text.split('\n').filter(p => p.trim()).length;
-
-            // Lexical richness calculation: percentage of unique words
-            const cleanWords = text.toLowerCase()
-                .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()\"'?«»]/g, " ")
-                .split(/\s+/)
-                .filter(w => w.trim());
-            const uniqueWords = new Set(cleanWords).size;
-            const richness = cleanWords.length ? ((uniqueWords / cleanWords.length) * 100).toFixed(1) : "100";
-
-            // Dialogue ratio calculation: sentences starting with - or — or "
-            const lines = text.split('\n').map(l => l.trim()).filter(l => l);
-            const dialogueLines = lines.filter(l => l.startsWith('-') || l.startsWith('—') || l.startsWith('"') || l.startsWith('«')).length;
-            const dialogueRatio = lines.length ? Math.round((dialogueLines / lines.length) * 100) : 0;
-
-            // Get active scene title
-            const activeNode = findNodeById(activeNodeId);
-            const sceneTitle = activeNode ? activeNode.title : "-";
-
-            // Inject Stats
-            document.getElementById('relecture-scene-title').innerText = sceneTitle;
-            document.getElementById('relecture-stat-words').innerText = words;
-            document.getElementById('relecture-stat-richness').innerText = richness + "%";
-            document.getElementById('relecture-stat-paragraphs').innerText = paragraphs;
-            document.getElementById('relecture-stat-dialogue').innerText = dialogueRatio + "%";
-
-            // Show Modal
-            document.getElementById('relecture-modal').classList.remove('hidden');
-
-            // Switch to repetitions tab
-            switchRelectureTab('repetitions');
-        }
-
-        function closeRelectureModal() {
-            document.getElementById('relecture-modal').classList.add('hidden');
-        }
-
-        function switchRelectureTab(tabName) {
-            currentRelectureTab = tabName;
-
-            // Reset tab styles
-            const tabs = ["repetitions", "rythme", "style", "coherence", "typographie"];
-            tabs.forEach(t => {
-                const btn = document.getElementById(`relecture-tab-${t}`);
-                if (btn) {
-                    btn.className = "flex items-center space-x-3 w-full px-3 py-2 text-sm rounded-lg font-medium transition-all text-slate-700 hover:bg-slate-100";
-                }
-            });
-
-            const activeBtn = document.getElementById(`relecture-tab-${tabName}`);
-            if (activeBtn) {
-                activeBtn.className = "flex items-center space-x-3 w-full px-3 py-2 text-sm rounded-lg font-bold transition-all text-indigo-700 bg-indigo-50 border border-indigo-100";
-            }
-
-            renderRelectureTabContent(tabName);
-        }
-
-        async function renderRelectureTabContent(tabName) {
-            const container = document.getElementById('relecture-analysis-container');
-            if (!container) return;
-
-            const text = document.getElementById('editor-content').value || "";
-
-            if (tabName === "repetitions") {
-                // Find words > 3 chars with count > 1
-                const cleanWords = text.toLowerCase()
-                    .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()\"'?«»]/g, " ")
-                    .split(/\s+/)
-                    .filter(w => w.length > 3);
-
-                const counts = {};
-                cleanWords.forEach(w => {
-                    counts[w] = (counts[w] || 0) + 1;
-                });
-
-                const repeats = Object.entries(counts)
-                    .filter(([w, cnt]) => cnt > 1)
-                    .sort((a, b) => b[1] - a[1]);
-
-                if (repeats.length === 0) {
-                    container.innerHTML = `<div class="p-4 text-center text-slate-500">${formatTranslation("relecture_no_repeats") || "No repetitions detected! Very clean prose."}</div>`;
-                    return;
-                }
-
-                let html = `<div class="space-y-3">
-                    <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">${formatTranslation("relecture_repeats_detected") || "DETECTED REPETITIONS"}</p>
-                    <div class="grid grid-cols-1 gap-2">`;
-
-                for (const [word, cnt] of repeats) {
-                    html += `
-                        <div class="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-lg">
-                            <div>
-                                <span class="font-bold text-slate-700 text-sm">« ${word} »</span>
-                                <span class="text-xs text-slate-400 ml-2">(${cnt} ${formatTranslation("relecture_times") || "times"})</span>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <button onclick="interactiveSynonymSearch('${word}')" class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-2 py-1.5 rounded-lg border border-indigo-200 transition-all font-semibold flex items-center space-x-1">
-                                    <span>📖</span>
-                                    <span>${formatTranslation("synonyms_btn") || "Synonymes"}</span>
-                                </button>
-                            </div>
-                        </div>`;
-                }
-                html += `</div></div>`;
-                container.innerHTML = html;
-
-            } else if (tabName === "rythme") {
-                // Sentences length analysis
-                const sentences = text.split(/[.!?]+/).map(s => s.trim()).filter(s => s);
-                let shortCount = 0;
-                let mediumCount = 0;
-                let longCount = 0;
-
-                sentences.forEach(s => {
-                    const wCount = s.split(/\s+/).length;
-                    if (wCount < 10) shortCount++;
-                    else if (wCount <= 25) mediumCount++;
-                    else longCount++;
-                });
-
-                const total = sentences.length || 1;
-                const shortPct = Math.round((shortCount / total) * 100);
-                const mediumPct = Math.round((mediumCount / total) * 100);
-                const longPct = Math.round((longCount / total) * 100);
-
-                let pacingMessage = "";
-                if (shortPct > 40) {
-                    pacingMessage = formatTranslation("relecture_pacing_fast") || "Your text has a dynamic and fast pacing, excellent for action or tense dialogue.";
-                } else if (longPct > 30) {
-                    pacingMessage = formatTranslation("relecture_pacing_slow") || "Your prose is rich, descriptive, and poetic, ideal for contemplation or complex scene immersion.";
-                } else {
-                    pacingMessage = formatTranslation("relecture_pacing_balanced") || "Your prose pacing is highly balanced, offering a fluid and enjoyable reading experience.";
-                }
-
-                container.innerHTML = `
-                    <div class="space-y-4">
-                        <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">${formatTranslation("relecture_pacing_analysis") || "PACING ANALYSIS"}</p>
-
-                        <div class="p-4 bg-indigo-50/50 border border-indigo-100/50 rounded-xl text-indigo-800 text-sm leading-relaxed">
-                            💡 <strong>${formatTranslation("relecture_pacing_note") || "Pacing Note:"}</strong> ${pacingMessage}
-                        </div>
-
-                        <div class="space-y-3 pt-2">
-                            <div>
-                                <div class="flex justify-between text-xs font-semibold text-slate-500 mb-1">
-                                    <span>⚡ ${formatTranslation("relecture_short_sentences") || "Short sentences (< 10 words)"}</span>
-                                    <span>${shortCount} (${shortPct}%)</span>
-                                </div>
-                                <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                                    <div class="bg-emerald-500 h-2 rounded-full" style="width: ${shortPct}%"></div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <div class="flex justify-between text-xs font-semibold text-slate-500 mb-1">
-                                    <span>⚖️ ${formatTranslation("relecture_medium_sentences") || "Medium sentences (10-25 words)"}</span>
-                                    <span>${mediumCount} (${mediumPct}%)</span>
-                                </div>
-                                <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                                    <div class="bg-indigo-500 h-2 rounded-full" style="width: ${mediumPct}%"></div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <div class="flex justify-between text-xs font-semibold text-slate-500 mb-1">
-                                    <span>📖 ${formatTranslation("relecture_long_sentences") || "Long sentences (> 25 words)"}</span>
-                                    <span>${longCount} (${longPct}%)</span>
-                                </div>
-                                <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                                    <div class="bg-amber-500 h-2 rounded-full" style="width: ${longPct}%"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>`;
-
-            } else if (tabName === "style" || tabName === "coherence") {
-                // Show dynamic loading
-                container.innerHTML = `
-                    <div class="flex flex-col items-center justify-center py-12 space-y-3">
-                        <svg class="animate-spin h-8 w-8 text-indigo-600" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        <span class="text-sm text-slate-400 font-medium">${formatTranslation("relecture_ai_generating") || "Generating AI review..."}</span>
-                    </div>`;
-
-                try {
-                    const res = await fetch('/api/relecture/ai', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            category: tabName,
-                            text: text,
-                            model: projectData.settings.ai_model || "llama3",
-                            temperature: projectData.settings.ai_temperature || 0.7,
-                            lang: activeLang
-                        })
-                    });
-
-                    if (res.ok) {
-                        const data = await res.json();
-                        const mdHtml = data.feedback || data.message || "";
-
-                        let modelBadge = `<span class="bg-indigo-50 border border-indigo-100 text-indigo-700 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ml-2">${data.model || "Local AI"}</span>`;
-                        if (data.status === "offline_fallback") {
-                            modelBadge = `<span class="bg-amber-50 border border-amber-100 text-amber-700 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ml-2">${data.model || "Offline Sim"}</span>`;
-                        }
-
-                        container.innerHTML = `
-                            <div class="space-y-4">
-                                <div class="flex justify-between items-center shrink-0">
-                                    <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">
-                                        ${tabName === 'style' ? (formatTranslation("relecture_style_feedback") || "STYLE FEEDBACK") : (formatTranslation("relecture_coherence_review") || "COHERENCE REVIEW")}
-                                    </p>
-                                    ${modelBadge}
-                                </div>
-                                <div class="bg-slate-50 border border-slate-150 rounded-xl p-4 text-slate-700 leading-relaxed max-h-[40vh] overflow-y-auto whitespace-pre-wrap">
-                                    ${mdHtml}
-                                </div>
-                            </div>`;
-                    } else {
-                        throw new Error("Failed response");
-                    }
-                } catch (err) {
-                    container.innerHTML = `
-                        <div class="p-4 text-center text-red-500 font-medium">
-                            ⚠️ ${formatTranslation("relecture_ai_error") || "An error occurred during generation."}
-                        </div>`;
-                }
-
-            } else if (tabName === "typographie") {
-                // Typography check
-                const doubleSpaces = (text.match(/  +/g) || []).length;
-
-                // Sentences missing capitals after periods
-                let missingCapitals = 0;
-                const periodRegex = /[.!?]\s+([a-z])/g;
-                let match;
-                while ((match = periodRegex.exec(text)) !== null) {
-                    missingCapitals++;
-                }
-
-                // Empty paragraph punctuation check
-                const paragraphs = text.split('\n').map(p => p.trim()).filter(p => p);
-                let missingEndPunc = 0;
-                paragraphs.forEach(p => {
-                    const lastChar = p.slice(-1);
-                    if (lastChar && !/[.!?…"'\r\n]/.test(lastChar)) {
-                        missingEndPunc++;
-                    }
-                });
-
-                // Spacing issues before punctuation marks (French spacing)
-                let spacingIssues = 0;
-                if (activeLang === "fr") {
-                    const frSpacingRegex = /([^ \u00a0\s])([:;!?])/g;
-                    while ((match = frSpacingRegex.exec(text)) !== null) {
-                        spacingIssues++;
-                    }
-                }
-
-                const totalIssues = doubleSpaces + missingCapitals + missingEndPunc + spacingIssues;
-
-                if (totalIssues === 0) {
-                    container.innerHTML = `
-                        <div class="p-6 text-center text-emerald-600 font-medium space-y-2">
-                            <span>✨ Perfect!</span>
-                            <p class="text-sm text-slate-500">${formatTranslation("relecture_typo_perfect") || "No typographical errors detected. Your text is perfectly polished!"}</p>
-                        </div>`;
-                    return;
-                }
-
-                container.innerHTML = `
-                    <div class="space-y-4">
-                        <div class="flex justify-between items-center">
-                            <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">${formatTranslation("relecture_typo_control") || "TYPOGRAPHIC CONTROL"}</p>
-                            <button onclick="autoFixTypography()" class="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-all shadow-xs flex items-center space-x-1">
-                                <span>⚡</span>
-                                <span>${formatTranslation("relecture_autofix") || "Auto-fix"}</span>
-                            </button>
-                        </div>
-
-                        <div class="grid grid-cols-1 gap-2">
-                            ${doubleSpaces > 0 ? `
-                            <div class="flex items-center justify-between p-3 bg-red-50/50 border border-red-100 rounded-lg text-slate-700">
-                                <span>⚠️ <strong>${doubleSpaces}</strong> ${formatTranslation("relecture_typo_double_spaces") || "double space(s) detected."}</span>
-                            </div>` : ''}
-
-                            ${missingCapitals > 0 ? `
-                            <div class="flex items-center justify-between p-3 bg-red-50/50 border border-red-100 rounded-lg text-slate-700">
-                                <span>⚠️ <strong>${missingCapitals}</strong> ${formatTranslation("relecture_typo_missing_capitals") || "sentence(s) starting with lowercase."}</span>
-                            </div>` : ''}
-
-                            ${missingEndPunc > 0 ? `
-                            <div class="flex items-center justify-between p-3 bg-red-50/50 border border-red-100 rounded-lg text-slate-700">
-                                <span>⚠️ <strong>${missingEndPunc}</strong> ${formatTranslation("relecture_typo_missing_end_punc") || "paragraph(s) missing final punctuation."}</span>
-                            </div>` : ''}
-
-                            ${spacingIssues > 0 ? `
-                            <div class="flex items-center justify-between p-3 bg-red-50/50 border border-red-100 rounded-lg text-slate-700">
-                                <span>⚠️ <strong>${spacingIssues}</strong> ${formatTranslation("relecture_typo_spacing_issues") || "missing space(s) before double punctuation (: ; ! ?)."}</span>
-                            </div>` : ''}
-                        </div>
-                    </div>`;
-            }
-        }
-
-        // AUTO-FIX TYPOGRAPHY RULES
-        function autoFixTypography() {
-            let text = document.getElementById('editor-content').value || "";
-
-            // 1. Double spaces
-            text = text.replace(/  +/g, " ");
-
-            // 2. Space after periods / comma / punctuation if missing
-            text = text.replace(/([.,!?;])([a-zA-Zà-ÿÀ-Ÿ])/g, "$1 $2");
-
-            // 3. Capitals after period, exclamation, question mark
-            text = text.replace(/([.!?]\s+)([a-zà-ÿ])/g, (match, p1, p2) => p1 + p2.toUpperCase());
-
-            // 4. Missing space before French double punctuation
-            if (activeLang === "fr") {
-                text = text.replace(/([^ \s])([:;!?])/g, "$1 $2");
-            }
-
-            // Write back to editor
-            document.getElementById('editor-content').value = text;
-
-            // Save project state
-            const node = findNodeById(activeNodeId);
-            if (node) {
-                node.content = text;
-                persistProject();
-            }
-
-            // Re-render tab
-            switchRelectureTab('typographie');
-        }
-
-        // INTERACTIVE SYNONYMS FROM REPETITIONS TAB
-        async function interactiveSynonymSearch(word) {
-            try {
-                const response = await fetch('/api/synonyms', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ word: word, lang: activeLang })
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    const synList = data.synonyms || [];
-
-                    const container = document.getElementById('relecture-analysis-container');
-                    if (synList.length === 0) {
-                        container.innerHTML = `
-                            <div class="space-y-4">
-                                <button onclick="switchRelectureTab('repetitions')" class="text-xs text-indigo-600 font-semibold flex items-center space-x-1">
-                                    <span>←</span> <span>${formatTranslation("relecture_back_to_repeats") || "Back to repetitions"}</span>
-                                </button>
-                                <div class="p-6 bg-slate-50 border border-slate-100 rounded-lg text-center text-slate-500">
-                                    ${(formatTranslation("relecture_no_synonyms_found") || "No synonyms found for \"{word}\".").replace("{word}", word)}
-                                </div>
-                            </div>`;
-                        return;
-                    }
-
-                    let html = `
-                        <div class="space-y-4">
-                            <button onclick="switchRelectureTab('repetitions')" class="text-xs text-indigo-600 font-semibold flex items-center space-x-1">
-                                <span>←</span> <span>${formatTranslation("relecture_back_to_repeats") || "Back to repetitions"}</span>
-                            </button>
-                            <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">${(formatTranslation("relecture_synonyms_for") || "SYNONYMS FOR \"{word}\"").replace("{word}", word)}</p>
-                            <div class="flex flex-wrap gap-2">`;
-
-                    synList.forEach(syn => {
-                        html += `
-                            <button onclick="substituteRelectureWord('${word}', '${syn}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg text-sm border border-indigo-200 transition-all font-semibold">
-                                ${syn}
-                            </button>`;
-                    });
-
-                    html += `</div></div>`;
-                    container.innerHTML = html;
-                }
-            } catch (err) {
-                console.error("Failed to query synonyms inside Relecture:", err);
-            }
-        }
-
-        function substituteRelectureWord(word, syn) {
-            const editor = document.getElementById('editor-content');
-            if (!editor) return;
-
-            let text = editor.value || "";
-            // Replace exact word match (case insensitive or exact)
-            const regex = new RegExp(`\\b${word}\\b`, 'gi');
-            text = text.replace(regex, syn);
-
-            editor.value = text;
-
-            // Save project state
-            const node = findNodeById(activeNodeId);
-            if (node) {
-                node.content = text;
-                persistProject();
-            }
-
-            // Reload relecture modal and statistics
-            openRelectureModal();
         }
 
         // Right Sidebar Resizer Logic

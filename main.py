@@ -6,7 +6,7 @@ from synonyms_db import get_synonyms
 from ai_client import OllamaClient
 
 app = Flask(__name__, template_folder='templates')
-ollama_client = OllamaClient()
+ai_client = OllamaClient()
 
 PROJECTS_DIR = "projects"
 ACTIVE_CONFIG_FILE = "active_project.txt"
@@ -700,8 +700,6 @@ def handle_ai_tool():
     text = payload.get("text", "").strip()
     inject_lore = payload.get("inject_lore_context", True)
     scene_id = payload.get("scene_id")
-    selected_model = payload.get("model", "llama3").strip()
-    temperature = payload.get("temperature", 0.7)
 
     if not text:
         return jsonify({"error": "No text selected"}), 400
@@ -732,21 +730,24 @@ def handle_ai_tool():
         {"role": "user", "content": text}
     ]
 
+    selected_model = payload.get("model", "llama3").strip()
+    temperature = payload.get("temperature", 0.7)
+
+    # Call Ollama via unified Client
     try:
-        res = ollama_client.chat(messages=messages, model=selected_model, temperature=temperature, timeout=15)
-        return jsonify(res)
+        res = ai_client.chat(messages, model=selected_model, temperature=temperature, timeout=15)
+        return jsonify({
+            "status": "success",
+            "message": res["message"],
+            "model": res["model"]
+        })
     except Exception:
-        is_french = any(word in text.lower() for word in ["le", "la", "les", "une", "un", "est", "et", "de", "je", "tu", "il"])
-        lang = "fr" if is_french else "en"
-        fallback_msg = ollama_client.get_fallback_response(
-            category=tool,
-            text_or_messages=text,
-            style=style,
-            lang=lang
-        )
+        # Fallback using unified client fallbacks
+        lang = "fr" if any(word in text.lower() for word in ["le", "la", "les", "une", "un", "est", "et", "de", "je", "tu", "il"]) else "en"
+        simulated_output = ai_client.get_fallback_response(tool, text, style=style, lang=lang)
         return jsonify({
             "status": "offline_fallback",
-            "message": fallback_msg,
+            "message": simulated_output,
             "model": "Simulation"
         })
 
@@ -765,40 +766,36 @@ def ai_chat():
         lore_ctx = get_scene_context(scene_id)
         if lore_ctx:
             system_msg = f"Voici des informations sur le contexte et le Lore de la scène en cours. Intègre et respecte ces éléments si nécessaire dans vos réponses :\n\n{lore_ctx}"
+            # Insert at the beginning or as a system prompt
             messages.insert(0, {"role": "system", "content": system_msg})
 
+    # Call Ollama via unified client
     try:
-        res = ollama_client.chat(messages=messages, model=selected_model, temperature=temperature, timeout=15)
-        return jsonify(res)
+        res = ai_client.chat(messages, model=selected_model, temperature=temperature, timeout=15)
+        return jsonify({
+            "status": "success",
+            "message": res["message"],
+            "model": res["model"]
+        })
     except Exception:
-        fallback_msg = ollama_client.get_fallback_response(
-            category="chat",
-            text_or_messages=messages,
-            lang=project.data["settings"].get("lang", "fr")
-        )
+        # Graceful fallback simulation
+        simulation = ai_client.get_fallback_response("chat", messages)
         return jsonify({
             "status": "offline_fallback",
-            "message": fallback_msg,
+            "message": simulation,
             "model": "Simulation"
         })
 
 @app.route('/api/ai/models', methods=['GET'])
 def get_ollama_models():
     """Queries the local Ollama API to fetch installed models."""
-    import urllib.request
-    ollama_url = "http://localhost:11434"
-    try:
-        req_tags = urllib.request.Request(f"{ollama_url}/api/tags", method="GET")
-        with urllib.request.urlopen(req_tags, timeout=2) as response:
-            tags_data = json.loads(response.read().decode('utf-8'))
-            models = tags_data.get("models", [])
-            # Return full list of installed model names
-            return jsonify({
-                "status": "success",
-                "models": [m["name"] for m in models]
-            })
-    except Exception:
-        # Ollama is offline or not installed
+    models = ai_client.get_available_models()
+    if models:
+        return jsonify({
+            "status": "success",
+            "models": models
+        })
+    else:
         return jsonify({
             "status": "offline",
             "models": []
@@ -856,20 +853,20 @@ def api_relecture_ai():
         {"role": "user", "content": text}
     ]
 
+    # Call Ollama via unified client
     try:
-        res = ollama_client.chat(messages=messages, model=selected_model, temperature=temperature, timeout=25)
-        # Rename 'message' key to 'feedback' for front-end compatibility
-        res["feedback"] = res.pop("message")
-        return jsonify(res)
+        res = ai_client.chat(messages, model=selected_model, temperature=temperature, timeout=25)
+        return jsonify({
+            "status": "success",
+            "feedback": res["message"],
+            "model": res["model"]
+        })
     except Exception:
-        fallback_msg = ollama_client.get_fallback_response(
-            category=f"relecture_{category}",
-            text_or_messages=text,
-            lang=lang
-        )
+        # Fallback using unified client fallbacks
+        simulated_feedback = ai_client.get_fallback_response(f"relecture_{category}", text, lang=lang)
         return jsonify({
             "status": "offline_fallback",
-            "feedback": fallback_msg,
+            "feedback": simulated_feedback,
             "model": "Simulation"
         })
 
