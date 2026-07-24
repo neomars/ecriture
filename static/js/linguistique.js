@@ -45,7 +45,7 @@
                         menu.innerHTML = `<div class="text-[10px] text-slate-400 p-2 italic">${activeLang === 'fr' ? 'Aucun synonyme' : 'No synonyms found'}</div>`;
                     } else {
                         menu.innerHTML = synonyms.map(syn => `
-                            <button onclick="applySynonymReplacement('${escapeHtml(syn)}')" class="w-full text-left px-2.5 py-1.5 hover:bg-slate-700 text-xs font-semibold rounded-md transition-colors block truncate">
+                            <button onclick="applySynonymReplacement('${escapeHtml(syn)}')" class="w-full text-left px-2.5 py-1.5 hover:bg-slate-700 text-slate-100 hover:text-white bg-transparent text-xs font-semibold rounded-md transition-colors block truncate">
                                 ${escapeHtml(syn)}
                             </button>
                         `).join('');
