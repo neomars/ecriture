@@ -58,6 +58,7 @@
 
 *   **Backend** : Python 3, Flask.
 *   **Exportations** : Python-docx, ReportLab (PDF), formatage de paquets zip binaires natifs pour ODT, ePub, et Mobipocket.
+*   **Données Lexicales & Synonymes** : Intègre la base de données Lexique.org pour la lemmatisation automatique ainsi que la ressource sémantique libre [WOLF](https://almanach.inria.fr/software_and_resources/WOLF-en.html) (Wordnet Libre du Français, développé par l'ALMAnaCH à l'Inria) pour une recherche de synonymes riche et contextuelle.
 *   **Stockage des Données** : Format JSON structuré (`projects/` directory) géré par un module de gestion robuste (`project_manager.py`).
 *   **Frontend** : HTML5, Tailwind CSS, JavaScript moderne (Vanilla JS, Single Page Application).
 *   **Localisation** : Fichiers de traduction externes JSON (`locales/fr.json`, `locales/en.json`) pour un découplage total.
@@ -159,6 +160,7 @@ Ouvrez votre navigateur web et accédez à :
 
 *   **Backend**: Python 3, Flask.
 *   **Exports**: Python-docx, ReportLab (PDF), native zip structural stream packets for ODT, ePub, and Mobipocket.
+*   **Lexical Data & Synonyms**: Integrates Lexique.org database for automatic lemmatization and the free French wordnet [WOLF](https://almanach.inria.fr/software_and_resources/WOLF-en.html) (Wordnet Libre du Français, developed by ALMAnaCH at Inria) for rich and contextual synonyms lookup.
 *   **Data Storage**: Structured JSON formatted projects (saved under `/projects/` directory) powered by a robust backend manager (`project_manager.py`).
 *   **Frontend**: HTML5, Tailwind CSS, Modern JavaScript (Vanilla JS, Single Page Application style).
 *   **Localization**: Decoupled external translation files (`locales/fr.json`, `locales/en.json`).

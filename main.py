@@ -5,7 +5,7 @@ from project_manager import NovelProject
 from ai_client import OllamaClient
 
 def get_synonyms(word, lang="fr"):
-    """Lookup other orthographic forms with same lemma inside lexique.db SQLite database."""
+    """Lookup synonyms from the WOLF synonyms table in lexique.db, utilizing lemma fallback."""
     if lang != "fr":
         return []
 
@@ -22,23 +22,30 @@ def get_synonyms(word, lang="fr"):
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
 
-        # Get the lemma of the selected word
-        cursor.execute("SELECT lemme FROM lexique WHERE ortho = ? LIMIT 1", (w_clean,))
-        row = cursor.fetchone()
-        if not row or not row[0]:
-            conn.close()
-            return []
-
-        lemma = row[0]
-
-        # Get other words sharing the same lemma
+        # 1. Query synonyms for the clean word itself
         cursor.execute(
-            "SELECT DISTINCT ortho FROM lexique WHERE lemme = ? AND ortho != ? ORDER BY freqlemlivres DESC LIMIT 20",
-            (lemma, w_clean)
+            "SELECT DISTINCT synonym FROM synonyms WHERE word = ? LIMIT 20",
+            (w_clean,)
         )
         syns = [r[0] for r in cursor.fetchall() if r[0]]
+
+        # 2. Get the lemma of the selected word
+        cursor.execute("SELECT lemme FROM lexique WHERE ortho = ? LIMIT 1", (w_clean,))
+        row = cursor.fetchone()
+        if row and row[0]:
+            lemma = row[0].lower().strip()
+            if lemma != w_clean:
+                # Query synonyms of the lemma
+                cursor.execute(
+                    "SELECT DISTINCT synonym FROM synonyms WHERE word = ? LIMIT 20",
+                    (lemma,)
+                )
+                for r in cursor.fetchall():
+                    if r[0] and r[0] not in syns and r[0] != w_clean:
+                        syns.append(r[0])
+
         conn.close()
-        return syns
+        return syns[:20]
     except Exception as e:
         print("Error querying synonyms from lexique.db:", e)
         return []
