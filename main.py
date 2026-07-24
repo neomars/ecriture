@@ -2,8 +2,46 @@ import os
 import json
 from flask import Flask, jsonify, request, send_file, render_template
 from project_manager import NovelProject
-from synonyms_db import get_synonyms
 from ai_client import OllamaClient
+
+def get_synonyms(word, lang="fr"):
+    """Lookup other orthographic forms with same lemma inside lexique.db SQLite database."""
+    if lang != "fr":
+        return []
+
+    db_path = "lexique.db"
+    if not os.path.exists(db_path):
+        return []
+
+    w_clean = word.lower().strip(".,!?;:\"'()[]{}«»")
+    if not w_clean:
+        return []
+
+    import sqlite3
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+
+        # Get the lemma of the selected word
+        cursor.execute("SELECT lemme FROM lexique WHERE ortho = ? LIMIT 1", (w_clean,))
+        row = cursor.fetchone()
+        if not row or not row[0]:
+            conn.close()
+            return []
+
+        lemma = row[0]
+
+        # Get other words sharing the same lemma
+        cursor.execute(
+            "SELECT DISTINCT ortho FROM lexique WHERE lemme = ? AND ortho != ? ORDER BY freqlemlivres DESC LIMIT 20",
+            (lemma, w_clean)
+        )
+        syns = [r[0] for r in cursor.fetchall() if r[0]]
+        conn.close()
+        return syns
+    except Exception as e:
+        print("Error querying synonyms from lexique.db:", e)
+        return []
 
 app = Flask(__name__, template_folder='templates')
 ai_client = OllamaClient()
