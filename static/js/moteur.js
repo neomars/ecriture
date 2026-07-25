@@ -682,6 +682,31 @@
         }
 
         // ACTIVE WORKSPACE REFRESH
+        function onCombinedEditorInput(val) {
+            let chapter = null;
+            if (activeNodeType === "scene") {
+                chapter = findParentChapter(activeNodeId);
+            } else {
+                chapter = findNodeById(activeNodeId);
+            }
+            if (!chapter || !chapter.children || chapter.children.length === 0) return;
+
+            // Split the edited text into lines
+            const lines = val.split('\n');
+            const numScenes = chapter.children.length;
+            const linesPerScene = Math.max(1, Math.ceil(lines.length / numScenes));
+
+            chapter.children.forEach((scene, idx) => {
+                const start = idx * linesPerScene;
+                const end = start + linesPerScene;
+                scene.content = lines.slice(start, end).join('\n');
+            });
+
+            // Trigger save and update word counts
+            triggerAutoSave();
+            updateEditorWordsCount();
+        }
+
         function refreshActiveWorkspace() {
             if (activeNodeType === "scene" || activeNodeType === "chapter") {
                 let chapter = null;
@@ -698,57 +723,32 @@
                     switchView('editor');
                     const wrapper = document.getElementById('editor-layout-wrapper');
 
-                    // Render Chapter header & scenes stacked
-                    let html = `
-                        <!-- Chapter Header -->
-                        <div class="chapter-header-block mb-10 pb-4 border-b border-slate-200 shrink-0">
-                            <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider">Chapitre / Chapter</span>
-                            <input type="text" id="editor-title" value="${escapeHtml(chapter.title)}" oninput="onChapterBlockInput('${chapter.id}', 'title', this.value)" placeholder="Titre du chapitre..." class="w-full text-3xl font-bold font-georgia border-none outline-none focus:ring-0 text-slate-900 placeholder-slate-300 bg-transparent mt-1">
-                        </div>
-                    `;
-
                     chapter.children = chapter.children || [];
+                     let html = '';
                     if (chapter.children.length === 0) {
-                        html += `
+                         html = `
                             <div class="text-slate-400 italic text-sm text-center py-10">
                                 Aucune scène dans ce chapitre. Créez-en une pour commencer à rédiger !
                             </div>
                         `;
                     } else {
-                        chapter.children.forEach(scene => {
-                            const isCurrentActive = (scene.id === targetSceneId);
-                            const textareaId = isCurrentActive ? 'editor-content' : `editor-content-${scene.id}`;
-                            html += `
-                                <div id="scene-block-${scene.id}" class="scene-block mb-12 pb-12 border-b border-slate-100">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Scène / Scene</span>
-                                    </div>
-                                    <input type="text" value="${escapeHtml(scene.title)}" oninput="onSceneBlockInput('${scene.id}', 'title', this.value)" placeholder="Titre de la scène..." class="w-full text-2xl font-bold font-georgia border-none outline-none focus:ring-0 text-slate-800 placeholder-slate-300 pb-2 mb-4 bg-transparent">
-                                    <textarea id="${textareaId}" data-scene-id="${scene.id}" onfocus="onSceneBlockFocus('${scene.id}')" oninput="onSceneBlockInput('${scene.id}', 'content', this.value); autoResizeTextarea(this)" placeholder="Commencez à rédiger votre scène ici..." class="w-full resize-none font-georgia text-lg leading-relaxed text-slate-800 border-none outline-none focus:ring-0 placeholder-slate-300 bg-transparent min-h-[150px]">${escapeHtml(scene.content || "")}</textarea>
-                                </div>
-                            `;
-                        });
+                         const compiledText = chapter.children.map(scene => scene.content || "").join("\n");
+                         html = `
+                             <div class="w-full h-full flex flex-col p-4">
+                                 <textarea id="editor-content" data-chapter-id="${chapter.id}" oninput="onCombinedEditorInput(this.value); autoResizeTextarea(this)" placeholder="Commencez à rédiger ici..." class="w-full resize-none font-georgia text-lg leading-relaxed text-slate-800 border-none outline-none focus:ring-0 placeholder-slate-300 bg-transparent min-h-[500px]">${escapeHtml(compiledText)}</textarea>
+                             </div>
+                         `;
                     }
 
                     wrapper.innerHTML = html;
 
-                    // Compute textareas heights and scroll to active
+                     // Compute textarea height and focus
                     setTimeout(() => {
-                        // Trigger auto-resize on all textareas
-                        const textareas = wrapper.querySelectorAll('textarea');
-                        textareas.forEach(ta => autoResizeTextarea(ta));
-
-                        // Navigation scrolling
-                        if (targetSceneId) {
-                            const activeBlock = document.getElementById(`scene-block-${targetSceneId}`);
-                            if (activeBlock) {
-                                activeBlock.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                // Focus active scene input
-                                const activeTa = document.getElementById('editor-content');
-                                if (activeTa) activeTa.focus();
-                            }
+                         const activeTa = document.getElementById('editor-content');
+                         if (activeTa) {
+                             autoResizeTextarea(activeTa);
+                             activeTa.focus();
                         } else {
-                            // Sliced at chapter level, scroll to top of editor container
                             const scrollContainer = document.getElementById('editor-scroll-container');
                             if (scrollContainer) scrollContainer.scrollTop = 0;
                         }
@@ -919,24 +919,16 @@
 
         // INPUT CHANGED HANDLERS (EDITOR / RESOURCE)
         function onEditorInput(field, val) {
-            if (activeNodeType === "scene") {
-                const node = findNodeById(activeNodeId);
-                if (node) {
-                    node[field] = val;
-                    if (field === 'title') {
-                        // Refresh tree live to show title change
+            if (activeNodeType === "scene" || activeNodeType === "chapter") {
+                if (field === 'content') {
+                    onCombinedEditorInput(val);
+                } else if (field === 'title') {
+                    const node = findNodeById(activeNodeId);
+                    if (node) {
+                        node.title = val;
                         renderTree();
-                    } else if (field === 'content') {
-                        updateEditorWordsCount(val);
+                        triggerAutoSave();
                     }
-                    triggerAutoSave();
-                }
-            } else if (activeNodeType === "chapter" && field === "title") {
-                const node = findNodeById(activeNodeId);
-                if (node) {
-                    node.title = val;
-                    renderTree();
-                    triggerAutoSave();
                 }
             }
         }
