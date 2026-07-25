@@ -1,4 +1,65 @@
 
+        function applySmartTypography(editor) {
+            const val = editor.value;
+            const start = editor.selectionStart;
+
+            // 1. Smart Quotes (Guillemets intelligents « »)
+            if (start > 0 && val[start - 1] === '"') {
+                const before = val.substring(0, start - 1);
+                const lastChar = before.slice(-1);
+                const isOpening = !lastChar || /\s|[.,!?;:([{\-]/.test(lastChar);
+                const quoteStr = isOpening ? '«\u00A0' : '\u00A0»';
+
+                editor.value = before + quoteStr + val.substring(start);
+                const newCursor = before.length + quoteStr.length;
+                editor.setSelectionRange(newCursor, newCursor);
+            }
+
+            // 2. Em dash (Tiret cadratin — from consecutive '--')
+            if (start > 1 && val.substring(start - 2, start) === '--') {
+                const before = val.substring(0, start - 2);
+                const dashStr = '—';
+
+                editor.value = before + dashStr + val.substring(start);
+                const newCursor = before.length + dashStr.length;
+                editor.setSelectionRange(newCursor, newCursor);
+            }
+        }
+
+        function applySelectionFormatting(type) {
+            const editor = document.getElementById('editor-content');
+            if (!editor) return;
+
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            const selectedText = editor.value.substring(start, end);
+
+            let formatted = selectedText;
+            if (type === 'italic') {
+                formatted = `<i>${selectedText}</i>`;
+            } else if (type === 'bold') {
+                formatted = `<b>${selectedText}</b>`;
+            } else if (type === 'bold_italic') {
+                formatted = `<b><i>${selectedText}</i></b>`;
+            } else if (type === 'smallcaps') {
+                formatted = `<span style="font-variant: small-caps;">${selectedText}</span>`;
+            }
+
+            editor.value = editor.value.substring(0, start) + formatted + editor.value.substring(end);
+
+            // Restore selection around the formatted text
+            const newCursorPos = start + formatted.length;
+            editor.setSelectionRange(newCursorPos, newCursorPos);
+            editor.focus();
+
+            // Trigger updates and persistence
+            onEditorInput('content', editor.value);
+
+            // Hide selection menu
+            const selectionMenu = document.getElementById('ai-selection-menu');
+            if (selectionMenu) selectionMenu.classList.add('hidden');
+        }
+
         function toggleSynonymsDropdown(event) {
             event.stopPropagation();
             const menu = document.getElementById('synonyms-dropdown-menu');

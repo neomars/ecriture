@@ -1,5 +1,6 @@
 import os
 import json
+import re
 from flask import Flask, jsonify, request, send_file, render_template
 from project_manager import NovelProject
 from ai_client import OllamaClient
@@ -395,6 +396,44 @@ def api_synonyms():
     syns = get_synonyms(word, lang)
     return jsonify({"synonyms": syns})
 
+def add_docx_formatted_paragraph(doc, text):
+    """Helper to add paragraphs with basic <i>, <b> and <span style='font-variant: small-caps;'> styling."""
+    paragraphs = text.split('\n')
+    for para in paragraphs:
+        p = doc.add_paragraph()
+        parts = re.split(r'(<b><i>|</i></b>|<b>|</b>|<i>|</i>|<span style="font-variant: small-caps;">|</span>)', para)
+
+        is_bold = False
+        is_italic = False
+        is_smallcaps = False
+
+        for part in parts:
+            if part == '<b><i>':
+                is_bold = True
+                is_italic = True
+            elif part == '</i></b>':
+                is_bold = False
+                is_italic = False
+            elif part == '<b>':
+                is_bold = True
+            elif part == '</b>':
+                is_bold = False
+            elif part == '<i>':
+                is_italic = True
+            elif part == '</i>':
+                is_italic = False
+            elif part == '<span style="font-variant: small-caps;">':
+                is_smallcaps = True
+            elif part == '</span>':
+                is_smallcaps = False
+            else:
+                if part:
+                    run = p.add_run(part)
+                    run.bold = is_bold
+                    run.italic = is_italic
+                    if is_smallcaps:
+                        run.font.small_caps = True
+
 @app.route('/api/export', methods=['POST'])
 def export_draft():
     """Compiles the entire manuscript and exports it in the chosen format."""
@@ -436,7 +475,7 @@ def export_draft():
                 doc.add_heading(chap['title'], level=1)
                 for scene in chap.get("children", []):
                     doc.add_heading(scene['title'], level=2)
-                    doc.add_paragraph(scene.get('content', ''))
+                    add_docx_formatted_paragraph(doc, scene.get('content', ''))
 
             doc.save(temp_file_path)
             return send_file(

@@ -683,6 +683,12 @@
 
         // ACTIVE WORKSPACE REFRESH
         function onCombinedEditorInput(val) {
+            const editor = document.getElementById('editor-content');
+            if (editor) {
+                applySmartTypography(editor);
+                val = editor.value;
+            }
+
             let chapter = null;
             if (activeNodeType === "scene") {
                 chapter = findParentChapter(activeNodeId);
@@ -748,6 +754,30 @@
                          if (activeTa) {
                              autoResizeTextarea(activeTa);
                              activeTa.focus();
+
+                             if (targetSceneId) {
+                                 // Calculate starting character offset of the target scene
+                                 let startOffset = 0;
+                                 if (chapter && chapter.children) {
+                                     for (const child of chapter.children) {
+                                         if (child.id === targetSceneId) {
+                                             break;
+                                         }
+                                         startOffset += (child.content || "").length + 1; // +1 for newline separator \n
+                                     }
+                                 }
+
+                                 // Place cursor at the starting offset of the scene
+                                 activeTa.selectionStart = startOffset;
+                                 activeTa.selectionEnd = startOffset;
+
+                                 // Scroll editor-scroll-container to make this scene visible
+                                 const coords = getCaretCoordinates(activeTa, startOffset);
+                                 const scrollContainer = document.getElementById('editor-scroll-container');
+                                 if (coords && scrollContainer) {
+                                     scrollContainer.scrollTop = coords.top - 50; // Scroll with padding
+                                 }
+                             }
                         } else {
                             const scrollContainer = document.getElementById('editor-scroll-container');
                             if (scrollContainer) scrollContainer.scrollTop = 0;
