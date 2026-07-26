@@ -106,13 +106,13 @@
             // Listen for text selection inside the editor using delegation to survive dynamic editor recreations
             document.addEventListener('mouseup', function(e) {
                 const editor = document.getElementById('editor-content');
-                if (editor && e.target === editor) {
+                if (editor && editor.contains(e.target)) {
                     handleTextSelection(e);
                 }
             });
             document.addEventListener('keyup', function(e) {
                 const editor = document.getElementById('editor-content');
-                if (editor && e.target === editor) {
+                if (editor && editor.contains(e.target)) {
                     handleTextSelection(e);
                 }
             });
@@ -681,12 +681,72 @@
             }
         }
 
+        // TYPOGRAPHY ASSISTANT FOR CONTENTEDITABLE
+        function handleContentEditableTypography(e) {
+            if (e.key === '"') {
+                e.preventDefault();
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    const range = selection.getRangeAt(0);
+
+                    const container = range.startContainer;
+                    const offset = range.startOffset;
+                    let isOpening = true;
+                    if (container.nodeType === Node.TEXT_NODE) {
+                        const text = container.nodeValue;
+                        const lastChar = offset > 0 ? text[offset - 1] : "";
+                        isOpening = !lastChar || /\s|[.,!?;:([{\-]/.test(lastChar);
+                    }
+
+                    const quoteStr = isOpening ? '«\u00A0' : '\u00A0»';
+                    const node = document.createTextNode(quoteStr);
+                    range.insertNode(node);
+                    range.setStartAfter(node);
+                    range.setEndAfter(node);
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+
+                    const editor = document.getElementById('editor-content');
+                    if (editor) {
+                        onCombinedEditorInput(editor.innerHTML);
+                    }
+                }
+            } else if (e.key === '-') {
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    const range = selection.getRangeAt(0);
+                    const container = range.startContainer;
+                    const offset = range.startOffset;
+                    if (container.nodeType === Node.TEXT_NODE) {
+                        const text = container.nodeValue;
+                        if (offset > 0 && text[offset - 1] === '-') {
+                            e.preventDefault();
+                            range.setStart(container, offset - 1);
+                            range.setEnd(container, offset);
+                            range.deleteContents();
+
+                            const dashNode = document.createTextNode('—');
+                            range.insertNode(dashNode);
+                            range.setStartAfter(dashNode);
+                            range.setEndAfter(dashNode);
+                            selection.removeAllRanges();
+                            selection.addRange(range);
+
+                            const editor = document.getElementById('editor-content');
+                            if (editor) {
+                                onCombinedEditorInput(editor.innerHTML);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         // ACTIVE WORKSPACE REFRESH
         function onCombinedEditorInput(val) {
             const editor = document.getElementById('editor-content');
             if (editor) {
-                applySmartTypography(editor);
-                val = editor.value;
+                val = editor.innerHTML;
             }
 
             let chapter = null;
@@ -697,8 +757,15 @@
             }
             if (!chapter || !chapter.children || chapter.children.length === 0) return;
 
+            // Clean any <span id="scene-anchor-..."> elements before saving to database
+            const temp = document.createElement('div');
+            temp.innerHTML = val;
+            const anchors = temp.querySelectorAll('[id^="scene-anchor-"]');
+            anchors.forEach(a => a.remove());
+            val = temp.innerHTML;
+
             // Split the edited text into lines
-            const lines = val.split('\n');
+            const lines = val.split(/<br\s*\/?>/i);
             const numScenes = chapter.children.length;
             const linesPerScene = Math.max(1, Math.ceil(lines.length / numScenes));
 
@@ -738,44 +805,60 @@
                             </div>
                         `;
                     } else {
-                         const compiledText = chapter.children.map(scene => scene.content || "").join("\n");
+                         let htmlParts = [];
+                         chapter.children.forEach(scene => {
+                             htmlParts.push(`<span id="scene-anchor-${scene.id}"></span>` + (scene.content || "").replace(/\n/g, '<br>'));
+                         });
+                         const compiledHtml = htmlParts.join('<br>');
+                         const placeholderText = formatTranslation("editor_placeholder") || "Commencez à rédiger votre chef-d'œuvre ici...";
                          html = `
                              <div class="w-full h-full flex flex-col p-4">
-                                 <textarea id="editor-content" data-chapter-id="${chapter.id}" oninput="onCombinedEditorInput(this.value); autoResizeTextarea(this)" placeholder="Commencez à rédiger ici..." class="w-full resize-none font-georgia text-lg leading-relaxed text-slate-800 border-none outline-none focus:ring-0 placeholder-slate-300 bg-transparent min-h-[500px]">${escapeHtml(compiledText)}</textarea>
+                                 <div id="editor-content"
+                                      data-chapter-id="${chapter.id}"
+                                      contenteditable="true"
+                                      data-placeholder="${placeholderText}"
+                                      class="w-full font-georgia text-lg leading-relaxed text-slate-800 border-none outline-none focus:ring-0 bg-transparent min-h-[500px]"
+                                      style="white-space: pre-wrap; word-wrap: break-word; outline: none;">${compiledHtml}</div>
                              </div>
                          `;
                     }
 
                     wrapper.innerHTML = html;
 
-                     // Compute textarea height and focus
+                     // Focus and setup event listeners for contenteditable
                     setTimeout(() => {
                          const activeTa = document.getElementById('editor-content');
                          if (activeTa) {
-                             autoResizeTextarea(activeTa);
                              activeTa.focus();
 
-                             if (targetSceneId) {
-                                 // Calculate starting character offset of the target scene
-                                 let startOffset = 0;
-                                 if (chapter && chapter.children) {
-                                     for (const child of chapter.children) {
-                                         if (child.id === targetSceneId) {
-                                             break;
-                                         }
-                                         startOffset += (child.content || "").length + 1; // +1 for newline separator \n
-                                     }
+                             // Add input listener
+                             activeTa.addEventListener('input', function() {
+                                 onCombinedEditorInput(activeTa.innerHTML);
+                             });
+
+                             // Add keydown listener for typography and Enter handling
+                             activeTa.addEventListener('keydown', function(e) {
+                                 if (e.key === 'Enter') {
+                                     e.preventDefault();
+                                     document.execCommand('insertLineBreak');
+                                     onCombinedEditorInput(activeTa.innerHTML);
+                                 } else if (e.key === '"' || e.key === '-') {
+                                     handleContentEditableTypography(e);
                                  }
+                             });
 
-                                 // Place cursor at the starting offset of the scene
-                                 activeTa.selectionStart = startOffset;
-                                 activeTa.selectionEnd = startOffset;
+                             if (targetSceneId) {
+                                 const anchor = document.getElementById(`scene-anchor-${targetSceneId}`);
+                                 if (anchor) {
+                                     anchor.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
-                                 // Scroll editor-scroll-container to make this scene visible
-                                 const coords = getCaretCoordinates(activeTa, startOffset);
-                                 const scrollContainer = document.getElementById('editor-scroll-container');
-                                 if (coords && scrollContainer) {
-                                     scrollContainer.scrollTop = coords.top - 50; // Scroll with padding
+                                     // Focus and place cursor right after the anchor
+                                     const selection = window.getSelection();
+                                     const range = document.createRange();
+                                     range.setStartAfter(anchor);
+                                     range.collapse(true);
+                                     selection.removeAllRanges();
+                                     selection.addRange(range);
                                  }
                              }
                         } else {
@@ -1281,7 +1364,7 @@
         function updateEditorWordsCount(text) {
             if (text === undefined) {
                 const el = document.getElementById('editor-content');
-                text = el ? (el.value || "") : "";
+                text = el ? (el.innerText || "") : "";
             }
             const cleanText = text.trim();
             const words = cleanText ? cleanText.split(/\s+/).length : 0;

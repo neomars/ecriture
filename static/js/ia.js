@@ -13,29 +13,34 @@
                 return;
             }
 
-            const start = editor.selectionStart;
-            const end = editor.selectionEnd;
-            const text = editor.value.substring(start, end).trim();
+            const selection = window.getSelection();
+            if (selection && selection.rangeCount > 0 && !selection.isCollapsed) {
+                const range = selection.getRangeAt(0);
+                const text = selection.toString().trim();
 
-            if (start !== end && text.length > 0) {
-                activeSelection = { start, end, text: editor.value.substring(start, end) };
+                if (text.length > 0) {
+                    activeSelection = { text: selection.toString() };
 
-                // Calculate position relative to editor contents
-                const caretCoords = getCaretCoordinates(editor, start);
+                    // Get selection bounding rect to position the menu perfectly below it
+                    const rect = range.getBoundingClientRect();
+                    const container = editor.closest('main');
+                    const containerRect = container.getBoundingClientRect();
 
-                // Offset calculation relative to the editor's bounding box and scroll offset
-                const rect = editor.getBoundingClientRect();
-                const container = editor.closest('main');
-                const containerRect = container.getBoundingClientRect();
+                    // Calculate positioning relative to the container
+                    const menuLeft = rect.left - containerRect.left;
+                    const menuTop = rect.bottom - containerRect.top + 8; // perfectly placed below selection
 
-                // Compute exact absolute coordinates within the main workspace container
-                const menuLeft = rect.left - containerRect.left + caretCoords.left - editor.scrollLeft;
-                const menuTop = rect.top - containerRect.top + caretCoords.top + caretCoords.height - editor.scrollTop + 8; // placed perfectly below selection
-
-                menu.style.left = `${Math.max(10, Math.min(menuLeft, containerRect.width - 250))}px`;
-                menu.style.top = `${menuTop}px`;
-                menu.classList.remove('hidden');
+                    menu.style.left = `${Math.max(10, Math.min(menuLeft, containerRect.width - 250))}px`;
+                    menu.style.top = `${menuTop}px`;
+                    menu.classList.remove('hidden');
+                } else {
+                    hideSelectionMenu(e);
+                }
             } else {
+                hideSelectionMenu(e);
+            }
+
+            function hideSelectionMenu(e) {
                 // Wait slightly to verify click target to prevent immediate hide on click
                 setTimeout(() => {
                     const activeEl = document.activeElement;
@@ -148,21 +153,33 @@
             const resultContainer = document.getElementById('ai-preview-result-container');
             if (!editor || !resultContainer) return;
 
-            const val = editor.value;
-            const start = activeSelection.start;
-            const end = activeSelection.end;
+            editor.focus();
             const suggestion = resultContainer.innerText;
 
-            // Perform clean replacement
-            editor.value = val.substring(0, start) + suggestion + val.substring(end);
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                range.deleteContents();
 
-            // Reposition cursor
-            const newCursorPos = start + suggestion.length;
-            editor.setSelectionRange(newCursorPos, newCursorPos);
-            editor.focus();
+                // Escape and convert newlines to <br> to preserve formatting in suggestions
+                const tempDiv = document.createElement('div');
+                tempDiv.innerText = suggestion;
+                const formattedHtml = tempDiv.innerHTML.replace(/\n/g, '<br>');
+
+                const fragment = range.createContextualFragment(formattedHtml);
+                const lastNode = fragment.lastChild;
+                range.insertNode(fragment);
+
+                if (lastNode) {
+                    range.setStartAfter(lastNode);
+                    range.setEndAfter(lastNode);
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                }
+            }
 
             // Trigger updates and persistence
-            onEditorInput('content', editor.value);
+            onEditorInput('content', editor.innerHTML);
             closeAiPreview();
         }
 
@@ -173,7 +190,7 @@
             let text = "";
             if (activeRelectureScope === "scene") {
                 const editor = document.getElementById('editor-content');
-                text = editor ? editor.value : "";
+                text = editor ? editor.innerText : "";
             } else {
                 text = getChapterText();
             }

@@ -1,59 +1,45 @@
 
         function applySmartTypography(editor) {
-            const val = editor.value;
-            const start = editor.selectionStart;
-
-            // 1. Smart Quotes (Guillemets intelligents « »)
-            if (start > 0 && val[start - 1] === '"') {
-                const before = val.substring(0, start - 1);
-                const lastChar = before.slice(-1);
-                const isOpening = !lastChar || /\s|[.,!?;:([{\-]/.test(lastChar);
-                const quoteStr = isOpening ? '«\u00A0' : '\u00A0»';
-
-                editor.value = before + quoteStr + val.substring(start);
-                const newCursor = before.length + quoteStr.length;
-                editor.setSelectionRange(newCursor, newCursor);
-            }
-
-            // 2. Em dash (Tiret cadratin — from consecutive '--')
-            if (start > 1 && val.substring(start - 2, start) === '--') {
-                const before = val.substring(0, start - 2);
-                const dashStr = '—';
-
-                editor.value = before + dashStr + val.substring(start);
-                const newCursor = before.length + dashStr.length;
-                editor.setSelectionRange(newCursor, newCursor);
-            }
+            // No-op for contenteditable, handled via keydown handler to prevent cursor resetting
         }
 
         function applySelectionFormatting(type) {
             const editor = document.getElementById('editor-content');
             if (!editor) return;
 
-            const start = editor.selectionStart;
-            const end = editor.selectionEnd;
-            const selectedText = editor.value.substring(start, end);
-
-            let formatted = selectedText;
-            if (type === 'italic') {
-                formatted = `<i>${selectedText}</i>`;
-            } else if (type === 'bold') {
-                formatted = `<b>${selectedText}</b>`;
-            } else if (type === 'bold_italic') {
-                formatted = `<b><i>${selectedText}</i></b>`;
-            } else if (type === 'smallcaps') {
-                formatted = `<span style="font-variant: small-caps;">${selectedText}</span>`;
-            }
-
-            editor.value = editor.value.substring(0, start) + formatted + editor.value.substring(end);
-
-            // Restore selection around the formatted text
-            const newCursorPos = start + formatted.length;
-            editor.setSelectionRange(newCursorPos, newCursorPos);
             editor.focus();
 
+            if (type === 'italic') {
+                document.execCommand('italic', false, null);
+            } else if (type === 'bold') {
+                document.execCommand('bold', false, null);
+            } else if (type === 'bold_italic') {
+                document.execCommand('bold', false, null);
+                document.execCommand('italic', false, null);
+            } else if (type === 'smallcaps') {
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    const range = selection.getRangeAt(0);
+                    const selectedText = range.toString();
+                    if (selectedText.length > 0) {
+                        const span = document.createElement('span');
+                        span.style.fontVariant = 'small-caps';
+                        span.appendChild(document.createTextNode(selectedText));
+
+                        range.deleteContents();
+                        range.insertNode(span);
+
+                        // Select the span text
+                        const newRange = document.createRange();
+                        newRange.selectNodeContents(span);
+                        selection.removeAllRanges();
+                        selection.addRange(newRange);
+                    }
+                }
+            }
+
             // Trigger updates and persistence
-            onEditorInput('content', editor.value);
+            onEditorInput('content', editor.innerHTML);
 
             // Hide selection menu
             const selectionMenu = document.getElementById('ai-selection-menu');
@@ -124,20 +110,23 @@
             const editor = document.getElementById('editor-content');
             if (!editor) return;
 
-            const val = editor.value;
-            const start = activeSelection.start;
-            const end = activeSelection.end;
-
-            // Perform replacement
-            editor.value = val.substring(0, start) + synonym + val.substring(end);
-
-            // Reposition cursor
-            const newCursorPos = start + synonym.length;
-            editor.setSelectionRange(newCursorPos, newCursorPos);
             editor.focus();
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                range.deleteContents();
+
+                const node = document.createTextNode(synonym);
+                range.insertNode(node);
+
+                range.setStartAfter(node);
+                range.setEndAfter(node);
+                selection.removeAllRanges();
+                selection.addRange(range);
+            }
 
             // Trigger updates and persistence
-            onEditorInput('content', editor.value);
+            onEditorInput('content', editor.innerHTML);
 
             // Close dropdown and menu
             const selectionMenu = document.getElementById('ai-selection-menu');
@@ -259,11 +248,10 @@
                 const editor = document.getElementById('editor-content');
                 if (!editor) return;
 
-                let content = editor.value;
+                let content = editor.innerHTML;
                 content = content.replace(regex, newWord);
-                editor.value = content;
-                onSceneBlockInput(activeNodeId, 'content', content);
-                autoResizeTextarea(editor);
+                editor.innerHTML = content;
+                onCombinedEditorInput(editor.innerHTML);
             } else {
                 // Replace in all scenes of the parent chapter
                 const chapter = findParentChapter(activeNodeId);
@@ -385,9 +373,18 @@
                 const editor = document.getElementById('editor-content');
                 if (!editor) return;
 
-                editor.value = correctText(editor.value);
-                onSceneBlockInput(activeNodeId, 'content', editor.value);
-                autoResizeTextarea(editor);
+                // Walk only text nodes to avoid corrupting HTML tags and attributes
+                const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, null, false);
+                let node;
+                const nodesToCorrect = [];
+                while (node = walker.nextNode()) {
+                    nodesToCorrect.push(node);
+                }
+                nodesToCorrect.forEach(textNode => {
+                    textNode.nodeValue = correctText(textNode.nodeValue);
+                });
+
+                onCombinedEditorInput(editor.innerHTML);
             } else {
                 const chapter = findParentChapter(activeNodeId);
                 if (chapter && chapter.children) {
@@ -408,7 +405,7 @@
             let text = "";
             if (activeRelectureScope === "scene") {
                 const editor = document.getElementById('editor-content');
-                text = editor ? editor.value : "";
+                text = editor ? editor.innerText : "";
             } else {
                 text = getChapterText();
             }
