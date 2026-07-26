@@ -9,7 +9,9 @@
 
             editor.focus();
 
-            if (type === 'italic') {
+            if (type === 'removeFormat') {
+                document.execCommand('removeFormat', false, null);
+            } else if (type === 'italic') {
                 document.execCommand('italic', false, null);
             } else if (type === 'bold') {
                 document.execCommand('bold', false, null);
@@ -32,6 +34,23 @@
                         // Select the span text
                         const newRange = document.createRange();
                         newRange.selectNodeContents(span);
+                        selection.removeAllRanges();
+                        selection.addRange(newRange);
+                    }
+                }
+            } else if (type === 'dialogue') {
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    const range = selection.getRangeAt(0);
+                    const selectedText = range.toString().trim();
+                    if (selectedText.length > 0) {
+                        const dialogueNode = document.createTextNode(`— «\u00A0${selectedText}\u00A0»`);
+                        range.deleteContents();
+                        range.insertNode(dialogueNode);
+
+                        // Select the dialogue text
+                        const newRange = document.createRange();
+                        newRange.selectNodeContents(dialogueNode);
                         selection.removeAllRanges();
                         selection.addRange(newRange);
                     }

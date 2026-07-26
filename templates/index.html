@@ -228,10 +228,12 @@
             <div id="ai-selection-menu" class="hidden absolute bg-slate-900 text-white rounded-lg shadow-xl px-3 py-1.5 flex items-center space-x-2 text-xs font-semibold z-50 transition-all duration-150">
                 <!-- Formatting Actions -->
                 <div class="flex items-center space-x-2 border-r border-slate-700 pr-2">
+                    <button onclick="applySelectionFormatting('removeFormat')" class="hover:text-indigo-300 font-sans px-1 text-sm" title="Annuler le style / Clear style">🚫</button>
                     <button onclick="applySelectionFormatting('italic')" class="hover:text-indigo-300 font-serif italic px-1 text-sm" title="Italique">I</button>
                     <button onclick="applySelectionFormatting('bold')" class="hover:text-indigo-300 font-serif font-bold px-1 text-sm" title="Gras">B</button>
                     <button onclick="applySelectionFormatting('bold_italic')" class="hover:text-indigo-300 font-serif font-bold italic px-1 text-sm" title="Gras + Italique">B+I</button>
                     <button onclick="applySelectionFormatting('smallcaps')" class="hover:text-indigo-300 font-serif px-1 text-xs tracking-wide" style="font-variant: small-caps;" title="Petites capitales">sc</button>
+                    <button onclick="applySelectionFormatting('dialogue')" class="hover:text-indigo-300 font-serif px-1 text-sm" title="Dialogue">💬</button>
                 </div>
                 <!-- Synonyms Dropdown Trigger -->
                 <div class="relative border-r border-slate-700 pr-2" id="synonyms-dropdown-wrapper">
