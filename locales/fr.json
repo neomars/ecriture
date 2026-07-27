@@ -135,5 +135,13 @@
   "stat_words": "MOTS",
   "stat_richness": "RICHESSE LEXICALE",
   "stat_paragraphs": "PARAGRAPHES",
-  "stat_dialogue_ratio": "RATIO DIALOGUE"
+  "stat_dialogue_ratio": "RATIO DIALOGUE",
+  "ollama_missing_title": "Intégration d'Ollama — IA d'écriture locale",
+  "ollama_missing_intro": "Ollama n'a pas été détecté en cours d'exécution sur votre système. L'IA locale est une fonctionnalité clé pour démultiplier vos capacités d'écriture avec Écriture :",
+  "ollama_benefit_1": "✨ <strong>Génération et Enrichissement :</strong> Décrivez, réécrivez dans différents styles ou étendez vos scènes instantanément depuis votre sélection.",
+  "ollama_benefit_2": "🔍 <strong>Atelier de Relecture & Correction :</strong> Bénéficiez d'analyses approfondies de style, de prose et de cohérence narrative, 100% en local et de manière totalement confidentielle.",
+  "ollama_benefit_3": "💬 <strong>Assistant IA contextuel :</strong> Chattez avec un assistant d'écriture intelligent qui comprend vos personnages et vos notes pour planifier votre roman.",
+  "ollama_missing_download_prompt": "Pour activer ces outils puissants, téléchargez et installez Ollama (gratuit, open-source et exécuté localement sans cloud) :",
+  "ollama_missing_download_btn": "Télécharger Ollama pour Windows",
+  "ollama_missing_close": "Continuer sans IA"
 }

@@ -135,5 +135,13 @@
   "stat_words": "WORDS",
   "stat_richness": "LEXICAL RICHNESS",
   "stat_paragraphs": "PARAGRAPHS",
-  "stat_dialogue_ratio": "DIALOGUE RATIO"
+  "stat_dialogue_ratio": "DIALOGUE RATIO",
+  "ollama_missing_title": "Ollama Integration — Local Writing AI",
+  "ollama_missing_intro": "Ollama was not detected running on your system. Local AI is a key feature to multiply your writing capabilities with Écriture:",
+  "ollama_benefit_1": "✨ <strong>Generation & Enrichment:</strong> Describe, rewrite in various styles, or expand your scenes instantly directly from your selection.",
+  "ollama_benefit_2": "🔍 <strong>Proofreading Workshop:</strong> Benefit from deep analyses of style, prose, and narrative coherence, 100% locally and completely confidentially.",
+  "ollama_benefit_3": "💬 <strong>Contextual AI Assistant:</strong> Chat with an intelligent writing assistant that understands your characters and notes to plan your novel.",
+  "ollama_missing_download_prompt": "To activate these powerful tools, download and install Ollama (free, open-source, and run locally without a cloud):",
+  "ollama_missing_download_btn": "Download Ollama for Windows",
+  "ollama_missing_close": "Continue without AI"
 }

@@ -128,7 +128,40 @@
 
             await loadProjectsList();
             await loadProject();
+            await checkOllamaStatus();
         });
+
+        // Check Ollama Status on Startup
+        async function checkOllamaStatus() {
+            try {
+                const res = await fetch('/api/ai/status');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (!data.installed) {
+                        showOllamaMissingModal();
+                    }
+                } else {
+                    showOllamaMissingModal();
+                }
+            } catch (err) {
+                console.error("Error checking Ollama status:", err);
+                showOllamaMissingModal();
+            }
+        }
+
+        function showOllamaMissingModal() {
+            const modal = document.getElementById('ollama-missing-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+            }
+        }
+
+        window.closeOllamaMissingModal = function() {
+            const modal = document.getElementById('ollama-missing-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        };
 
         // LOAD PROJECTS LIST FOR DROPDOWN
         async function loadProjectsList() {

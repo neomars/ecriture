@@ -227,5 +227,13 @@ class TestEcritureWebApp(unittest.TestCase):
         self.assertIn('models', data)
         self.assertIsInstance(data['models'], list)
 
+    def test_ai_status_endpoint(self):
+        """Test that the /api/ai/status endpoint returns whether Ollama is installed/online."""
+        response = self.client.get('/api/ai/status')
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data)
+        self.assertIn('status', data)
+        self.assertIn('installed', data)
+
 if __name__ == '__main__':
     unittest.main()
