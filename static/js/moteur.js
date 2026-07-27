@@ -2876,3 +2876,33 @@
                 }
             });
         })();
+
+        // WINDOW CONTROLS: QUIT & MINIMIZE / FULLSCREEN
+        function minimizeApplication() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log("Error attempting to enable full-screen:", err);
+                });
+            } else {
+                document.exitFullscreen().catch(err => {
+                    console.log("Error attempting to exit full-screen:", err);
+                });
+            }
+        }
+
+        async function quitApplication() {
+            if (confirm(activeLang === 'fr' ? "Voulez-vous quitter l'application ?" : "Do you want to quit the application?")) {
+                try {
+                    await fetch('/api/quit', { method: 'POST' });
+                } catch(e) {}
+                window.close();
+            }
+        }
+
+        // Auto-fullscreen on first interaction for "pleine page" start
+        document.addEventListener('click', function autoFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {});
+            }
+            document.removeEventListener('click', autoFullscreen);
+        }, { once: true });

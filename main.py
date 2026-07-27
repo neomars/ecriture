@@ -954,6 +954,25 @@ def api_relecture_ai():
             "model": "Simulation"
         })
 
+@app.route('/api/quit', methods=['POST'])
+def quit_app():
+    """Shuts down the backend web server gracefully."""
+    import os
+    import signal
+    os.kill(os.getpid(), signal.SIGINT)
+    return jsonify({"status": "shutdown"})
+
 if __name__ == "__main__":
+    import webbrowser
+    import threading
+    import os
+
+    def open_browser():
+        webbrowser.open("http://127.0.0.1:5000")
+
+    # Only launch browser once when in debug reloader
+    if not app.debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+        threading.Timer(1.5, open_browser).start()
+
     # Start the local development web server on port 5000
     app.run(host="0.0.0.0", port=5000, debug=True)
