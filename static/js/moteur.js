@@ -163,6 +163,13 @@
             }
         };
 
+        window.closeOllamaInstalledModal = function() {
+            const modal = document.getElementById('ollama-installed-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        };
+
         // LOAD PROJECTS LIST FOR DROPDOWN
         async function loadProjectsList() {
             try {
@@ -2010,11 +2017,15 @@
                         const data = await res.json();
                         if (data.installed) {
                             const defaultModel = (projectData && projectData.settings && projectData.settings.ai_model) || "llama3";
-                            if (activeLang === 'fr') {
-                                alert(`OLLAMA installé. Le moteur par défaut est ${defaultModel}`);
-                            } else {
-                                alert(`OLLAMA installed. The default engine is ${defaultModel}`);
+                            const msgEl = document.getElementById('ollama-installed-message');
+                            if (msgEl) {
+                                if (activeLang === 'fr') {
+                                    msgEl.innerText = `OLLAMA installé. Version ${defaultModel}`;
+                                } else {
+                                    msgEl.innerText = `OLLAMA installed. Version ${defaultModel}`;
+                                }
                             }
+                            showOllamaInstalledModal();
                         } else {
                             showOllamaMissingModal();
                         }
@@ -2025,6 +2036,13 @@
                     console.error("Error checking Ollama status on toggle:", err);
                     showOllamaMissingModal();
                 }
+            }
+        }
+
+        function showOllamaInstalledModal() {
+            const modal = document.getElementById('ollama-installed-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
             }
         }
 

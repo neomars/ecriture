@@ -693,6 +693,18 @@
         </div>
     </div>
 
+    <!-- MODAL: OLLAMA INSTALLED -->
+    <div id="ollama-installed-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50">
+        <div class="bg-white w-[400px] max-w-md rounded-xl shadow-xl p-6 border border-slate-200 text-center">
+            <span class="text-5xl mb-3 block">🎉</span>
+            <h3 class="text-lg font-bold text-slate-800 mb-2">Ollama</h3>
+            <div id="ollama-installed-message" class="text-sm text-slate-600 mb-6 leading-relaxed">
+                OLLAMA installé. Version llama3
+            </div>
+            <button onclick="closeOllamaInstalledModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg text-sm font-semibold shadow-sm transition-all w-full" data-i18n="cancel">Fermer</button>
+        </div>
+    </div>
+
     <!-- MODAL: RELECTURE WORKSHOP -->
     <div id="relecture-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50">
         <div class="bg-white w-[800px] max-w-4xl rounded-xl shadow-xl p-6 border border-slate-200 flex flex-col max-h-[90vh]">
