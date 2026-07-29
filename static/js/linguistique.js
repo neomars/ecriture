@@ -325,6 +325,11 @@
         }
 
         function selectRelectureCategory(cat) {
+            const isAiEnabled = (localStorage.getItem('ai-enabled') !== 'false');
+            if (!isAiEnabled && (cat === 'style' || cat === 'coherence')) {
+                return;
+            }
+
             activeRelectureCategory = cat;
 
             // Highlight active button

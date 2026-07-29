@@ -124,7 +124,7 @@
             if (aiCheckbox) {
                 aiCheckbox.checked = aiEnabled;
             }
-            toggleAiOption(aiEnabled);
+            toggleAiOption(aiEnabled, true);
 
             await loadProjectsList();
             await loadProject();
@@ -1974,7 +1974,7 @@
         }
 
         // AI OPTION TOGGLE HANDLER
-        function toggleAiOption(enabled) {
+        async function toggleAiOption(enabled, isInitial = false) {
             const aiChatSection = document.getElementById('ai-chat-section');
             if (aiChatSection) {
                 if (enabled) {
@@ -1983,7 +1983,49 @@
                     aiChatSection.classList.add('hidden');
                 }
             }
+
+            const styleBtn = document.getElementById('relecture-btn-style');
+            const coherenceBtn = document.getElementById('relecture-btn-coherence');
+            if (styleBtn) {
+                if (enabled) {
+                    styleBtn.classList.remove('hidden');
+                } else {
+                    styleBtn.classList.add('hidden');
+                }
+            }
+            if (coherenceBtn) {
+                if (enabled) {
+                    coherenceBtn.classList.remove('hidden');
+                } else {
+                    coherenceBtn.classList.add('hidden');
+                }
+            }
+
             localStorage.setItem('ai-enabled', enabled ? 'true' : 'false');
+
+            if (enabled && !isInitial) {
+                try {
+                    const res = await fetch('/api/ai/status');
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.installed) {
+                            const defaultModel = (projectData && projectData.settings && projectData.settings.ai_model) || "llama3";
+                            if (activeLang === 'fr') {
+                                alert(`OLLAMA installé. Le moteur par défaut est ${defaultModel}`);
+                            } else {
+                                alert(`OLLAMA installed. The default engine is ${defaultModel}`);
+                            }
+                        } else {
+                            showOllamaMissingModal();
+                        }
+                    } else {
+                        showOllamaMissingModal();
+                    }
+                } catch (err) {
+                    console.error("Error checking Ollama status on toggle:", err);
+                    showOllamaMissingModal();
+                }
+            }
         }
 
         // LANGUAGE CHANGE HANDLER
@@ -2175,7 +2217,13 @@
             // Default scope and category
             activeRelectureScope = "scene";
             document.getElementById('relecture-scope-select').value = "scene";
-            selectRelectureCategory('repetitions');
+
+            const isAiEnabled = (localStorage.getItem('ai-enabled') !== 'false');
+            if (!isAiEnabled && (activeRelectureCategory === 'style' || activeRelectureCategory === 'coherence')) {
+                activeRelectureCategory = 'repetitions';
+            }
+
+            selectRelectureCategory(activeRelectureCategory || 'repetitions');
 
             // Run stats and repetitions calculations
             updateRelectureStatsAndPanes();
