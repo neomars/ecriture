@@ -143,5 +143,6 @@
   "ollama_benefit_3": "💬 <strong>Contextual AI Assistant:</strong> Chat with an intelligent writing assistant that understands your characters and notes to plan your novel.",
   "ollama_missing_download_prompt": "To activate these powerful tools, download and install Ollama (free, open-source, and run locally without a cloud):",
   "ollama_missing_download_btn": "Download Ollama for Windows",
-  "ollama_missing_close": "Continue without AI"
+  "ollama_missing_close": "Continue without AI",
+  "btn_close": "Close"
 }

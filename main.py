@@ -873,19 +873,29 @@ def ai_chat():
 @app.route('/api/ai/status', methods=['GET'])
 def get_ai_status():
     """Checks if Ollama is installed and running locally."""
-    import urllib.request
-    try:
-        req = urllib.request.Request("http://localhost:11434/api/tags", method="GET")
-        with urllib.request.urlopen(req, timeout=1.5) as response:
-            return jsonify({
-                "status": "online",
-                "installed": True
-            })
-    except Exception:
+    models = ai_client.get_available_models()
+    if models:
         return jsonify({
-            "status": "offline",
-            "installed": False
+            "status": "online",
+            "installed": True,
+            "models": models
         })
+    else:
+        import urllib.request
+        try:
+            req = urllib.request.Request("http://localhost:11434/api/tags", method="GET")
+            with urllib.request.urlopen(req, timeout=1.5) as response:
+                return jsonify({
+                    "status": "online",
+                    "installed": True,
+                    "models": []
+                })
+        except Exception:
+            return jsonify({
+                "status": "offline",
+                "installed": False,
+                "models": []
+            })
 
 @app.route('/api/ai/models', methods=['GET'])
 def get_ollama_models():

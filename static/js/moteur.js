@@ -2019,10 +2019,11 @@
                             const defaultModel = (projectData && projectData.settings && projectData.settings.ai_model) || "llama3";
                             const msgEl = document.getElementById('ollama-installed-message');
                             if (msgEl) {
+                                const modelsStr = data.models && data.models.length > 0 ? data.models.join(', ') : 'aucun';
                                 if (activeLang === 'fr') {
-                                    msgEl.innerText = `OLLAMA installé. Version ${defaultModel}`;
+                                    msgEl.innerHTML = `OLLAMA installé. Version ${defaultModel}<br><span class="text-xs text-slate-500 font-medium">(LLM disponibles : ${modelsStr})</span>`;
                                 } else {
-                                    msgEl.innerText = `OLLAMA installed. Version ${defaultModel}`;
+                                    msgEl.innerHTML = `OLLAMA installed. Version ${defaultModel}<br><span class="text-xs text-slate-500 font-medium">(Available LLMs: ${modelsStr})</span>`;
                                 }
                             }
                             showOllamaInstalledModal();
@@ -2237,6 +2238,24 @@
             document.getElementById('relecture-scope-select').value = "scene";
 
             const isAiEnabled = (localStorage.getItem('ai-enabled') !== 'false');
+
+            const styleBtn = document.getElementById('relecture-btn-style');
+            const coherenceBtn = document.getElementById('relecture-btn-coherence');
+            if (styleBtn) {
+                if (isAiEnabled) {
+                    styleBtn.classList.remove('hidden');
+                } else {
+                    styleBtn.classList.add('hidden');
+                }
+            }
+            if (coherenceBtn) {
+                if (isAiEnabled) {
+                    coherenceBtn.classList.remove('hidden');
+                } else {
+                    coherenceBtn.classList.add('hidden');
+                }
+            }
+
             if (!isAiEnabled && (activeRelectureCategory === 'style' || activeRelectureCategory === 'coherence')) {
                 activeRelectureCategory = 'repetitions';
             }
