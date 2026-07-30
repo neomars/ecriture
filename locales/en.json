@@ -144,5 +144,14 @@
   "ollama_missing_download_prompt": "To activate these powerful tools, download and install Ollama (free, open-source, and run locally without a cloud):",
   "ollama_missing_download_btn": "Download Ollama for Windows",
   "ollama_missing_close": "Continue without AI",
-  "btn_close": "Close"
+  "btn_close": "Close",
+  "backups_btn": "Backups",
+  "backups_modal_title": "Backups & Restoration",
+  "backup_sec_manual": "Backup Files",
+  "backup_btn_download": "Download (.json)",
+  "backup_btn_upload": "Import (.json)",
+  "backup_sec_local": "Local Backup Folder",
+  "backup_local_path_label": "Folder path for backups on your computer:",
+  "backup_btn_create": "Backup Now",
+  "backup_local_list_title": "Backups detected in this folder:"
 }

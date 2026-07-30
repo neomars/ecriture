@@ -981,6 +981,118 @@ def api_relecture_ai():
             "model": "Simulation"
         })
 
+@app.route('/api/backups/local/create', methods=['POST'])
+def local_backup_create():
+    payload = request.json or {}
+    folder_path = payload.get("folder_path", "").strip()
+    if not folder_path:
+        return jsonify({"error": "No folder path provided"}), 400
+
+    import os
+    import json
+    from datetime import datetime
+
+    # Create directory if not exists
+    try:
+        os.makedirs(folder_path, exist_ok=True)
+    except Exception as e:
+        return jsonify({"error": f"Failed to create directory: {str(e)}"}), 500
+
+    # Retrieve current active project data
+    current_data = project.data if project else None
+    if not current_data:
+        return jsonify({"error": "No active project data to back up"}), 400
+
+    # Generate filename
+    clean_title = "".join(c for c in current_data.get("settings", {}).get("title", "roman") if c.isalnum() or c in (' ', '_', '-')).rstrip()
+    clean_title = clean_title.replace(' ', '_')
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    filename = f"backup_{clean_title}_{timestamp}.json"
+    full_path = os.path.join(folder_path, filename)
+
+    try:
+        with open(full_path, "w", encoding="utf-8") as f:
+            json.dump(current_data, f, ensure_ascii=False, indent=2)
+        return jsonify({"status": "success", "filename": filename, "full_path": full_path})
+    except Exception as e:
+        return jsonify({"error": f"Failed to write backup file: {str(e)}"}), 500
+
+@app.route('/api/backups/local/list', methods=['POST'])
+def local_backup_list():
+    import os
+    payload = request.json or {}
+    folder_path = payload.get("folder_path", "").strip()
+    if not folder_path or not os.path.exists(folder_path):
+        return jsonify({"backups": []})
+
+    from datetime import datetime
+
+    backups = []
+    try:
+        for file in os.listdir(folder_path):
+            if file.startswith("backup_") and file.endswith(".json"):
+                full_path = os.path.join(folder_path, file)
+                stat = os.stat(full_path)
+                mtime = datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M:%S")
+                size_kb = round(stat.st_size / 1024, 2)
+                backups.append({
+                    "filename": file,
+                    "mtime": mtime,
+                    "size_kb": size_kb
+                })
+        # Sort by mtime descending
+        backups.sort(key=lambda x: x["mtime"], reverse=True)
+        return jsonify({"backups": backups})
+    except Exception as e:
+        return jsonify({"error": f"Failed to list directory contents: {str(e)}"}), 500
+
+@app.route('/api/backups/local/restore', methods=['POST'])
+def local_backup_restore():
+    payload = request.json or {}
+    folder_path = payload.get("folder_path", "").strip()
+    filename = payload.get("filename", "").strip()
+    if not folder_path or not filename:
+        return jsonify({"error": "Folder path and filename are required"}), 400
+
+    full_path = os.path.join(folder_path, filename)
+    if not os.path.exists(full_path):
+        return jsonify({"error": "Backup file not found"}), 404
+
+    import json
+    try:
+        with open(full_path, "r", encoding="utf-8") as f:
+            backup_data = json.load(f)
+
+        # Overwrite current active project data
+        if project:
+            project.data = backup_data
+            project.save()
+            return jsonify({"status": "success", "data": backup_data})
+        else:
+            return jsonify({"error": "No active project instance to restore to"}), 400
+    except Exception as e:
+        return jsonify({"error": f"Failed to restore backup: {str(e)}"}), 500
+
+@app.route('/api/backups/upload/restore', methods=['POST'])
+def upload_backup_restore():
+    if 'file' not in request.files:
+        return jsonify({"error": "No file uploaded"}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"error": "Empty filename"}), 400
+
+    import json
+    try:
+        backup_data = json.loads(file.read().decode('utf-8'))
+        if project:
+            project.data = backup_data
+            project.save()
+            return jsonify({"status": "success", "data": backup_data})
+        else:
+            return jsonify({"error": "No active project instance to restore to"}), 400
+    except Exception as e:
+        return jsonify({"error": f"Failed to restore uploaded backup: {str(e)}"}), 500
+
 @app.route('/api/quit', methods=['POST'])
 def quit_app():
     """Shuts down the backend web server gracefully."""
