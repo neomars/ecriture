@@ -55,6 +55,28 @@
                         selection.addRange(newRange);
                     }
                 }
+            } else if (type === 'annotation') {
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    const range = selection.getRangeAt(0);
+                    const selectedText = range.toString();
+                    if (selectedText.length > 0) {
+                        const span = document.createElement('span');
+                        span.className = 'annotation-highlight border-b-2 border-dashed border-indigo-500 cursor-help relative inline';
+                        const defaultText = activeLang === 'fr' ? "Saisissez votre note d'annotation ici..." : "Enter your annotation note here...";
+                        span.setAttribute('data-annotation', defaultText);
+                        span.appendChild(document.createTextNode(selectedText));
+
+                        range.deleteContents();
+                        range.insertNode(span);
+
+                        // Select the span text
+                        const newRange = document.createRange();
+                        newRange.selectNodeContents(span);
+                        selection.removeAllRanges();
+                        selection.addRange(newRange);
+                    }
+                }
             }
 
             // Trigger updates and persistence

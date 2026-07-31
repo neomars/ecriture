@@ -396,6 +396,11 @@ def api_synonyms():
     syns = get_synonyms(word, lang)
     return jsonify({"synonyms": syns})
 
+def clean_annotations(text):
+    """Strips annotation span wrapping while preserving the inner annotated text."""
+    import re
+    return re.sub(r'<span class="annotation-highlight[^>]*>(.*?)</span>', r'\1', text)
+
 def add_docx_formatted_paragraph(doc, text):
     """Helper to add paragraphs with basic <i>, <b> and <span style='font-variant: small-caps;'> styling."""
     paragraphs = text.split('\n')
@@ -451,7 +456,7 @@ def export_draft():
             content_lines.append(f"\n--- {chap['title']} ---\n\n")
             for scene in chap.get("children", []):
                 content_lines.append(f"[{scene['title']}]\n")
-                content_lines.append(f"{scene.get('content', '')}\n\n")
+                content_lines.append(f"{clean_annotations(scene.get('content', ''))}\n\n")
         compiled_text = "".join(content_lines)
 
         if fmt == "txt":
@@ -475,7 +480,7 @@ def export_draft():
                 doc.add_heading(chap['title'], level=1)
                 for scene in chap.get("children", []):
                     doc.add_heading(scene['title'], level=2)
-                    add_docx_formatted_paragraph(doc, scene.get('content', ''))
+                    add_docx_formatted_paragraph(doc, clean_annotations(scene.get('content', '')))
 
             doc.save(temp_file_path)
             return send_file(
@@ -534,7 +539,7 @@ def export_draft():
                 story.append(Paragraph(chap['title'], heading1_style))
                 for scene in chap.get("children", []):
                     story.append(Paragraph(scene['title'], heading2_style))
-                    content = scene.get('content', '').replace('\n', '<br/>')
+                    content = clean_annotations(scene.get('content', '')).replace('\n', '<br/>')
                     story.append(Paragraph(content, body_style))
                     story.append(Spacer(1, 10))
 
@@ -582,7 +587,7 @@ def export_draft():
                 body_xml_lines.append(f'<text:h text:outline-level="1">{html.escape(chap["title"])}</text:h>')
                 for scene in chap.get("children", []):
                     body_xml_lines.append(f'<text:h text:outline-level="2">{html.escape(scene["title"])}</text:h>')
-                    for para in scene.get("content", "").split("\n"):
+                    for para in clean_annotations(scene.get("content", "")).split("\n"):
                         if para.strip():
                             body_xml_lines.append(f'<text:p>{html.escape(para)}</text:p>')
             body_xml = "\n".join(body_xml_lines)
@@ -675,7 +680,7 @@ def export_draft():
                 html_body_lines.append(f'<h2>{html.escape(chap["title"])}</h2>')
                 for scene in chap.get("children", []):
                     html_body_lines.append(f'<h3>{html.escape(scene["title"])}</h3>')
-                    for para in scene.get("content", "").split("\n"):
+                    for para in clean_annotations(scene.get("content", "")).split("\n"):
                         if para.strip():
                             html_body_lines.append(f'<p>{html.escape(para)}</p>')
             html_body = "\n".join(html_body_lines)

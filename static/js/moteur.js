@@ -2442,6 +2442,103 @@
             document.getElementById('about-modal').classList.add('hidden');
         }
 
+        // --- ANNOTATIONS SYSTEM ---
+        let activeAnnotationSpan = null;
+        let annotationTooltipTimeout = null;
+
+        document.addEventListener('mouseover', function(e) {
+            const span = e.target.closest('.annotation-highlight');
+            const tooltip = document.getElementById('annotation-tooltip');
+
+            if (span && tooltip) {
+                if (annotationTooltipTimeout) {
+                    clearTimeout(annotationTooltipTimeout);
+                    annotationTooltipTimeout = null;
+                }
+
+                activeAnnotationSpan = span;
+                const rect = span.getBoundingClientRect();
+
+                // Show tooltip and position it below the span
+                tooltip.classList.remove('hidden');
+                tooltip.style.opacity = '1';
+
+                // Position calculation (with scroll offsets)
+                const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+                tooltip.style.left = (rect.left + scrollLeft + rect.width / 2 - tooltip.offsetWidth / 2) + 'px';
+                tooltip.style.top = (rect.bottom + scrollTop + 6) + 'px';
+
+                // Set textarea content
+                const textarea = document.getElementById('annotation-textarea');
+                if (textarea) {
+                    textarea.value = span.getAttribute('data-annotation') || '';
+                }
+            } else if (e.target.closest('#annotation-tooltip')) {
+                if (annotationTooltipTimeout) {
+                    clearTimeout(annotationTooltipTimeout);
+                    annotationTooltipTimeout = null;
+                }
+            }
+        });
+
+        document.addEventListener('mouseout', function(e) {
+            const span = e.target.closest('.annotation-highlight');
+            const tooltip = e.target.closest('#annotation-tooltip');
+
+            if (span || tooltip) {
+                // Delay hiding to allow moving mouse between span and tooltip
+                if (annotationTooltipTimeout) clearTimeout(annotationTooltipTimeout);
+                annotationTooltipTimeout = setTimeout(function() {
+                    closeAnnotationTooltip();
+                }, 300);
+            }
+        });
+
+        window.closeAnnotationTooltip = function() {
+            const tooltip = document.getElementById('annotation-tooltip');
+            if (tooltip) {
+                tooltip.style.opacity = '0';
+                setTimeout(() => {
+                    if (tooltip.style.opacity === '0') {
+                        tooltip.classList.add('hidden');
+                    }
+                }, 200);
+            }
+            activeAnnotationSpan = null;
+        };
+
+        window.saveAnnotation = function() {
+            const textarea = document.getElementById('annotation-textarea');
+            if (activeAnnotationSpan && textarea) {
+                activeAnnotationSpan.setAttribute('data-annotation', textarea.value.trim());
+
+                // Trigger editor input to save to projectData / database
+                const editor = document.getElementById('editor-content');
+                if (editor) {
+                    onCombinedEditorInput(editor.innerHTML);
+                }
+                closeAnnotationTooltip();
+            }
+        };
+
+        window.deleteAnnotation = function() {
+            if (activeAnnotationSpan) {
+                // Unwrap the span, keeping its text content
+                const text = activeAnnotationSpan.textContent;
+                const textNode = document.createTextNode(text);
+                activeAnnotationSpan.parentNode.replaceChild(textNode, activeAnnotationSpan);
+
+                // Trigger editor input to save to projectData / database
+                const editor = document.getElementById('editor-content');
+                if (editor) {
+                    onCombinedEditorInput(editor.innerHTML);
+                }
+                closeAnnotationTooltip();
+            }
+        };
+
         // --- RELECTURE MODAL CONTROL LOGIC ---
         let activeRelectureCategory = "repetitions";
         let activeRelectureScope = "scene";

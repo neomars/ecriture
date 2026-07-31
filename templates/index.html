@@ -246,6 +246,7 @@
                     <button onclick="applySelectionFormatting('bold_italic')" class="hover:text-indigo-300 font-serif font-bold italic px-1 text-sm" title="Gras + Italique">B+I</button>
                     <button onclick="applySelectionFormatting('smallcaps')" class="hover:text-indigo-300 font-serif px-1 text-xs tracking-wide" style="font-variant: small-caps;" title="Petites capitales">sc</button>
                     <button onclick="applySelectionFormatting('dialogue')" class="hover:text-indigo-300 font-serif px-1 text-sm" title="Dialogue">💬</button>
+                    <button onclick="applySelectionFormatting('annotation')" class="hover:text-indigo-300 font-serif px-1 text-sm" title="Annoter">✍️</button>
                 </div>
                 <!-- Synonyms Dropdown Trigger -->
                 <div class="relative border-r border-slate-700 pr-2" id="synonyms-dropdown-wrapper">
@@ -910,6 +911,25 @@
                     <button onclick="savePlotCard()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-all" data-i18n="save">Enregistrer</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- FLOATING ANNOTATION TOOLTIP -->
+    <div id="annotation-tooltip" class="hidden absolute bg-white text-slate-800 rounded-xl shadow-2xl p-4 border border-slate-200 z-50 w-72 flex flex-col space-y-3 transition-opacity duration-200">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-1.5 shrink-0">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center space-x-1">
+                <span>✍️</span> <span data-i18n="annotation_title">Annotation</span>
+            </span>
+            <button onclick="closeAnnotationTooltip()" class="text-slate-400 hover:text-red-500 font-bold">✕</button>
+        </div>
+        <textarea id="annotation-textarea" rows="3" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs focus:ring-indigo-500 focus:border-indigo-500 resize-none" placeholder="Saisissez votre note ici..."></textarea>
+        <div class="flex items-center justify-between gap-2 shrink-0">
+            <button onclick="deleteAnnotation()" class="text-red-500 hover:text-red-700 text-xs font-semibold flex items-center space-x-1">
+                <span>🗑️</span> <span data-i18n="delete">Supprimer</span>
+            </button>
+            <button onclick="saveAnnotation()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all">
+                <span data-i18n="save">Enregistrer</span>
+            </button>
         </div>
     </div>
 
