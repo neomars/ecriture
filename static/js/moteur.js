@@ -65,6 +65,10 @@
         // Drag and drop state for chapters
         let draggedChapId = null;
 
+        // Drag and drop state for scenes
+        let draggedSceneId = null;
+        let draggedSceneParentChapId = null;
+
         // Pomodoro Focus Timer variables
         let timerDurationMinutes = 15;
         let timerSecondsLeft = 15 * 60;
@@ -588,7 +592,17 @@
                                         </div>
                                 `;
                                 return `
-                                    <div class="group/scene flex items-center justify-between px-2 py-1 rounded-lg text-xs font-medium ${isSceneActive ? 'bg-indigo-100 text-indigo-800 font-bold' : 'text-slate-500 hover:bg-slate-200/50'} cursor-pointer">
+                                    <div class="group/scene flex items-center justify-between px-2 py-1 rounded-lg text-xs font-medium ${isSceneActive ? 'bg-indigo-100 text-indigo-800 font-bold' : 'text-slate-500 hover:bg-slate-200/50'} cursor-pointer border-t-2 border-b-2 border-transparent transition-all duration-150"
+                                         ${isLocked ? "" : `
+                                            draggable="true"
+                                            data-scene-id="${scene.id}"
+                                            data-parent-chap-id="${chap.id}"
+                                            ondragstart="handleSceneDragStart(event)"
+                                            ondragover="handleSceneDragOver(event)"
+                                            ondragleave="handleSceneDragLeave(event)"
+                                            ondrop="handleSceneDrop(event)"
+                                            ondragend="handleSceneDragEnd(event)"
+                                         `}>
                                         <div class="flex items-center space-x-1.5 flex-1 min-w-0" onclick="selectScene('${scene.id}')">
                                             <span>📄</span>
                                             <span class="truncate">${sceneTitle}</span>
@@ -1046,6 +1060,27 @@
             this.classList.add('border-t-transparent', 'border-b-transparent');
 
             const targetChapId = this.getAttribute('data-chap-id');
+
+            // If dropping a scene onto a chapter header
+            if (draggedSceneId) {
+                if (draggedSceneParentChapId === targetChapId) return; // already in this chapter
+                const sourceChap = findNodeById(draggedSceneParentChapId);
+                const targetChap = findNodeById(targetChapId);
+                if (!sourceChap || !targetChap) return;
+
+                const draggedIdx = sourceChap.children.findIndex(s => s.id === draggedSceneId);
+                if (draggedIdx === -1) return;
+
+                // Remove from source and push to target end
+                const [draggedScene] = sourceChap.children.splice(draggedIdx, 1);
+                targetChap.children.push(draggedScene);
+
+                triggerAutoSave();
+                renderTree();
+                refreshActiveWorkspace();
+                return;
+            }
+
             if (!draggedChapId || draggedChapId === targetChapId) return;
 
             // Reorder in projectData.manuscript
@@ -1080,6 +1115,92 @@
             triggerAutoSave();
             renderTree();
         }
+
+        // DRAG AND DROP HANDLERS FOR SCENES
+        window.handleSceneDragStart = function(e) {
+            e.stopPropagation();
+            draggedSceneId = e.currentTarget.getAttribute('data-scene-id');
+            draggedSceneParentChapId = e.currentTarget.getAttribute('data-parent-chap-id');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', draggedSceneId);
+            e.currentTarget.classList.add('opacity-50');
+        };
+
+        window.handleSceneDragOver = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.dataTransfer.dropEffect = 'move';
+
+            const el = e.currentTarget;
+            const rect = el.getBoundingClientRect();
+            const midpoint = rect.top + rect.height / 2;
+
+            if (e.clientY < midpoint) {
+                el.classList.add('border-t-indigo-500');
+                el.classList.remove('border-t-transparent', 'border-b-indigo-500');
+                el.classList.add('border-b-transparent');
+            } else {
+                el.classList.add('border-b-indigo-500');
+                el.classList.remove('border-b-transparent', 'border-t-indigo-500');
+                el.classList.add('border-t-transparent');
+            }
+        };
+
+        window.handleSceneDragLeave = function(e) {
+            e.stopPropagation();
+            const el = e.currentTarget;
+            el.classList.remove('border-t-indigo-500', 'border-b-indigo-500');
+            el.classList.add('border-t-transparent', 'border-b-transparent');
+        };
+
+        window.handleSceneDragEnd = function(e) {
+            e.currentTarget.classList.remove('opacity-50', 'border-t-indigo-500', 'border-b-indigo-500');
+            document.querySelectorAll('[data-scene-id]').forEach(el => {
+                el.classList.remove('border-t-indigo-500', 'border-b-indigo-500', 'border-t-transparent', 'border-b-transparent');
+            });
+            draggedSceneId = null;
+            draggedSceneParentChapId = null;
+        };
+
+        window.handleSceneDrop = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const el = e.currentTarget;
+            el.classList.remove('border-t-indigo-500', 'border-b-indigo-500');
+
+            const targetSceneId = el.getAttribute('data-scene-id');
+            const targetParentChapId = el.getAttribute('data-parent-chap-id');
+            if (!draggedSceneId || draggedSceneId === targetSceneId) return;
+
+            const sourceChap = findNodeById(draggedSceneParentChapId);
+            const targetChap = findNodeById(targetParentChapId);
+            if (!sourceChap || !targetChap) return;
+
+            const draggedIdx = sourceChap.children.findIndex(s => s.id === draggedSceneId);
+            const targetIdx = targetChap.children.findIndex(s => s.id === targetSceneId);
+            if (draggedIdx === -1 || targetIdx === -1) return;
+
+            const rect = el.getBoundingClientRect();
+            const midpoint = rect.top + rect.height / 2;
+
+            let newIdx = targetIdx;
+            if (e.clientY >= midpoint) {
+                newIdx = targetIdx + 1;
+            }
+
+            const [draggedScene] = sourceChap.children.splice(draggedIdx, 1);
+
+            let insertIdx = newIdx;
+            if (draggedSceneParentChapId === targetParentChapId && draggedIdx < newIdx) {
+                insertIdx = newIdx - 1;
+            }
+
+            targetChap.children.splice(insertIdx, 0, draggedScene);
+
+            triggerAutoSave();
+            renderTree();
+            refreshActiveWorkspace();
+        };
 
         // SELECT HANDLERS
         function selectScene(id) {
