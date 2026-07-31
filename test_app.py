@@ -235,29 +235,28 @@ class TestEcritureWebApp(unittest.TestCase):
         self.assertIn('status', data)
         self.assertIn('installed', data)
 
-    def test_backups_local_endpoints(self):
-        """Test the local backups create and list APIs."""
+    def test_backups_endpoints(self):
+        """Test the folder picker chooser and backup creation endpoints."""
         import tempfile
         import os
-        with tempfile.TemporaryDirectory() as tmpdir:
-            # Test creation
-            response = self.client.post('/api/backups/local/create', json={
-                "folder_path": tmpdir
-            })
-            self.assertEqual(response.status_code, 200)
-            data = json.loads(response.data)
-            self.assertEqual(data["status"], "success")
-            self.assertTrue(os.path.exists(data["full_path"]))
 
-            # Test list
-            response_list = self.client.post('/api/backups/local/list', json={
-                "folder_path": tmpdir
+        # Test folder picker (headless fallback)
+        response = self.client.post('/api/backups/choose_directory', json={})
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data)
+        self.assertEqual(data["status"], "headless_fallback")
+        self.assertTrue(data["folder_path"])
+
+        # Test local backup creation
+        with tempfile.TemporaryDirectory() as tmpdir:
+            response_create = self.client.post('/api/backups/local/create', json={
+                "folder_path": tmpdir,
+                "frequency": "daily"
             })
-            self.assertEqual(response_list.status_code, 200)
-            data_list = json.loads(response_list.data)
-            self.assertIn("backups", data_list)
-            self.assertEqual(len(data_list["backups"]), 1)
-            self.assertEqual(data_list["backups"][0]["filename"], data["filename"])
+            self.assertEqual(response_create.status_code, 200)
+            data_create = json.loads(response_create.data)
+            self.assertEqual(data_create["status"], "success")
+            self.assertTrue(os.path.exists(data_create["full_path"]))
 
 if __name__ == '__main__':
     unittest.main()

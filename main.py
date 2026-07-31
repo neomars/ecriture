@@ -981,10 +981,37 @@ def api_relecture_ai():
             "model": "Simulation"
         })
 
+@app.route('/api/backups/choose_directory', methods=['POST'])
+def choose_directory():
+    """Opens a native OS folder picker dialog to select a backup directory."""
+    import tkinter as tk
+    from tkinter import filedialog
+    import os
+
+    try:
+        root = tk.Tk()
+        root.withdraw()
+        # Bring the dialog window to the front
+        root.wm_attributes('-topmost', 1)
+        folder = filedialog.askdirectory(title="Sélectionner le répertoire de destination des sauvegardes")
+        root.destroy()
+        if folder:
+            return jsonify({"status": "success", "folder_path": os.path.abspath(folder)})
+        else:
+            return jsonify({"status": "cancelled", "folder_path": ""})
+    except Exception as e:
+        # Graceful fallback for headless environments
+        return jsonify({
+            "status": "headless_fallback",
+            "error": str(e),
+            "folder_path": os.path.abspath("./backups")
+        })
+
 @app.route('/api/backups/local/create', methods=['POST'])
 def local_backup_create():
     payload = request.json or {}
     folder_path = payload.get("folder_path", "").strip()
+    frequency = payload.get("frequency", "manual").strip() # "daily", "weekly", "monthly", "manual"
     if not folder_path:
         return jsonify({"error": "No folder path provided"}), 400
 
@@ -1007,7 +1034,7 @@ def local_backup_create():
     clean_title = "".join(c for c in current_data.get("settings", {}).get("title", "roman") if c.isalnum() or c in (' ', '_', '-')).rstrip()
     clean_title = clean_title.replace(' ', '_')
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    filename = f"backup_{clean_title}_{timestamp}.json"
+    filename = f"backup_{clean_title}_{timestamp}_{frequency}.json"
     full_path = os.path.join(folder_path, filename)
 
     try:
@@ -1016,82 +1043,6 @@ def local_backup_create():
         return jsonify({"status": "success", "filename": filename, "full_path": full_path})
     except Exception as e:
         return jsonify({"error": f"Failed to write backup file: {str(e)}"}), 500
-
-@app.route('/api/backups/local/list', methods=['POST'])
-def local_backup_list():
-    import os
-    payload = request.json or {}
-    folder_path = payload.get("folder_path", "").strip()
-    if not folder_path or not os.path.exists(folder_path):
-        return jsonify({"backups": []})
-
-    from datetime import datetime
-
-    backups = []
-    try:
-        for file in os.listdir(folder_path):
-            if file.startswith("backup_") and file.endswith(".json"):
-                full_path = os.path.join(folder_path, file)
-                stat = os.stat(full_path)
-                mtime = datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M:%S")
-                size_kb = round(stat.st_size / 1024, 2)
-                backups.append({
-                    "filename": file,
-                    "mtime": mtime,
-                    "size_kb": size_kb
-                })
-        # Sort by mtime descending
-        backups.sort(key=lambda x: x["mtime"], reverse=True)
-        return jsonify({"backups": backups})
-    except Exception as e:
-        return jsonify({"error": f"Failed to list directory contents: {str(e)}"}), 500
-
-@app.route('/api/backups/local/restore', methods=['POST'])
-def local_backup_restore():
-    payload = request.json or {}
-    folder_path = payload.get("folder_path", "").strip()
-    filename = payload.get("filename", "").strip()
-    if not folder_path or not filename:
-        return jsonify({"error": "Folder path and filename are required"}), 400
-
-    full_path = os.path.join(folder_path, filename)
-    if not os.path.exists(full_path):
-        return jsonify({"error": "Backup file not found"}), 404
-
-    import json
-    try:
-        with open(full_path, "r", encoding="utf-8") as f:
-            backup_data = json.load(f)
-
-        # Overwrite current active project data
-        if project:
-            project.data = backup_data
-            project.save()
-            return jsonify({"status": "success", "data": backup_data})
-        else:
-            return jsonify({"error": "No active project instance to restore to"}), 400
-    except Exception as e:
-        return jsonify({"error": f"Failed to restore backup: {str(e)}"}), 500
-
-@app.route('/api/backups/upload/restore', methods=['POST'])
-def upload_backup_restore():
-    if 'file' not in request.files:
-        return jsonify({"error": "No file uploaded"}), 400
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({"error": "Empty filename"}), 400
-
-    import json
-    try:
-        backup_data = json.loads(file.read().decode('utf-8'))
-        if project:
-            project.data = backup_data
-            project.save()
-            return jsonify({"status": "success", "data": backup_data})
-        else:
-            return jsonify({"error": "No active project instance to restore to"}), 400
-    except Exception as e:
-        return jsonify({"error": f"Failed to restore uploaded backup: {str(e)}"}), 500
 
 @app.route('/api/quit', methods=['POST'])
 def quit_app():

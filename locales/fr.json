@@ -145,13 +145,11 @@
   "ollama_missing_download_btn": "Télécharger Ollama pour Windows",
   "ollama_missing_close": "Continuer sans IA",
   "btn_close": "Fermer",
-  "backups_btn": "Sauvegardes",
-  "backups_modal_title": "Sauvegardes & Restauration",
-  "backup_sec_manual": "Fichiers de Sauvegarde",
-  "backup_btn_download": "Télécharger (.json)",
-  "backup_btn_upload": "Importer (.json)",
-  "backup_sec_local": "Dossier de Sauvegarde Local",
-  "backup_local_path_label": "Chemin du dossier de sauvegarde sur votre ordinateur :",
-  "backup_btn_create": "Sauvegarder",
-  "backup_local_list_title": "Sauvegardes détectées dans ce dossier :"
+  "backup_settings_title": "Configuration des Sauvegardes",
+  "backup_local_path_label": "Répertoire de destination des sauvegardes :",
+  "btn_choose": "Parcourir...",
+  "backup_frequency_label": "Fréquence des sauvegardes :",
+  "freq_daily": "Une sauvegarde tous les jours (Quotidien)",
+  "freq_weekly": "Une sauvegarde par semaine (Hebdomadaire)",
+  "freq_monthly": "Une sauvegarde par mois (Mensuel)"
 }

@@ -65,10 +65,6 @@
         // Drag and drop state for chapters
         let draggedChapId = null;
 
-        // Drag and drop state for scenes
-        let draggedSceneId = null;
-        let draggedSceneParentChapId = null;
-
         // Pomodoro Focus Timer variables
         let timerDurationMinutes = 15;
         let timerSecondsLeft = 15 * 60;
@@ -449,8 +445,67 @@
                 const result = await res.json();
                 projectData = result.data;
                 updateRightSidebar();
+                // Silently trigger auto-backup check
+                runAutoBackup();
             } catch (err) {
                 console.error("Failed to save project data:", err);
+            }
+        }
+
+        async function runAutoBackup() {
+            if (!projectData || !projectData.settings || !projectData.settings.backup_config) return;
+            const config = projectData.settings.backup_config;
+            const path = config.folder_path;
+            const freq = config.frequency || 'daily';
+            if (!path || !path.trim()) return;
+
+            if (!config.last_backup_timestamps) {
+                config.last_backup_timestamps = {};
+            }
+
+            const now = new Date();
+            const todayStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
+
+            const oneJan = new Date(now.getFullYear(), 0, 1);
+            const numberOfDays = Math.floor((now - oneJan) / (24 * 60 * 60 * 1000));
+            const weekStr = `${now.getFullYear()}-W${Math.ceil((numberOfDays + oneJan.getDay() + 1) / 7)}`;
+
+            const monthStr = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
+
+            let shouldBackup = false;
+            if (freq === 'daily') {
+                if (config.last_backup_timestamps.daily !== todayStr) {
+                    shouldBackup = true;
+                    config.last_backup_timestamps.daily = todayStr;
+                }
+            } else if (freq === 'weekly') {
+                if (config.last_backup_timestamps.weekly !== weekStr) {
+                    shouldBackup = true;
+                    config.last_backup_timestamps.weekly = weekStr;
+                }
+            } else if (freq === 'monthly') {
+                if (config.last_backup_timestamps.monthly !== monthStr) {
+                    shouldBackup = true;
+                    config.last_backup_timestamps.monthly = monthStr;
+                }
+            }
+
+            if (shouldBackup) {
+                try {
+                    await fetch('/api/backups/local/create', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ folder_path: path, frequency: freq })
+                    });
+                    // Save timestamps state back to project
+                    await fetch('/api/project', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(projectData)
+                    });
+                } catch (e) {
+                    console.error("Failed to run automated backup:", e);
+                }
             }
         }
 
@@ -533,17 +588,7 @@
                                         </div>
                                 `;
                                 return `
-                                    <div class="group/scene flex items-center justify-between px-2 py-1 rounded-lg text-xs font-medium ${isSceneActive ? 'bg-indigo-100 text-indigo-800 font-bold' : 'text-slate-500 hover:bg-slate-200/50'} cursor-pointer border-t-2 border-b-2 border-transparent transition-all duration-150"
-                                         ${isLocked ? "" : `
-                                            draggable="true"
-                                            data-scene-id="${scene.id}"
-                                            data-parent-chap-id="${chap.id}"
-                                            ondragstart="handleSceneDragStart(event)"
-                                            ondragover="handleSceneDragOver(event)"
-                                            ondragleave="handleSceneDragLeave(event)"
-                                            ondrop="handleSceneDrop(event)"
-                                            ondragend="handleSceneDragEnd(event)"
-                                         `}>
+                                    <div class="group/scene flex items-center justify-between px-2 py-1 rounded-lg text-xs font-medium ${isSceneActive ? 'bg-indigo-100 text-indigo-800 font-bold' : 'text-slate-500 hover:bg-slate-200/50'} cursor-pointer">
                                         <div class="flex items-center space-x-1.5 flex-1 min-w-0" onclick="selectScene('${scene.id}')">
                                             <span>📄</span>
                                             <span class="truncate">${sceneTitle}</span>
@@ -1001,27 +1046,6 @@
             this.classList.add('border-t-transparent', 'border-b-transparent');
 
             const targetChapId = this.getAttribute('data-chap-id');
-
-            // If dropping a scene onto a chapter header
-            if (draggedSceneId) {
-                if (draggedSceneParentChapId === targetChapId) return; // already in this chapter
-                const sourceChap = findNodeById(draggedSceneParentChapId);
-                const targetChap = findNodeById(targetChapId);
-                if (!sourceChap || !targetChap) return;
-
-                const draggedIdx = sourceChap.children.findIndex(s => s.id === draggedSceneId);
-                if (draggedIdx === -1) return;
-
-                // Remove from source and push to target end
-                const [draggedScene] = sourceChap.children.splice(draggedIdx, 1);
-                targetChap.children.push(draggedScene);
-
-                triggerAutoSave();
-                renderTree();
-                refreshActiveWorkspace();
-                return;
-            }
-
             if (!draggedChapId || draggedChapId === targetChapId) return;
 
             // Reorder in projectData.manuscript
@@ -1056,92 +1080,6 @@
             triggerAutoSave();
             renderTree();
         }
-
-        // DRAG AND DROP HANDLERS FOR SCENES
-        window.handleSceneDragStart = function(e) {
-            e.stopPropagation();
-            draggedSceneId = e.currentTarget.getAttribute('data-scene-id');
-            draggedSceneParentChapId = e.currentTarget.getAttribute('data-parent-chap-id');
-            e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/plain', draggedSceneId);
-            e.currentTarget.classList.add('opacity-50');
-        };
-
-        window.handleSceneDragOver = function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            e.dataTransfer.dropEffect = 'move';
-
-            const el = e.currentTarget;
-            const rect = el.getBoundingClientRect();
-            const midpoint = rect.top + rect.height / 2;
-
-            if (e.clientY < midpoint) {
-                el.classList.add('border-t-indigo-500');
-                el.classList.remove('border-t-transparent', 'border-b-indigo-500');
-                el.classList.add('border-b-transparent');
-            } else {
-                el.classList.add('border-b-indigo-500');
-                el.classList.remove('border-b-transparent', 'border-t-indigo-500');
-                el.classList.add('border-t-transparent');
-            }
-        };
-
-        window.handleSceneDragLeave = function(e) {
-            e.stopPropagation();
-            const el = e.currentTarget;
-            el.classList.remove('border-t-indigo-500', 'border-b-indigo-500');
-            el.classList.add('border-t-transparent', 'border-b-transparent');
-        };
-
-        window.handleSceneDragEnd = function(e) {
-            e.currentTarget.classList.remove('opacity-50', 'border-t-indigo-500', 'border-b-indigo-500');
-            document.querySelectorAll('[data-scene-id]').forEach(el => {
-                el.classList.remove('border-t-indigo-500', 'border-b-indigo-500', 'border-t-transparent', 'border-b-transparent');
-            });
-            draggedSceneId = null;
-            draggedSceneParentChapId = null;
-        };
-
-        window.handleSceneDrop = function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            const el = e.currentTarget;
-            el.classList.remove('border-t-indigo-500', 'border-b-indigo-500');
-
-            const targetSceneId = el.getAttribute('data-scene-id');
-            const targetParentChapId = el.getAttribute('data-parent-chap-id');
-            if (!draggedSceneId || draggedSceneId === targetSceneId) return;
-
-            const sourceChap = findNodeById(draggedSceneParentChapId);
-            const targetChap = findNodeById(targetParentChapId);
-            if (!sourceChap || !targetChap) return;
-
-            const draggedIdx = sourceChap.children.findIndex(s => s.id === draggedSceneId);
-            const targetIdx = targetChap.children.findIndex(s => s.id === targetSceneId);
-            if (draggedIdx === -1 || targetIdx === -1) return;
-
-            const rect = el.getBoundingClientRect();
-            const midpoint = rect.top + rect.height / 2;
-
-            let newIdx = targetIdx;
-            if (e.clientY >= midpoint) {
-                newIdx = targetIdx + 1;
-            }
-
-            const [draggedScene] = sourceChap.children.splice(draggedIdx, 1);
-
-            let insertIdx = newIdx;
-            if (draggedSceneParentChapId === targetParentChapId && draggedIdx < newIdx) {
-                insertIdx = newIdx - 1;
-            }
-
-            targetChap.children.splice(insertIdx, 0, draggedScene);
-
-            triggerAutoSave();
-            renderTree();
-            refreshActiveWorkspace();
-        };
 
         // SELECT HANDLERS
         function selectScene(id) {
@@ -2257,6 +2195,16 @@
 
             document.getElementById('settings-ai-context-input').checked = (projectData.settings.inject_lore_context !== undefined) ? !!projectData.settings.inject_lore_context : true;
 
+            // Set Backup / Auto-Save values
+            if (!projectData.settings.backup_config) {
+                projectData.settings.backup_config = {
+                    folder_path: localStorage.getItem('backup-local-path') || '',
+                    frequency: "daily"
+                };
+            }
+            document.getElementById('settings-backup-path').value = projectData.settings.backup_config.folder_path || '';
+            document.getElementById('settings-backup-frequency').value = projectData.settings.backup_config.frequency || 'daily';
+
             document.getElementById('settings-modal').classList.remove('hidden');
         }
 
@@ -2287,6 +2235,19 @@
             projectData.settings.ai_model = document.getElementById('settings-ai-model-input').value.trim() || "llama3";
             projectData.settings.inject_lore_context = document.getElementById('settings-ai-context-input').checked;
 
+            // Read Backup / Auto-Save values
+            if (!projectData.settings.backup_config) {
+                projectData.settings.backup_config = {};
+            }
+            const backupPath = document.getElementById('settings-backup-path').value.trim();
+            const backupFreq = document.getElementById('settings-backup-frequency').value;
+            projectData.settings.backup_config.folder_path = backupPath;
+            projectData.settings.backup_config.frequency = backupFreq;
+
+            if (backupPath) {
+                localStorage.setItem('backup-local-path', backupPath);
+            }
+
             closeSettingsModal();
             renderTree();
             applyEditorLayoutSettings();
@@ -2299,6 +2260,29 @@
             // Reload list to update titles in selector
             await loadProjectsList();
         }
+
+        window.triggerDirectoryPicker = async function() {
+            try {
+                const res = await fetch('/api/backups/choose_directory', {
+                    method: 'POST'
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.status === "success" || data.status === "headless_fallback") {
+                        if (data.folder_path) {
+                            const input = document.getElementById('settings-backup-path');
+                            if (input) {
+                                input.value = data.folder_path;
+                                // Save path immediately
+                                localStorage.setItem('backup-local-path', data.folder_path);
+                            }
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to trigger directory picker:", err);
+            }
+        };
 
         // DELETE CURRENT NOVEL
         async function deleteCurrentProject() {
@@ -2328,186 +2312,6 @@
                 console.error("Error deleting project:", err);
             }
         }
-
-        // --- BACKUPS & RESTORATION MANAGEMENT ---
-        window.openBackupModal = function() {
-            document.getElementById('backup-modal').classList.remove('hidden');
-            const pathInput = document.getElementById('backup-local-path-input');
-            if (pathInput) {
-                pathInput.value = localStorage.getItem('backup-local-path') || '';
-                // Add change listener to auto-save path and refresh list
-                if (!pathInput.dataset.hasChangeListener) {
-                    pathInput.dataset.hasChangeListener = "true";
-                    pathInput.addEventListener('input', (e) => {
-                        localStorage.setItem('backup-local-path', e.target.value.trim());
-                        loadLocalBackups();
-                    });
-                }
-            }
-            loadLocalBackups();
-        };
-
-        window.closeBackupModal = function() {
-            document.getElementById('backup-modal').classList.add('hidden');
-        };
-
-        window.downloadProjectBackup = async function() {
-            try {
-                // Persist current project state first
-                await persistProject();
-
-                const cleanTitle = (projectData.settings.title || "roman").replace(/\s+/g, '_');
-                const timestamp = new Date().toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
-
-                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(projectData, null, 2));
-                const downloadAnchor = document.createElement('a');
-                downloadAnchor.setAttribute("href", dataStr);
-                downloadAnchor.setAttribute("download", `backup_${cleanTitle}_${timestamp}.json`);
-                document.body.appendChild(downloadAnchor);
-                downloadAnchor.click();
-                downloadAnchor.remove();
-            } catch (err) {
-                console.error("Failed to download project backup:", err);
-                alert("Failed to export backup.");
-            }
-        };
-
-        window.uploadProjectBackup = async function(input) {
-            const file = input.files[0];
-            if (!file) return;
-
-            const confirmMsg = activeLang === 'fr'
-                ? "Attention : Importer cette sauvegarde va écraser l'intégralité de votre roman actuel. Continuer ?"
-                : "Warning: Importing this backup will completely overwrite your current novel. Continue?";
-            if (!confirm(confirmMsg)) {
-                input.value = "";
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append('file', file);
-
-            try {
-                const res = await fetch('/api/backups/upload/restore', {
-                    method: 'POST',
-                    body: formData
-                });
-                if (res.ok) {
-                    alert(activeLang === 'fr' ? "Projet restauré avec succès !" : "Project successfully restored!");
-                    closeBackupModal();
-                    await loadProject();
-                } else {
-                    const err = await res.json();
-                    alert("Error: " + (err.error || "Failed to restore backup"));
-                }
-            } catch (err) {
-                console.error("Failed to upload/restore backup:", err);
-                alert("Failed to upload/restore backup.");
-            }
-            input.value = "";
-        };
-
-        window.loadLocalBackups = async function() {
-            const path = localStorage.getItem('backup-local-path') || '';
-            const listContainer = document.getElementById('backup-local-list');
-            if (!listContainer) return;
-
-            if (!path.trim()) {
-                listContainer.innerHTML = `<span class="text-slate-400 italic">${activeLang === 'fr' ? 'Saisissez un chemin de dossier ci-dessus pour activer les sauvegardes locales.' : 'Enter a folder path above to enable local backups.'}</span>`;
-                return;
-            }
-
-            try {
-                const res = await fetch('/api/backups/local/list', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ folder_path: path })
-                });
-
-                if (res.ok) {
-                    const data = await res.json();
-                    const backups = data.backups || [];
-                    if (backups.length === 0) {
-                        listContainer.innerHTML = `<span class="text-slate-400 italic">${activeLang === 'fr' ? 'Aucune sauvegarde détectée dans ce dossier.' : 'No backups detected in this folder.'}</span>`;
-                    } else {
-                        listContainer.innerHTML = backups.map(b => `
-                            <div class="flex items-center justify-between bg-white border border-slate-200 p-2 rounded-lg shadow-2xs hover:shadow-xs transition-all">
-                                <div class="min-w-0 flex-1">
-                                    <div class="font-semibold text-slate-700 truncate" title="${b.filename}">${b.filename}</div>
-                                    <div class="text-[10px] text-slate-400 mt-0.5">${b.mtime} • ${b.size_kb} KB</div>
-                                </div>
-                                <button onclick="restoreLocalBackup('${b.filename}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2 py-1 rounded-md text-[10px] font-bold border border-indigo-200 transition-all shrink-0 ml-2">
-                                    ${activeLang === 'fr' ? 'Restaurer' : 'Restore'}
-                                </button>
-                            </div>
-                        `).join('');
-                    }
-                } else {
-                    listContainer.innerHTML = `<span class="text-red-500 italic">${activeLang === 'fr' ? 'Dossier introuvable ou erreur de chargement.' : 'Folder not found or loading error.'}</span>`;
-                }
-            } catch (err) {
-                console.error("Failed to load local backups:", err);
-                listContainer.innerHTML = `<span class="text-red-500 italic">Error loading backups.</span>`;
-            }
-        };
-
-        window.createLocalBackup = async function() {
-            const path = localStorage.getItem('backup-local-path') || '';
-            if (!path.trim()) {
-                alert(activeLang === 'fr' ? "Veuillez saisir un chemin de dossier valide." : "Please enter a valid folder path.");
-                return;
-            }
-
-            try {
-                // Save current state first
-                await persistProject();
-
-                const res = await fetch('/api/backups/local/create', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ folder_path: path })
-                });
-
-                if (res.ok) {
-                    alert(activeLang === 'fr' ? "Sauvegarde locale créée avec succès !" : "Local backup successfully created!");
-                    await loadLocalBackups();
-                } else {
-                    const err = await res.json();
-                    alert("Error: " + (err.error || "Failed to create local backup"));
-                }
-            } catch (err) {
-                console.error("Failed to create local backup:", err);
-                alert("Failed to create local backup.");
-            }
-        };
-
-        window.restoreLocalBackup = async function(filename) {
-            const path = localStorage.getItem('backup-local-path') || '';
-            const confirmMsg = activeLang === 'fr'
-                ? `Attention : Restaurer la sauvegarde "${filename}" va écraser tout le projet actuel. Continuer ?`
-                : `Warning: Restoring "${filename}" will overwrite your current project. Continue?`;
-            if (!confirm(confirmMsg)) return;
-
-            try {
-                const res = await fetch('/api/backups/local/restore', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ folder_path: path, filename: filename })
-                });
-
-                if (res.ok) {
-                    alert(activeLang === 'fr' ? "Projet restauré avec succès !" : "Project successfully restored!");
-                    closeBackupModal();
-                    await loadProject();
-                } else {
-                    const err = await res.json();
-                    alert("Error: " + (err.error || "Failed to restore backup"));
-                }
-            } catch (err) {
-                console.error("Failed to restore backup:", err);
-                alert("Failed to restore backup.");
-            }
-        };
 
         // MODAL MANAGEMENT: ABOUT
         function openAboutModal() {
