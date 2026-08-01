@@ -151,7 +151,5 @@
   "backup_frequency_label": "Fréquence des sauvegardes :",
   "freq_daily": "Une sauvegarde tous les jours (Quotidien)",
   "freq_weekly": "Une sauvegarde par semaine (Hebdomadaire)",
-  "freq_monthly": "Une sauvegarde par mois (Mensuel)",
-  "annotation_title": "Annotation",
-  "annotation_placeholder": "Saisissez votre note d'annotation ici..."
+  "freq_monthly": "Une sauvegarde par mois (Mensuel)"
 }

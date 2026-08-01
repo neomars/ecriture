@@ -2539,6 +2539,27 @@
             }
         };
 
+        window.toggleAnnotationSize = function(e) {
+            if (e) {
+                e.stopPropagation();
+                e.preventDefault();
+            }
+            const tooltip = document.getElementById('annotation-tooltip');
+            const textarea = document.getElementById('annotation-textarea');
+            if (tooltip && textarea) {
+                const isLarge = tooltip.classList.contains('w-[450px]');
+                if (isLarge) {
+                    tooltip.classList.remove('w-[450px]');
+                    tooltip.classList.add('w-72');
+                    textarea.style.height = '80px';
+                } else {
+                    tooltip.classList.remove('w-72');
+                    tooltip.classList.add('w-[450px]');
+                    textarea.style.height = '180px';
+                }
+            }
+        };
+
         // --- RELECTURE MODAL CONTROL LOGIC ---
         let activeRelectureCategory = "repetitions";
         let activeRelectureScope = "scene";

@@ -151,7 +151,5 @@
   "backup_frequency_label": "Backup frequency:",
   "freq_daily": "One backup every day (Daily)",
   "freq_weekly": "One backup per week (Weekly)",
-  "freq_monthly": "One backup per month (Monthly)",
-  "annotation_title": "Annotation",
-  "annotation_placeholder": "Enter your annotation note here..."
+  "freq_monthly": "One backup per month (Monthly)"
 }
