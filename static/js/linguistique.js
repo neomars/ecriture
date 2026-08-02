@@ -65,9 +65,12 @@
                         span.className = 'annotation-highlight border-b-2 border-dashed border-indigo-500 cursor-help relative inline';
                         const defaultText = activeLang === 'fr' ? "Saisissez votre note d'annotation ici..." : "Enter your annotation note here...";
                         span.setAttribute('data-annotation', defaultText);
-                        span.appendChild(document.createTextNode(selectedText));
+                        span.setAttribute('data-annotation-id', 'anno-' + Date.now() + '-' + Math.floor(Math.random() * 1000));
 
-                        range.deleteContents();
+                        // Use extractContents to preserve HTML elements like <br> and other formatting tags
+                        const extracted = range.extractContents();
+                        span.appendChild(extracted);
+
                         range.insertNode(span);
 
                         // Select the span text

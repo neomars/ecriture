@@ -210,6 +210,16 @@
                         <!-- Dynamic Notes -->
                     </div>
                 </div>
+
+                <!-- Annotation Group -->
+                <div>
+                    <div class="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider px-2 py-1 select-none">
+                        <span data-i18n="annotation_title">Annotation</span>
+                    </div>
+                    <div id="annotations-list" class="space-y-1 mt-1">
+                        <!-- Dynamic Annotations -->
+                    </div>
+                </div>
             </div>
 
             <!-- QUICK ACTIONS FOOTER -->
@@ -917,7 +927,7 @@
     <!-- FLOATING ANNOTATION TOOLTIP -->
     <div id="annotation-tooltip" class="hidden absolute bg-white text-slate-800 rounded-xl shadow-2xl p-4 border border-slate-200 z-50 w-72 flex flex-col space-y-3 transition-all duration-200">
         <div class="flex items-center justify-between border-b border-slate-100 pb-1.5 shrink-0">
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center space-x-1">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center space-x-1" id="annotation-tooltip-title">
                 <span>✍️</span> <span data-i18n="annotation_title">Annotation</span>
             </span>
             <div class="flex items-center space-x-2 shrink-0">
