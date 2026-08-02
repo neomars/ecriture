@@ -688,7 +688,107 @@
                     noteList.appendChild(noteEl);
                 });
             }
+
+            // 4. Render Annotations
+            const annotationsList = document.getElementById('annotations-list');
+            if (annotationsList) {
+                annotationsList.innerHTML = "";
+                let allAnnotations = [];
+
+                // Extract annotations from manuscript
+                if (projectData && projectData.manuscript) {
+                    projectData.manuscript.forEach(chap => {
+                        if (chap.children) {
+                            chap.children.forEach(scene => {
+                                if (scene.content) {
+                                    // Parse HTML to extract annotation elements
+                                    const tempDiv = document.createElement('div');
+                                    tempDiv.innerHTML = scene.content;
+                                    const spans = tempDiv.querySelectorAll('.annotation-highlight');
+                                    spans.forEach(span => {
+                                        let annoId = span.getAttribute('data-annotation-id');
+                                        if (!annoId) {
+                                            // Assign a persistent ID if it lacks one
+                                            annoId = 'anno-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+                                            span.setAttribute('data-annotation-id', annoId);
+                                            // Update scene content with the new ID
+                                            scene.content = tempDiv.innerHTML;
+                                            triggerAutoSave();
+                                        }
+                                        const text = span.textContent || "";
+                                        allAnnotations.push({
+                                            id: annoId,
+                                            sceneId: scene.id,
+                                            text: text
+                                        });
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+
+                window.globalAnnotationsCache = allAnnotations;
+                const totalAnnotations = allAnnotations.length;
+
+                allAnnotations.forEach((anno, index) => {
+                    const annoIndex = index + 1;
+                    const annoTitle = `✍️ Annotation ${annoIndex}/${totalAnnotations}`;
+                    const previewText = anno.text.length > 20 ? anno.text.substring(0, 20) + "..." : anno.text;
+
+                    if (searchVal && !annoTitle.toLowerCase().includes(searchVal) && !previewText.toLowerCase().includes(searchVal)) {
+                        return;
+                    }
+
+                    const isAnnoActive = (activeAnnotationId === anno.id);
+                    const annoEl = document.createElement('div');
+                    annoEl.className = "group/anno flex flex-col px-2.5 py-1 rounded-lg text-sm font-medium " +
+                                      (isAnnoActive ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-600 hover:bg-slate-200/50') +
+                                      " cursor-pointer";
+
+                    const safeTitle = document.createElement('div');
+                    safeTitle.textContent = annoTitle;
+                    const safePreview = document.createElement('div');
+                    safePreview.textContent = previewText;
+
+                    annoEl.innerHTML = `
+                        <div class="flex items-center space-x-1.5 flex-1 min-w-0" onclick="selectAnnotation('${anno.sceneId}', '${anno.id}')">
+                            <span class="truncate title-container"></span>
+                        </div>
+                        <div class="text-xs text-slate-400 truncate pl-5 pointer-events-none preview-container"></div>
+                    `;
+                    annoEl.querySelector('.title-container').textContent = safeTitle.textContent;
+                    annoEl.querySelector('.preview-container').textContent = safePreview.textContent;
+                    annotationsList.appendChild(annoEl);
+                });
+            }
         }
+
+        let activeAnnotationId = null;
+
+        window.selectAnnotation = function(sceneId, annotationId) {
+            activeAnnotationId = annotationId;
+            selectScene(sceneId);
+
+            // Wait for editor to render, then scroll to it
+            setTimeout(() => {
+                const editor = document.getElementById('editor-content');
+                if (editor) {
+                    const span = editor.querySelector(`.annotation-highlight[data-annotation-id="${annotationId}"]`);
+                    if (span) {
+                        span.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                        // Briefly highlight the annotation for visual feedback
+                        const originalBg = span.style.backgroundColor;
+                        span.style.backgroundColor = 'rgba(99, 102, 241, 0.2)'; // indigo-500 light
+                        setTimeout(() => {
+                            span.style.backgroundColor = originalBg;
+                        }, 1500);
+                    }
+                }
+                renderTree();
+            }, 100);
+        };
 
         // TRIGGER TREE FILTERING
         function filterTree(val) {
@@ -2459,6 +2559,40 @@
                 activeAnnotationSpan = span;
                 const rect = span.getBoundingClientRect();
 
+                // Use cached annotations from renderTree if available, else fallback
+                let allAnnotationsIds = [];
+                if (window.globalAnnotationsCache) {
+                    allAnnotationsIds = window.globalAnnotationsCache.map(a => a.id);
+                } else if (projectData && projectData.manuscript) {
+                    projectData.manuscript.forEach(chap => {
+                        if (chap.children) {
+                            chap.children.forEach(scene => {
+                                if (scene.content) {
+                                    const tempDiv = document.createElement('div');
+                                    tempDiv.innerHTML = scene.content;
+                                    const spans = tempDiv.querySelectorAll('.annotation-highlight');
+                                    spans.forEach(s => {
+                                        let annoId = s.getAttribute('data-annotation-id');
+                                        if (annoId) {
+                                            allAnnotationsIds.push(annoId);
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+                const currentAnnoId = span.getAttribute('data-annotation-id');
+                const annoIndex = allAnnotationsIds.indexOf(currentAnnoId) + 1;
+                const totalAnnos = allAnnotationsIds.length;
+
+                const tooltipTitle = document.getElementById('annotation-tooltip-title');
+                if (tooltipTitle && annoIndex > 0) {
+                    tooltipTitle.innerHTML = `<span>✍️</span> <span>Annotation ${annoIndex}/${totalAnnos}</span>`;
+                } else if (tooltipTitle) {
+                    tooltipTitle.innerHTML = `<span>✍️</span> <span data-i18n="annotation_title">Annotation</span>`;
+                }
+
                 // Show tooltip and position it below the span
                 tooltip.classList.remove('hidden');
                 tooltip.style.opacity = '1';
@@ -2520,6 +2654,7 @@
                     onCombinedEditorInput(editor.innerHTML);
                 }
                 closeAnnotationTooltip();
+                renderTree();
             }
         };
 
@@ -2536,6 +2671,7 @@
                     onCombinedEditorInput(editor.innerHTML);
                 }
                 closeAnnotationTooltip();
+                renderTree();
             }
         };
 
