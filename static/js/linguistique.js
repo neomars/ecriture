@@ -65,6 +65,7 @@
                         span.className = 'annotation-highlight border-b-2 border-dashed border-indigo-500 cursor-help relative inline';
                         const defaultText = activeLang === 'fr' ? "Saisissez votre note d'annotation ici..." : "Enter your annotation note here...";
                         span.setAttribute('data-annotation', defaultText);
+                        span.setAttribute('data-annotation-id', 'anno-' + Date.now() + '-' + Math.floor(Math.random() * 1000));
                         span.appendChild(document.createTextNode(selectedText));
 
                         range.deleteContents();
