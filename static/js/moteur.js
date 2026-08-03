@@ -3534,7 +3534,19 @@ window.loadBackupsList = async function() {
     listContainer.innerHTML = '<div class="text-slate-400 text-xs italic p-2 text-center" data-i18n="loading">Chargement...</div>';
 
     try {
-        const response = await fetch('/api/backups/local/list');
+        // Read the currently inputted directory, fallback to local storage or project settings
+        const inputField = document.getElementById('settings-backup-path');
+        let currentPath = inputField ? inputField.value.trim() : "";
+        if (!currentPath && projectData && projectData.settings && projectData.settings.backup_config) {
+            currentPath = projectData.settings.backup_config.folder_path || "";
+        }
+
+        let fetchUrl = '/api/backups/local/list';
+        if (currentPath) {
+            fetchUrl += `?path=${encodeURIComponent(currentPath)}`;
+        }
+
+        const response = await fetch(fetchUrl);
         const data = await response.json();
 
         if (data.error || !data.backups || data.backups.length === 0) {
@@ -3554,7 +3566,7 @@ window.loadBackupsList = async function() {
                     <span class="text-xs font-semibold text-slate-700 truncate">${backup.filename}</span>
                     <span class="text-[10px] text-slate-400">${date} • ${size}</span>
                 </div>
-                <button onclick="restoreBackup('${backup.filename}')" class="bg-amber-100 hover:bg-amber-200 text-amber-700 font-bold px-2 py-1 rounded text-xs ml-2 shrink-0 transition-colors">
+                <button onclick="restoreBackup('${backup.filename}', '${currentPath.replace(/\'/g, "\\'")}')" class="bg-amber-100 hover:bg-amber-200 text-amber-700 font-bold px-2 py-1 rounded text-xs ml-2 shrink-0 transition-colors">
                     Restaurer
                 </button>
             `;
@@ -3566,14 +3578,17 @@ window.loadBackupsList = async function() {
     }
 };
 
-window.restoreBackup = async function(filename) {
+window.restoreBackup = async function(filename, path = "") {
     if (!confirm("Êtes-vous sûr de vouloir restaurer cette sauvegarde ? Cela écrasera toutes vos données actuelles.")) return;
 
     try {
+        const payload = { filename: filename };
+        if (path) payload.path = path;
+
         const response = await fetch('/api/backups/local/restore', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ filename: filename })
+            body: JSON.stringify(payload)
         });
         const data = await response.json();
 

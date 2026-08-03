@@ -1074,7 +1074,11 @@ def local_backup_list():
     if not project.data or not project.data.get('id'):
         return jsonify({"error": "No active project"}), 400
 
-    backup_dir = project.data.get("settings", {}).get("backup_config", {}).get("folder_path", os.path.abspath("./backups"))
+    # Read path from query params, fallback to project settings, fallback to default
+    backup_dir = request.args.get('path')
+    if not backup_dir:
+        backup_dir = project.data.get("settings", {}).get("backup_config", {}).get("folder_path", os.path.abspath("./backups"))
+
     if not os.path.exists(backup_dir):
         return jsonify({"backups": []})
 
@@ -1106,10 +1110,11 @@ def local_backup_restore():
     """Restore a specific backup file."""
     data = request.json
     filename = data.get("filename")
+    path = data.get("path")
     if not filename:
         return jsonify({"error": "No filename provided"}), 400
 
-    backup_dir = project.data.get("settings", {}).get("backup_config", {}).get("folder_path", os.path.abspath("./backups"))
+    backup_dir = path if path else project.data.get("settings", {}).get("backup_config", {}).get("folder_path", os.path.abspath("./backups"))
     # Sanitize filename to prevent path traversal
     from werkzeug.utils import secure_filename
     filename = secure_filename(filename)
