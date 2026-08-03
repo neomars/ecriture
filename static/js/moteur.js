@@ -3505,3 +3505,119 @@
             }
             document.removeEventListener('click', autoFullscreen);
         }, { once: true });
+
+
+// Restoration & Import Modals
+window.openRestoreModal = function() {
+    closeSettingsModal();
+    const modal = document.getElementById('restore-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        loadBackupsList();
+    }
+};
+
+window.closeRestoreModal = function() {
+    const modal = document.getElementById('restore-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+};
+
+window.loadBackupsList = async function() {
+    const listContainer = document.getElementById('restore-backups-list');
+    if (!listContainer) return;
+
+    listContainer.innerHTML = '<div class="text-slate-400 text-xs italic p-2 text-center" data-i18n="loading">Chargement...</div>';
+
+    try {
+        const response = await fetch('/api/backups/local/list');
+        const data = await response.json();
+
+        if (data.error || !data.backups || data.backups.length === 0) {
+            listContainer.innerHTML = '<div class="text-slate-400 text-xs italic p-2 text-center">Aucune sauvegarde locale trouvée.</div>';
+            return;
+        }
+
+        listContainer.innerHTML = '';
+        data.backups.forEach(backup => {
+            const date = new Date(backup.timestamp * 1000).toLocaleString();
+            const size = (backup.size / 1024).toFixed(1) + ' KB';
+
+            const btn = document.createElement('div');
+            btn.className = 'flex items-center justify-between p-2 hover:bg-slate-200/50 rounded cursor-pointer border-b border-slate-100 last:border-0';
+            btn.innerHTML = `
+                <div class="flex flex-col overflow-hidden">
+                    <span class="text-xs font-semibold text-slate-700 truncate">${backup.filename}</span>
+                    <span class="text-[10px] text-slate-400">${date} • ${size}</span>
+                </div>
+                <button onclick="restoreBackup('${backup.filename}')" class="bg-amber-100 hover:bg-amber-200 text-amber-700 font-bold px-2 py-1 rounded text-xs ml-2 shrink-0 transition-colors">
+                    Restaurer
+                </button>
+            `;
+            listContainer.appendChild(btn);
+        });
+
+    } catch (err) {
+        listContainer.innerHTML = '<div class="text-red-500 text-xs p-2 text-center">Erreur lors du chargement des sauvegardes.</div>';
+    }
+};
+
+window.restoreBackup = async function(filename) {
+    if (!confirm("Êtes-vous sûr de vouloir restaurer cette sauvegarde ? Cela écrasera toutes vos données actuelles.")) return;
+
+    try {
+        const response = await fetch('/api/backups/local/restore', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ filename: filename })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert("Erreur lors de la restauration : " + data.error);
+        }
+    } catch (err) {
+        alert("Erreur de connexion.");
+    }
+};
+
+window.importDocument = async function() {
+    const input = document.getElementById('import-document-input');
+    if (!input || !input.files || input.files.length === 0) {
+        alert("Veuillez sélectionner un fichier à importer.");
+        return;
+    }
+
+    if (!confirm("Êtes-vous sûr de vouloir importer ce document ? Cela écrasera entièrement votre manuscrit actuel !")) return;
+
+    const file = input.files[0];
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const btn = document.querySelector('button[onclick="importDocument()"]');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = 'Importation...';
+    btn.disabled = true;
+
+    try {
+        const response = await fetch('/api/import/document', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert("Erreur lors de l'importation : " + data.error);
+        }
+    } catch (err) {
+        alert("Erreur de connexion.");
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+};

@@ -1,6 +1,11 @@
 import os
 import json
 import re
+
+import zipfile
+from werkzeug.utils import secure_filename
+from bs4 import BeautifulSoup
+
 from flask import Flask, jsonify, request, send_file, render_template
 from project_manager import NovelProject
 from ai_client import OllamaClient

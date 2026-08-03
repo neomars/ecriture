@@ -604,7 +604,12 @@
 
                 <!-- BACKUP & AUTO-SAVE CONFIGURATION -->
                 <div class="pt-3 border-t border-slate-100">
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2" data-i18n="backup_settings_title">Configuration des Sauvegardes</h4>
+                    <div class="flex items-center justify-between mb-2">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500" data-i18n="backup_settings_title">Configuration des Sauvegardes</h4>
+                        <button onclick="openRestoreModal()" class="text-slate-400 hover:text-indigo-600 font-bold px-2 py-1 rounded transition-colors flex items-center space-x-1" title="Restaurer / Importer" data-i18n-title="restore_import_title">
+                            <span class="text-sm">🔄</span>
+                        </button>
+                    </div>
                     <div class="space-y-3">
                         <!-- Directory Selection -->
                         <div>
@@ -950,5 +955,42 @@
     <script src="/static/js/moteur.js"></script>
     <script src="/static/js/linguistique.js"></script>
     <script src="/static/js/ia.js"></script>
+
+    <!-- MODAL: RESTORE & IMPORT -->
+    <div id="restore-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div class="bg-white w-[500px] max-h-[85vh] overflow-y-auto rounded-xl shadow-xl p-6 border border-slate-200">
+            <h3 class="text-lg font-bold text-slate-800 mb-2" data-i18n="restore_modal_title">Restauration & Importation</h3>
+
+            <div class="bg-amber-50 border border-amber-200 text-amber-800 text-xs p-3 rounded-lg mb-4 flex items-start space-x-2">
+                <span class="text-base leading-none">⚠️</span>
+                <span data-i18n="restore_warning">Attention : L'importation ou la restauration écrasera <b>intégralement</b> le manuscrit actuel de ce projet. Cette action est irréversible.</span>
+            </div>
+
+            <!-- BACKUPS LIST -->
+            <div class="mb-5">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2" data-i18n="restore_backups_title">Restaurer une sauvegarde locale</h4>
+                <div id="restore-backups-list" class="space-y-2 max-h-48 overflow-y-auto bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm">
+                    <div class="text-slate-400 text-xs italic p-2 text-center" data-i18n="loading">Chargement...</div>
+                </div>
+            </div>
+
+            <!-- IMPORT DOCUMENT -->
+            <div class="mb-5 pt-4 border-t border-slate-100">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2" data-i18n="import_doc_title">Importer un document externe</h4>
+                <div class="flex items-center space-x-2">
+                    <input type="file" id="import-document-input" accept=".txt,.rtf,.odt,.doc,.docx,.epub" class="block w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-slate-200 rounded-lg bg-slate-50">
+                    <button onclick="importDocument()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs shadow-sm transition-all whitespace-nowrap" data-i18n="import_btn">
+                        Importer
+                    </button>
+                </div>
+                <div class="text-[10px] text-slate-400 mt-1">Formats supportés : .txt, .docx, .odt, .epub</div>
+            </div>
+
+            <div class="flex justify-end border-t border-slate-100 pt-4">
+                <button onclick="closeRestoreModal()" class="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-700 transition-colors" data-i18n="cancel">Annuler</button>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
