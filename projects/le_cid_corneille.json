@@ -14,7 +14,7 @@
         "lang": "fr",
         "locked": false,
         "overall_goal": 10000,
-        "overall_written": 761,
+        "overall_written": 920,
         "title": "Le Cid - Pierre Corneille"
     },
     "characters": [
@@ -179,37 +179,37 @@
         {
             "children": [
                 {
-                    "content": "<span class=\"annotation-highlight border-b-2 border-dashed border-indigo-500 cursor-help relative inline\" data-annotation=\"Saisissez votre note d'annotation ici...\" data-annotation-id=\"anno-1785709169482-224\">Line 1",
+                    "content": "Elle aimait regarder le coucher de soleil.",
                     "id": "scene_acte1_1",
                     "title": "Scène 1 : Chimène, Elvire",
                     "type": "scene"
                 },
                 {
-                    "content": "Line 2</span>",
+                    "content": "L'INFANTE.\nPage, allez avertir Chimène de ma part\nQu'aujourd'hui pour me voir elle attend un peu tard,\nEt que mon amitié se plaint de sa paresse.",
                     "id": "scene_acte1_2",
                     "title": "Scène 2 : L'Infante, Léonor, Le Page",
                     "type": "scene"
                 },
                 {
-                    "content": "Line 3",
+                    "content": "LE COMTE.\nEnfin vous l'emportez, et la faveur du Roi\nVous élève en un rang qui n'était dû qu'à moi,\nIl vous fait Gouverneur du prince de Castille.",
                     "id": "scene_acte1_3",
                     "title": "Scène 3 : Le Comte, Don Diègue",
                     "type": "scene"
                 },
                 {
-                    "content": "",
+                    "content": "DON DIÈGUE.\nÔ rage ! ô désespoir ! ô vieillesse ennemie !\nN'ai-je donc tant vécu que pour cette infamie ?\nEt ne suis-je blanchi dans les travaux guerriers\nQue pour voir en un jour flétrir tant de lauriers ?",
                     "id": "scene_acte1_4",
                     "title": "Scène 4 : Don Diègue",
                     "type": "scene"
                 },
                 {
-                    "content": "",
+                    "content": "DON DIÈGUE.\nRodrigue, as-tu du cœur ?\n\nDON RODRIGUE.\nTout autre que mon père\nL'éprouverait sur l'heure.\n\nDON DIÈGUE.\nAgréable colère !\nDigne ressentiment à ma douleur bien doux !\nJe reconnais mon sang à ce noble courroux.",
                     "id": "scene_acte1_5",
                     "title": "Scène 5 : Don Diègue, Don Rodrigue",
                     "type": "scene"
                 },
                 {
-                    "content": "",
+                    "content": "DON RODRIGUE.\nPercé jusques au fond du cœur\nD'une atteinte imprévue aussi bien que mortelle,\nMisérable vengeur d'une juste querelle,\nEt malheureux objet d'une injuste rigueur\nJe demeure immobile, et mon âme abattue\nCède au coup qui me tue.",
                     "id": "scene_acte1_6",
                     "title": "Scène 6 : Don Rodrigue (Monologue)",
                     "type": "scene"

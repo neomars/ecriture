@@ -4,22 +4,48 @@
 --- Acte I ---
 
 [Scène 1 : Chimène, Elvire]
-Ceci est un grand test pour la sélection et les annotations du chapitre.
+Elle aimait regarder le coucher de soleil.
 
 [Scène 2 : L'Infante, Léonor, Le Page]
-
+L'INFANTE.
+Page, allez avertir Chimène de ma part
+Qu'aujourd'hui pour me voir elle attend un peu tard,
+Et que mon amitié se plaint de sa paresse.
 
 [Scène 3 : Le Comte, Don Diègue]
-
+LE COMTE.
+Enfin vous l'emportez, et la faveur du Roi
+Vous élève en un rang qui n'était dû qu'à moi,
+Il vous fait Gouverneur du prince de Castille.
 
 [Scène 4 : Don Diègue]
-
+DON DIÈGUE.
+Ô rage ! ô désespoir ! ô vieillesse ennemie !
+N'ai-je donc tant vécu que pour cette infamie ?
+Et ne suis-je blanchi dans les travaux guerriers
+Que pour voir en un jour flétrir tant de lauriers ?
 
 [Scène 5 : Don Diègue, Don Rodrigue]
+DON DIÈGUE.
+Rodrigue, as-tu du cœur ?
 
+DON RODRIGUE.
+Tout autre que mon père
+L'éprouverait sur l'heure.
+
+DON DIÈGUE.
+Agréable colère !
+Digne ressentiment à ma douleur bien doux !
+Je reconnais mon sang à ce noble courroux.
 
 [Scène 6 : Don Rodrigue (Monologue)]
-
+DON RODRIGUE.
+Percé jusques au fond du cœur
+D'une atteinte imprévue aussi bien que mortelle,
+Misérable vengeur d'une juste querelle,
+Et malheureux objet d'une injuste rigueur
+Je demeure immobile, et mon âme abattue
+Cède au coup qui me tue.
 
 
 --- Acte II ---

@@ -399,7 +399,7 @@ def api_synonyms():
 def clean_annotations(text):
     """Strips annotation span wrapping while preserving the inner annotated text."""
     import re
-    return re.sub(r'<span class="annotation-highlight[^>]*>(.*?)</span>', r'\1', text)
+    return re.sub(r'<span[^>]*class="annotation-highlight[^>]*>(.*?)</span>', r'\1', text, flags=re.DOTALL)
 
 def add_docx_formatted_paragraph(doc, text):
     """Helper to add paragraphs with basic <i>, <b> and <span style='font-variant: small-caps;'> styling."""

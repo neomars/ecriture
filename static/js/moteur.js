@@ -2660,10 +2660,11 @@
 
         window.deleteAnnotation = function() {
             if (activeAnnotationSpan) {
-                // Unwrap the span, keeping its text content
-                const text = activeAnnotationSpan.textContent;
-                const textNode = document.createTextNode(text);
-                activeAnnotationSpan.parentNode.replaceChild(textNode, activeAnnotationSpan);
+                // Unwrap the span, keeping its HTML contents (like <br> tags) intact
+                while (activeAnnotationSpan.firstChild) {
+                    activeAnnotationSpan.parentNode.insertBefore(activeAnnotationSpan.firstChild, activeAnnotationSpan);
+                }
+                activeAnnotationSpan.parentNode.removeChild(activeAnnotationSpan);
 
                 // Trigger editor input to save to projectData / database
                 const editor = document.getElementById('editor-content');
