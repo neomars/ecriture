@@ -6,6 +6,11 @@ import zipfile
 from werkzeug.utils import secure_filename
 from bs4 import BeautifulSoup
 
+
+import zipfile
+from werkzeug.utils import secure_filename
+from bs4 import BeautifulSoup
+
 from flask import Flask, jsonify, request, send_file, render_template
 from project_manager import NovelProject
 from ai_client import OllamaClient
@@ -1061,6 +1066,149 @@ def quit_app():
     import signal
     os.kill(os.getpid(), signal.SIGINT)
     return jsonify({"status": "shutdown"})
+
+
+@app.route('/api/backups/local/list', methods=['GET'])
+def local_backup_list():
+    """List all available backups for the current project."""
+    if not project.data or not project.data.get('id'):
+        return jsonify({"error": "No active project"}), 400
+
+    backup_dir = project.data.get("settings", {}).get("backup_config", {}).get("folder_path", os.path.abspath("./backups"))
+    if not os.path.exists(backup_dir):
+        return jsonify({"backups": []})
+
+    pid = project.data['id']
+    backups = []
+
+    for f in os.listdir(backup_dir):
+        if f.endswith('.json') and f.startswith('backup_'):
+            filepath = os.path.join(backup_dir, f)
+            try:
+                import json
+                with open(filepath, 'r', encoding='utf-8') as f_json:
+                    data = json.load(f_json)
+                    if data.get('id') == pid:
+                        backups.append({
+                            "filename": f,
+                            "path": filepath,
+                            "timestamp": os.path.getmtime(filepath),
+                            "size": os.path.getsize(filepath)
+                        })
+            except Exception:
+                continue
+
+    backups.sort(key=lambda x: x['timestamp'], reverse=True)
+    return jsonify({"backups": backups})
+
+@app.route('/api/backups/local/restore', methods=['POST'])
+def local_backup_restore():
+    """Restore a specific backup file."""
+    data = request.json
+    filename = data.get("filename")
+    if not filename:
+        return jsonify({"error": "No filename provided"}), 400
+
+    backup_dir = project.data.get("settings", {}).get("backup_config", {}).get("folder_path", os.path.abspath("./backups"))
+    # Sanitize filename to prevent path traversal
+    from werkzeug.utils import secure_filename
+    filename = secure_filename(filename)
+    filepath = os.path.join(backup_dir, filename)
+
+    if not os.path.exists(filepath):
+        return jsonify({"error": "Backup file not found"}), 404
+
+    try:
+        import json
+        with open(filepath, 'r', encoding='utf-8') as f:
+            backup_data = json.load(f)
+
+        project.data = backup_data
+
+        if project.filepath:
+            with open(project.filepath, 'w', encoding='utf-8') as f:
+                json.dump(project.data, f, indent=4, ensure_ascii=False)
+
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/import/document', methods=['POST'])
+def import_document():
+    """Import a document and overwrite the current project's manuscript."""
+    if 'file' not in request.files:
+        return jsonify({"error": "No file uploaded"}), 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"error": "No file selected"}), 400
+
+    from werkzeug.utils import secure_filename
+    import zipfile
+    from bs4 import BeautifulSoup
+    filename = secure_filename(file.filename)
+    ext = filename.rsplit('.', 1)[1].lower() if '.' in filename else ''
+
+    if ext not in ['txt', 'docx', 'odt', 'epub']:
+        return jsonify({"error": "Unsupported file format"}), 400
+
+    temp_dir = os.path.abspath('./temp_imports')
+    os.makedirs(temp_dir, exist_ok=True)
+    temp_path = os.path.join(temp_dir, filename)
+    file.save(temp_path)
+
+    text_content = ""
+    try:
+        if ext == 'txt':
+            with open(temp_path, 'r', encoding='utf-8') as f:
+                text_content = f.read()
+        elif ext == 'docx':
+            from docx import Document as DocxDocument
+            doc = DocxDocument(temp_path)
+            text_content = "\n\n".join([p.text for p in doc.paragraphs if p.text.strip()])
+        elif ext == 'odt':
+            with zipfile.ZipFile(temp_path, 'r') as z:
+                xml_content = z.read('content.xml')
+                soup = BeautifulSoup(xml_content, 'xml')
+                paragraphs = soup.find_all('text:p')
+                text_content = "\n\n".join([p.text for p in paragraphs if p.text.strip()])
+        elif ext == 'epub':
+            with zipfile.ZipFile(temp_path, 'r') as z:
+                for item in z.namelist():
+                    if item.endswith('.html') or item.endswith('.xhtml'):
+                        html_content = z.read(item)
+                        soup = BeautifulSoup(html_content, 'html.parser')
+                        text_content += "\n\n" + soup.get_text(separator='\n')
+
+        text_content = text_content.strip()
+        html_content = text_content.replace('\n', '<br>')
+
+        project.data["manuscript"] = [{
+            "id": "chap-imported",
+            "title": "Chapitre Importé",
+            "type": "corps",
+            "children": [{
+                "id": "scene-imported",
+                "title": "Scène Importée",
+                "content": html_content
+            }]
+        }]
+
+        if project.filepath:
+            import json
+            with open(project.filepath, 'w', encoding='utf-8') as f:
+                json.dump(project.data, f, indent=4, ensure_ascii=False)
+
+    except Exception as e:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+        return jsonify({"error": str(e)}), 500
+
+    if os.path.exists(temp_path):
+        os.remove(temp_path)
+
+    return jsonify({"success": True, "message": "Import successful"})
+
 
 if __name__ == "__main__":
     import webbrowser

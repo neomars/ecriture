@@ -391,6 +391,9 @@
                 // Apply locking restrictions frontend
                 applyLockState();
 
+                // Check and run automated backup on launch if due
+                runAutoBackup();
+
             } catch (err) {
                 console.error("Error loading project state:", err);
             }
