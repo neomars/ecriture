@@ -11,6 +11,9 @@ import zipfile
 from werkzeug.utils import secure_filename
 from bs4 import BeautifulSoup
 
+
+from flask import Response
+
 from flask import Flask, jsonify, request, send_file, render_template
 from project_manager import NovelProject
 from ai_client import OllamaClient
@@ -1213,6 +1216,39 @@ def import_document():
         os.remove(temp_path)
 
     return jsonify({"success": True, "message": "Import successful"})
+
+
+
+@app.route('/api/ai/pull', methods=['GET'])
+def pull_ai_model():
+    """Pulls an Ollama model and streams progress via Server-Sent Events (SSE)."""
+    model_name = request.args.get('model', 'gemma4:latest')
+
+    def generate():
+        import json
+        import urllib.request
+        try:
+            req = urllib.request.Request(
+                "http://localhost:11434/api/pull",
+                data=json.dumps({"name": model_name, "stream": True}).encode('utf-8'),
+                headers={'Content-Type': 'application/json'},
+                method="POST"
+            )
+            with urllib.request.urlopen(req) as response:
+                for line in response:
+                    if line:
+                        decoded_line = line.decode('utf-8')
+                        try:
+                            data = json.loads(decoded_line)
+                            yield f"data: {json.dumps(data)}\n\n"
+                        except json.JSONDecodeError:
+                            continue
+                yield f"data: {json.dumps({'status': 'success'})}\n\n"
+        except Exception as e:
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+
+    from flask import Response
+    return Response(generate(), mimetype='text/event-stream')
 
 
 if __name__ == "__main__":

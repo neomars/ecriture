@@ -992,5 +992,19 @@
         </div>
     </div>
 
+
+    <!-- MODAL: OLLAMA INSTALLING MODEL -->
+    <div id="ollama-installing-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div class="bg-white w-[400px] rounded-xl shadow-xl p-6 border border-slate-200 text-center">
+            <h3 class="text-lg font-bold text-slate-800 mb-2">Installation du modèle IA</h3>
+            <p class="text-sm text-slate-600 mb-4">Téléchargement de <span class="font-semibold text-indigo-600">gemma4:latest</span>. Veuillez patienter...</p>
+
+            <div class="w-full bg-slate-200 rounded-full h-2.5 mb-2">
+                <div id="ollama-install-progress-bar" class="bg-indigo-600 h-2.5 rounded-full" style="width: 0%"></div>
+            </div>
+            <div id="ollama-install-status-text" class="text-xs text-slate-500 font-semibold mb-4">Initialisation...</div>
+        </div>
+    </div>
+
 </body>
 </html>

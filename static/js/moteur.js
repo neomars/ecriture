@@ -143,6 +143,12 @@
                     const data = await res.json();
                     if (!data.installed) {
                         showOllamaMissingModal();
+                    } else {
+                        // Ollama is installed, check for gemma4:latest
+                        const hasGemma = data.models.includes('gemma4:latest') || data.models.includes('gemma4');
+                        if (!hasGemma) {
+                            startModelInstallation('gemma4:latest');
+                        }
                     }
                 } else {
                     showOllamaMissingModal();
@@ -151,6 +157,71 @@
                 console.error("Error checking Ollama status:", err);
                 showOllamaMissingModal();
             }
+        }
+
+        function startModelInstallation(modelName) {
+            const modal = document.getElementById('ollama-installing-modal');
+            const progressBar = document.getElementById('ollama-install-progress-bar');
+            const statusText = document.getElementById('ollama-install-status-text');
+
+            if (modal) modal.classList.remove('hidden');
+
+            const eventSource = new EventSource('/api/ai/pull?model=' + encodeURIComponent(modelName));
+
+            eventSource.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+
+                if (data.status) {
+                    statusText.innerText = data.status;
+                }
+
+                if (data.completed && data.total) {
+                    const percent = Math.round((data.completed / data.total) * 100);
+                    progressBar.style.width = percent + '%';
+                    statusText.innerText = `Téléchargement : ${percent}%`;
+                }
+
+                if (data.status === 'success') {
+                    eventSource.close();
+                    if (modal) modal.classList.add('hidden');
+
+                    // Set as default model
+                    if (projectData && projectData.settings) {
+                        projectData.settings.ai_model = modelName;
+                        const selectEl = document.getElementById('settings-ai-model');
+                        if (selectEl) {
+                            // Add option if it doesn't exist yet
+                            let optionExists = Array.from(selectEl.options).some(opt => opt.value === modelName);
+                            if (!optionExists) {
+                                const newOpt = document.createElement('option');
+                                newOpt.value = modelName;
+                                newOpt.text = modelName;
+                                selectEl.add(newOpt);
+                            }
+                            selectEl.value = modelName;
+                        }
+                        persistProject();
+                    }
+                }
+
+                if (data.error) {
+                    eventSource.close();
+                    statusText.innerText = "Erreur : " + data.error;
+                    statusText.classList.add('text-red-500');
+                    setTimeout(() => {
+                        if (modal) modal.classList.add('hidden');
+                    }, 3000);
+                }
+            };
+
+            eventSource.onerror = function() {
+                eventSource.close();
+                statusText.innerText = "Erreur de connexion lors du téléchargement.";
+                statusText.classList.add('text-red-500');
+                setTimeout(() => {
+                    if (modal) modal.classList.add('hidden');
+                }, 3000);
+            };
         }
 
         function showOllamaMissingModal() {
