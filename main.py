@@ -1,18 +1,15 @@
+import zipfile
+from werkzeug.utils import secure_filename
+from bs4 import BeautifulSoup
+from flask import Response
 import os
 import json
 import re
 
-import zipfile
-from werkzeug.utils import secure_filename
-from bs4 import BeautifulSoup
 
 
-import zipfile
-from werkzeug.utils import secure_filename
-from bs4 import BeautifulSoup
 
 
-from flask import Response
 
 from flask import Flask, jsonify, request, send_file, render_template
 from project_manager import NovelProject
