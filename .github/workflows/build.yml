@@ -3,10 +3,9 @@ name: Compilation Multi-Plateformes
 on:
   push:
     tags:
-      - 'v*'
-  workflow_dispatch:
+      - 'v*' # Se déclenche lors du push d'un tag (ex: v1.0.0)
+  workflow_dispatch: # Lancement manuel depuis l'onglet Actions
 
-# 1. AUTORISATION D'ÉCRITURE : Obligatoire pour créer une Release GitHub
 permissions:
   contents: write
 
@@ -35,7 +34,6 @@ jobs:
             bin_path: dist/ecriture
 
     steps:
-      # 2. FETCH-DEPTH: 0 pour récupérer tous les tags et éviter l'erreur 128 de Git
       - name: Checkout du code
         uses: actions/checkout@v4
         with:
@@ -68,17 +66,19 @@ jobs:
       - name: Compilation avec PyInstaller
         run: ${{ matrix.pyinstaller_cmd }}
 
+      # Les exécutables seront TOUJOURS disponibles au téléchargement dans les Artifacts
       - name: Upload de l'artefact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
           path: ${{ matrix.bin_path }}
 
-      # 3. La release ne s'exécute QUE si vous avez poussé un tag (ex: v1.0.0)
+      # La Release GitHub ne s'exécutera QUE si vous avez poussé un Tag Git
       - name: Créer la Release GitHub
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           files: ${{ matrix.bin_path }}
+          tag_name: ${{ github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
