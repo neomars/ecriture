@@ -1,0 +1,87 @@
+name: Compilation Multi-Plateformes
+
+on:
+  push:
+    tags:
+      - 'v*' # Se déclenche quand vous poussez un tag de version (ex: v1.0.0)
+  workflow_dispatch: # Permet aussi de lancer la compilation manuellement depuis l'interface GitHub
+
+jobs:
+  build:
+    name: Build sur ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Configuration pour Windows
+          - os: windows-latest
+            artifact_name: ecriture-windows.exe
+            pyinstaller_cmd: pyinstaller --noconfirm --onefile --windowed --add-data "web;web" --name ecriture main.py
+            bin_path: dist/ecriture.exe
+
+          # Configuration pour macOS
+          - os: macos-latest
+            artifact_name: ecriture-macos
+            pyinstaller_cmd: pyinstaller --noconfirm --onefile --windowed --add-data "web:web" --name ecriture main.py
+            bin_path: dist/ecriture
+
+          # Configuration pour Linux
+          - os: ubuntu-latest
+            artifact_name: ecriture-linux
+            pyinstaller_cmd: pyinstaller --noconfirm --onefile --add-data "web:web" --name ecriture main.py
+            bin_path: dist/ecriture
+
+    steps:
+      # 1. Récupérer le code source du dépôt
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      # 2. Installer Python
+      - name: Configuration de Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # 3. Installer Node.js (Si vous utilisez un bundle JS comme Vite/Webpack)
+      - name: Configuration de Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # 4. Compiler les assets JavaScript (si votre projet a un package.json)
+      - name: Build du Frontend JS
+        run: |
+          if [ -f "package.json" ]; then
+            npm ci
+            npm run build --if-present
+          fi
+        shell: bash
+
+      # 5. Installer les dépendances Python & PyInstaller
+      - name: Installation des dépendances Python
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+          if [ -f "requirements.txt" ]; then pip install -r requirements.txt; fi
+
+      # 6. Exécuter la commande de compilation spécifique à l'OS
+      - name: Compilation avec PyInstaller
+        run: ${{ matrix.pyinstaller_cmd }}
+
+      # 7. Sauvegarder l'exécutable dans les artefacts GitHub
+      - name: Upload de l'artefact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: ${{ matrix.bin_path }}
+
+      # 8. (Optionnel) Publier automatiquement sur la page "Releases" GitHub lors d'un Tag
+      - name: Créer la Release GitHub
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ matrix.bin_path }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
