@@ -36,9 +36,7 @@ jobs:
     steps:
       # 1. Récupérer le code source du dépôt
       - name: Checkout du code
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
+        uses: actions/checkout@v4
 
       # 2. Installer Python
       - name: Configuration de Python
