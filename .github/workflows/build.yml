@@ -40,13 +40,13 @@ jobs:
 
       # 2. Installer Python
       - name: Configuration de Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
       # 3. Installer Node.js (Si vous utilisez un bundle JS comme Vite/Webpack)
       - name: Configuration de Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '24'
 
@@ -72,7 +72,7 @@ jobs:
 
       # 7. Sauvegarder l'exécutable dans les artefacts GitHub
       - name: Upload de l'artefact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ matrix.artifact_name }}
           path: ${{ matrix.bin_path }}
