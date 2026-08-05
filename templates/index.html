@@ -430,6 +430,103 @@
                     </div>
                 </div>
             </div>
+
+            <!-- STATISTICS DASHBOARD VIEW -->
+            <div id="stats-view" class="hidden flex-1 flex flex-col overflow-y-auto bg-slate-50 h-full p-8 space-y-8">
+                <!-- Top Header Info -->
+                <div class="flex items-center space-x-3 mb-2">
+                    <span class="text-2xl">📚</span>
+                    <h2 class="text-2xl font-bold text-slate-800" id="stats-title-display">Mon Roman</h2>
+                </div>
+
+                <!-- First Row: High Level Stats -->
+                <div class="grid grid-cols-3 gap-8">
+                    <!-- Total Words -->
+                    <div class="bg-white p-6 rounded-xl border border-slate-200/60 shadow-sm">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2" data-i18n="total_words">Nombre Total de Mots</h3>
+                        <div class="text-5xl font-bold text-slate-800 mb-2" id="stats-total-words">0</div>
+                        <div class="text-xs text-slate-500" id="stats-reading-time">≈ 0 min de lecture</div>
+                    </div>
+
+                    <!-- Goal Progress -->
+                    <div class="bg-white p-6 rounded-xl border border-slate-200/60 shadow-sm">
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400" data-i18n="overall_goal">Objectif Global</h3>
+                            <span class="text-sm font-semibold text-slate-600" id="stats-goal-text">0 / 0</span>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-3 mt-4 mb-2">
+                            <div id="stats-goal-bar" class="bg-indigo-500 h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Writing Streak (Placeholder/Basic implementation) -->
+                    <div class="bg-white p-6 rounded-xl border border-slate-200/60 shadow-sm">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2" data-i18n="writing_streak">Série</h3>
+                        <div class="text-5xl font-bold text-slate-800 mb-2" id="stats-streak">0 <span class="text-2xl text-slate-500 font-normal">jours</span></div>
+                        <div class="text-xs text-slate-500" id="stats-longest-streak">Plus longue : 0</div>
+                    </div>
+                </div>
+
+                <!-- Second Row: Structure -->
+                <div>
+                    <h3 class="text-sm font-bold text-slate-700 mb-4 flex items-center border-b border-slate-200 pb-2">
+                        <span class="text-slate-400 mr-2">§ I</span> Structure
+                        <span class="ml-auto text-xs font-normal text-slate-500 uppercase tracking-wider" id="stats-structure-summary">0 SCÈNES · 0 CHAPITRES</span>
+                    </h3>
+                    <div class="grid grid-cols-3 gap-8">
+                        <div class="bg-white p-6 rounded-xl border border-slate-200/60 shadow-sm">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2" data-i18n="scenes">Scènes</h4>
+                            <div class="text-4xl font-bold text-slate-800 mb-1" id="stats-scenes-count">0</div>
+                            <div class="text-xs text-slate-500" id="stats-chapters-count-sub">across 0 chapters</div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl border border-slate-200/60 shadow-sm">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2" data-i18n="avg_words_scene">Mots moy. / Scène</h4>
+                            <div class="text-4xl font-bold text-slate-800 mb-1" id="stats-avg-words-scene">0</div>
+                        </div>
+                        <div class="flex flex-col space-y-4">
+                            <div class="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm flex-1 flex flex-col justify-center">
+                                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1" data-i18n="notes">Notes</h4>
+                                <div class="text-3xl font-bold text-slate-800" id="stats-notes-count">0</div>
+                            </div>
+                            <div class="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm flex-1 flex flex-col justify-center">
+                                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1" data-i18n="events">Événements de chronologie</h4>
+                                <div class="text-3xl font-bold text-slate-800" id="stats-events-count">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Third Row: Words per chapter -->
+                <div>
+                    <h3 class="text-sm font-bold text-slate-700 mb-4 flex items-center border-b border-slate-200 pb-2">
+                        <span class="text-slate-400 mr-2">§ -</span> Mots par chapitre
+                    </h3>
+                    <div class="bg-white p-6 rounded-xl border border-slate-200/60 shadow-sm">
+                         <div id="stats-chapters-chart" class="flex items-end space-x-1 h-48 w-full border-b border-slate-300 pb-1">
+                             <!-- Chapter bars will be inserted here -->
+                         </div>
+                         <div id="stats-chapters-labels" class="flex items-start space-x-1 w-full mt-1">
+                             <!-- Chapter labels will be inserted here -->
+                         </div>
+                    </div>
+                </div>
+
+                <!-- Fourth Row: Characters -->
+                <div>
+                    <h3 class="text-sm font-bold text-slate-700 mb-4 flex items-center border-b border-slate-200 pb-2">
+                        <span class="text-slate-400 mr-2">§ II</span> Habitants
+                        <span class="ml-auto text-xs font-normal text-slate-500 uppercase tracking-wider" id="stats-inhabitants-summary">0 PEOPLE</span>
+                    </h3>
+                    <div class="bg-white p-6 rounded-xl border border-slate-200/60 shadow-sm">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4" data-i18n="characters_by_appearances">Personnages par apparitions</h4>
+                        <div id="stats-characters-list" class="space-y-3">
+                            <!-- Character bars will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STATISTICS DASHBOARD VIEW -->
         </main>
 
         <!-- RIGHT SIDEBAR: GOALS & FOCUS TIMER -->
@@ -467,6 +564,11 @@
                             <div id="overall-progress-bar" class="bg-indigo-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
                         </div>
                     </div>
+                    <!-- Statistics Dashboard Button -->
+                    <button onclick="selectStatisticsDashboard()" class="w-full mt-4 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-lg text-sm font-semibold transition-all flex justify-center items-center space-x-2 border border-slate-300">
+                        <span>📈</span>
+                        <span>Stats</span>
+                    </button>
                 </div>
             </div>
 

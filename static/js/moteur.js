@@ -892,6 +892,7 @@
             document.getElementById('editor-view').classList.add('hidden');
             document.getElementById('plot-grid-view').classList.add('hidden');
             document.getElementById('resource-view').classList.add('hidden');
+            if (document.getElementById('stats-view')) document.getElementById('stats-view').classList.add('hidden');
 
             if (viewName === 'editor') {
                 document.getElementById('editor-view').classList.remove('hidden');
@@ -899,8 +900,189 @@
                 document.getElementById('plot-grid-view').classList.remove('hidden');
             } else if (viewName === 'resource') {
                 document.getElementById('resource-view').classList.remove('hidden');
+            } else if (viewName === 'stats') {
+                if (document.getElementById('stats-view')) {
+                    document.getElementById('stats-view').classList.remove('hidden');
+                    document.getElementById('stats-view').classList.add('flex');
+                    renderStatisticsDashboard();
+                }
             }
         }
+
+// -----------------------------------------------------------------------------
+// STATISTICS DASHBOARD
+// -----------------------------------------------------------------------------
+
+function selectStatisticsDashboard() {
+    activeChapterIndex = -1;
+    activeSceneIndex = -1;
+    renderTree(); // deselect all
+    switchView('stats');
+}
+
+function renderStatisticsDashboard() {
+    if (!projectData) return;
+
+    // 1. Basic properties
+    document.getElementById('stats-title-display').textContent = projectData.title || "Mon Roman";
+
+    // 2. Compute structural stats
+    let totalWords = 0;
+    let chaptersCount = projectData.manuscript ? projectData.manuscript.length : 0;
+    let scenesCount = 0;
+    let chapterWordCounts = [];
+
+    if (projectData.manuscript) {
+        projectData.manuscript.forEach(chapter => {
+            let chapterWords = 0;
+            if (chapter.scenes) {
+                scenesCount += chapter.scenes.length;
+                chapter.scenes.forEach(scene => {
+                    let text = scene.content || "";
+                    // Strip HTML tags for word count
+                    let plainText = text.replace(/<[^>]+>/g, ' ');
+                    let words = plainText.trim().split(/\s+/).filter(word => word.length > 0).length;
+                    chapterWords += words;
+                    totalWords += words;
+                });
+            }
+            chapterWordCounts.push({
+                title: chapter.title || "Chapitre",
+                words: chapterWords
+            });
+        });
+    }
+
+    // 3. Populate High Level Stats
+    document.getElementById('stats-total-words').textContent = totalWords.toLocaleString();
+    let readingTimeMins = Math.ceil(totalWords / 250); // average reading speed 250 wpm
+    document.getElementById('stats-reading-time').textContent = `≈ ${readingTimeMins} min de lecture`;
+
+    // Goal
+    let goal = 10000;
+    if (projectData.settings && projectData.settings.global_word_goal) {
+        goal = projectData.settings.global_word_goal;
+    }
+    let goalProgress = Math.min(100, Math.round((totalWords / goal) * 100));
+    document.getElementById('stats-goal-text').textContent = `${totalWords.toLocaleString()} / ${goal.toLocaleString()}`;
+    document.getElementById('stats-goal-bar').style.width = `${goalProgress}%`;
+
+    // Streak (Basic mock logic or real if implemented later)
+    let currentStreak = 0;
+    let longestStreak = 0;
+    if (projectData.settings && projectData.settings.streak) {
+        currentStreak = projectData.settings.streak.current || 0;
+        longestStreak = projectData.settings.streak.longest || 0;
+    }
+    document.getElementById('stats-streak').innerHTML = `${currentStreak} <span class="text-2xl text-slate-500 font-normal">jours</span>`;
+    document.getElementById('stats-longest-streak').textContent = `Plus longue : ${longestStreak}`;
+
+    // 4. Structure Stats
+    document.getElementById('stats-structure-summary').textContent = `${scenesCount} SCÈNES · ${chaptersCount} CHAPITRES`;
+    document.getElementById('stats-scenes-count').textContent = scenesCount;
+    document.getElementById('stats-chapters-count-sub').textContent = `dans ${chaptersCount} chapitres`;
+    let avgWordsScene = scenesCount > 0 ? Math.round(totalWords / scenesCount) : 0;
+    document.getElementById('stats-avg-words-scene').textContent = avgWordsScene.toLocaleString();
+
+    document.getElementById('stats-notes-count').textContent = (projectData.notes && projectData.notes.notes) ? projectData.notes.notes.length : 0;
+    document.getElementById('stats-events-count').textContent = (projectData.notes && projectData.notes.timeline_events) ? projectData.notes.timeline_events.length : 0;
+
+    // 5. Chapters Chart
+    const chartContainer = document.getElementById('stats-chapters-chart');
+    const labelsContainer = document.getElementById('stats-chapters-labels');
+    chartContainer.innerHTML = '';
+    labelsContainer.innerHTML = '';
+
+    if (chapterWordCounts.length > 0) {
+        let maxWords = Math.max(...chapterWordCounts.map(c => c.words), 1); // prevent div by zero
+        chapterWordCounts.forEach((c, index) => {
+            let heightPercent = Math.max(5, (c.words / maxWords) * 100);
+
+            // Bar
+            let bar = document.createElement('div');
+            bar.className = 'bg-indigo-500 rounded-t-sm flex-1 hover:bg-indigo-400 transition-colors relative group';
+            bar.style.height = `${heightPercent}%`;
+
+            // Tooltip
+            let tooltip = document.createElement('div');
+            tooltip.className = 'opacity-0 group-hover:opacity-100 absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-slate-800 text-white text-xs px-2 py-1 rounded pointer-events-none whitespace-nowrap transition-opacity z-10';
+            tooltip.textContent = `${c.title}: ${c.words} mots`;
+            bar.appendChild(tooltip);
+
+            chartContainer.appendChild(bar);
+
+            // Label
+            let label = document.createElement('div');
+            label.className = 'text-[10px] text-slate-400 truncate text-center flex-1 overflow-hidden';
+            label.textContent = `${index + 1}`;
+            label.title = c.title;
+            labelsContainer.appendChild(label);
+        });
+    }
+
+    // 6. Characters List (By appearance/cards)
+    document.getElementById('stats-inhabitants-summary').textContent = `${projectData.characters ? projectData.characters.length : 0} PERSONNAGES`;
+    const charsList = document.getElementById('stats-characters-list');
+    charsList.innerHTML = '';
+
+    if (projectData.characters && projectData.characters.length > 0) {
+        // Calculate mentions across manuscript
+        let charactersWithCounts = projectData.characters.map(char => {
+            let count = 0;
+            let nameLower = char.name.toLowerCase();
+            let aliasesLower = char.aliases ? char.aliases.map(a => a.toLowerCase()) : [];
+
+            if (projectData.manuscript) {
+                projectData.manuscript.forEach(ch => {
+                    if (ch.scenes) {
+                        ch.scenes.forEach(sc => {
+                            let text = (sc.content || "").toLowerCase();
+                            // Count main name
+                            let regexName = new RegExp(`\\b${nameLower}\\b`, 'g');
+                            count += (text.match(regexName) || []).length;
+                            // Count aliases
+                            aliasesLower.forEach(alias => {
+                                let regexAlias = new RegExp(`\\b${alias}\\b`, 'g');
+                                count += (text.match(regexAlias) || []).length;
+                            });
+                        });
+                    }
+                });
+            }
+            return { name: char.name, count: count, color: char.color || '#6366f1' };
+        });
+
+        // Sort by appearances, descending
+        charactersWithCounts.sort((a, b) => b.count - a.count);
+        let maxCount = Math.max(...charactersWithCounts.map(c => c.count), 1);
+
+        // Display top 5 or all if less
+        let topChars = charactersWithCounts.slice(0, 5);
+        if (topChars.length === 0 || topChars[0].count === 0) {
+            charsList.innerHTML = '<div class="text-sm text-slate-500 italic">Aucune mention détectée.</div>';
+        } else {
+            topChars.forEach(char => {
+                if (char.count > 0) {
+                    let widthPercent = (char.count / maxCount) * 100;
+
+                    let row = document.createElement('div');
+                    row.className = 'flex items-center space-x-3';
+
+                    row.innerHTML = `
+                        <div class="w-24 text-xs font-semibold text-slate-700 truncate" title="${char.name}">${char.name}</div>
+                        <div class="flex-1 bg-slate-100 rounded-full h-2">
+                            <div class="h-2 rounded-full transition-all" style="width: ${widthPercent}%; background-color: ${char.color}"></div>
+                        </div>
+                        <div class="w-12 text-right text-xs text-slate-500">${char.count}</div>
+                    `;
+                    charsList.appendChild(row);
+                }
+            });
+        }
+    } else {
+        charsList.innerHTML = '<div class="text-sm text-slate-500 italic">Aucun personnage.</div>';
+    }
+}
 
         function findParentChapter(sceneId) {
             for (const chap of projectData.manuscript) {
