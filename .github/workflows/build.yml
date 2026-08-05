@@ -18,28 +18,25 @@ jobs:
           # Configuration pour Windows
           - os: windows-latest
             artifact_name: ecriture-windows.exe
-            pyinstaller_cmd: pyinstaller --noconfirm --onefile --windowed --add-data "web;web" --name ecriture main.py
+            pyinstaller_cmd: pyinstaller --noconfirm --onefile --windowed --add-data "static;static" --add-data "templates;templates" --add-data "locales;locales" --add-data "images;images" --add-data "projects;projects" --name ecriture main.py
             bin_path: dist/ecriture.exe
 
           # Configuration pour macOS
           - os: macos-latest
             artifact_name: ecriture-macos
-            pyinstaller_cmd: pyinstaller --noconfirm --onefile --windowed --add-data "web:web" --name ecriture main.py
+            pyinstaller_cmd: pyinstaller --noconfirm --onefile --windowed --add-data "static:static" --add-data "templates:templates" --add-data "locales:locales" --add-data "images:images" --add-data "projects:projects" --name ecriture main.py
             bin_path: dist/ecriture
 
           # Configuration pour Linux
           - os: ubuntu-latest
             artifact_name: ecriture-linux
-            pyinstaller_cmd: pyinstaller --noconfirm --onefile --add-data "web:web" --name ecriture main.py
+            pyinstaller_cmd: pyinstaller --noconfirm --onefile --add-data "static:static" --add-data "templates:templates" --add-data "locales:locales" --add-data "images:images" --add-data "projects:projects" --name ecriture main.py
             bin_path: dist/ecriture
 
     steps:
       # 1. Récupérer le code source du dépôt
       - name: Checkout du code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          fetch-tags: true
 
       # 2. Installer Python
       - name: Configuration de Python
