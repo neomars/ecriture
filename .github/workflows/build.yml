@@ -1,5 +1,7 @@
 name: Compilation Multi-Plateformes
-
+permissions:
+  contents: write
+  
 on:
   push:
     tags:
@@ -37,6 +39,9 @@ jobs:
       # 1. Récupérer le code source du dépôt
       - name: Checkout du code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # récupère tout l’historique
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       # 2. Installer Python
       - name: Configuration de Python
