@@ -65,6 +65,13 @@
 
 ---
 
+## 📥 Téléchargement
+
+Les versions exécutables prêtes à l'emploi (Windows, macOS, Linux) sont disponibles sur la page des releases :
+👉 **[https://github.com/neomars/ecriture/releases](https://github.com/neomars/ecriture/releases)**
+
+---
+
 ## 🚀 Installation & Lancement
 
 ### Prérequis
@@ -164,6 +171,13 @@ Ouvrez votre navigateur web et accédez à :
 *   **Data Storage**: Structured JSON formatted projects (saved under `/projects/` directory) powered by a robust backend manager (`project_manager.py`).
 *   **Frontend**: HTML5, Tailwind CSS, Modern JavaScript (Vanilla JS, Single Page Application style).
 *   **Localization**: Decoupled external translation files (`locales/fr.json`, `locales/en.json`).
+
+---
+
+## 📥 Download
+
+Ready-to-use executable releases (Windows, macOS, Linux) are available on the releases page:
+👉 **[https://github.com/neomars/ecriture/releases](https://github.com/neomars/ecriture/releases)**
 
 ---
 
