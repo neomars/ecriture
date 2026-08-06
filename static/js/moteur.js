@@ -142,7 +142,7 @@
                 if (res.ok) {
                     const data = await res.json();
                     if (!data.installed) {
-                        showOllamaMissingModal();
+                        showOllamaMissingModal(data.sys_info);
                     } else {
                         // Ollama is installed, check for gemma4:latest
                         const hasGemma = data.models.includes('gemma4:latest') || data.models.includes('gemma4');
@@ -224,12 +224,97 @@
             };
         }
 
-        function showOllamaMissingModal() {
+        function showOllamaMissingModal(sysInfo) {
             const modal = document.getElementById('ollama-missing-modal');
             if (modal) {
+                if (sysInfo) {
+                    const canInstall = sysInfo.total_ram_gb >= 12 && sysInfo.free_disk_gb >= 5;
+                    const compatibilityDiv = document.getElementById('ollama-compatibility-info');
+
+                    let osNameDisplay = "";
+                    if (sysInfo.os === "win32") {
+                        osNameDisplay = "sous Windows";
+                    } else if (sysInfo.os === "linux") {
+                        osNameDisplay = "sous Linux";
+                    } else if (sysInfo.os === "darwin") {
+                        osNameDisplay = "sous macOS";
+                    }
+
+                    if (compatibilityDiv) {
+                        if (canInstall) {
+                            compatibilityDiv.innerHTML = `
+                                <div class="bg-green-50 p-4 rounded-lg border border-green-200 mb-4">
+                                    <p class="text-sm text-green-800 mb-2">Votre système est compatible ! (RAM: ${sysInfo.total_ram_gb} Go, Espace libre: ${sysInfo.free_disk_gb} Go)</p>
+                                    <button onclick="installOllamaAndModel()" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded transition-colors">
+                                        Installer Ollama ${osNameDisplay} et gemma4
+                                    </button>
+                                </div>
+                            `;
+                        } else {
+                            compatibilityDiv.innerHTML = `
+                                <div class="bg-red-50 p-4 rounded-lg border border-red-200 mb-4">
+                                    <p class="text-sm text-red-800">Le système n'est pas compatible avec l'installation d'une IA ${osNameDisplay}. Il faut au moins 12 Go de RAM et 5 Go d'espace disque disponible.</p>
+                                    <p class="text-xs text-red-600 mt-1">Actuel : RAM: ${sysInfo.total_ram_gb} Go, Espace libre: ${sysInfo.free_disk_gb} Go</p>
+                                </div>
+                            `;
+                        }
+                    }
+                }
                 modal.classList.remove('hidden');
             }
         }
+
+        window.installOllamaAndModel = async function() {
+            // Hide the missing modal
+            closeOllamaMissingModal();
+
+            // Show installing modal with a custom message for Ollama + gemma4
+            const installModal = document.getElementById('ollama-installing-modal');
+            const statusText = document.getElementById('ollama-install-status-text');
+            if (installModal) installModal.classList.remove('hidden');
+            if (statusText) statusText.innerText = "Installation d'Ollama et de gemma4 en cours...";
+
+            try {
+                const res = await fetch('/api/ai/install_ollama', { method: 'POST' });
+                if (res.ok) {
+                    // Wait a bit to give the OS time to start the installation before pulling the model
+                    if (statusText) statusText.innerText = "Attente du démarrage du service Ollama...";
+                    let attempts = 0;
+                    const maxAttempts = 20;
+                    const pollInterval = setInterval(async () => {
+                        attempts++;
+                        try {
+                            const statusRes = await fetch('/api/ai/status');
+                            const statusData = await statusRes.json();
+                            if (statusData.installed) {
+                                clearInterval(pollInterval);
+                                // Once installed and responding, start the model installation
+                                startModelInstallation('gemma4:latest');
+                            }
+                        } catch (e) {
+                            // ignore and keep polling
+                        }
+
+                        if (attempts >= maxAttempts) {
+                            clearInterval(pollInterval);
+                            if (statusText) statusText.innerText = "Le service Ollama met trop de temps à répondre. Veuillez le démarrer manuellement.";
+                            if (statusText) statusText.classList.add('text-orange-500');
+                            setTimeout(() => { if (installModal) installModal.classList.add('hidden'); }, 5000);
+                        }
+                    }, 5000);
+
+                } else {
+                    if (statusText) statusText.innerText = "Erreur lors de l'installation d'Ollama.";
+                    if (statusText) statusText.classList.add('text-red-500');
+                    setTimeout(() => { if (installModal) installModal.classList.add('hidden'); }, 3000);
+                }
+            } catch (err) {
+                console.error(err);
+                if (statusText) statusText.innerText = "Erreur de connexion.";
+                if (statusText) statusText.classList.add('text-red-500');
+                setTimeout(() => { if (installModal) installModal.classList.add('hidden'); }, 3000);
+            }
+        };
 
         window.closeOllamaMissingModal = function() {
             const modal = document.getElementById('ollama-missing-modal');
