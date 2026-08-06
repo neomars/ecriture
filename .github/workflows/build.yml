@@ -4,6 +4,8 @@ permissions:
   contents: write
 
 on:
+  release:
+    types: [published] # Se déclenche quand vous cliquez sur "Publish release" dans le menu Releases
   push:
     tags:
       - 'v*'
@@ -85,9 +87,9 @@ jobs:
           name: ${{ matrix.artifact_name }}
           path: ${{ matrix.bin_path }}
 
-      # 8. Publier automatiquement sur la page "Releases"
-      - name: Créer la Release GitHub
-        if: startsWith(github.ref, 'refs/tags/')
+      # 8. Attacher les fichiers compilés à la Release GitHub
+      - name: Ajouter les fichiers à la Release
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'release'
         uses: softprops/action-gh-release@v2
         with:
           files: ${{ matrix.bin_path }}
