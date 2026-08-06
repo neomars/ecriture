@@ -889,11 +889,27 @@ def ai_chat():
 def get_ai_status():
     """Checks if Ollama is installed and running locally."""
     models = ai_client.get_available_models()
+
+    import shutil
+    import psutil
+
+    total, used, free = shutil.disk_usage("/")
+    free_gb = free / (1024**3)
+
+    mem = psutil.virtual_memory()
+    ram_gb = mem.total / (1024**3)
+
+    sys_info = {
+        "free_disk_gb": round(free_gb, 2),
+        "total_ram_gb": round(ram_gb, 2)
+    }
+
     if models:
         return jsonify({
             "status": "online",
             "installed": True,
-            "models": models
+            "models": models,
+            "sys_info": sys_info
         })
     else:
         import urllib.request
@@ -903,14 +919,40 @@ def get_ai_status():
                 return jsonify({
                     "status": "online",
                     "installed": True,
-                    "models": []
+                    "models": [],
+                    "sys_info": sys_info
                 })
         except Exception:
             return jsonify({
                 "status": "offline",
                 "installed": False,
-                "models": []
+                "models": [],
+                "sys_info": sys_info
             })
+
+@app.route('/api/ai/install_ollama', methods=['POST'])
+def install_ollama():
+    import subprocess
+    import sys
+    import urllib.request
+    import os
+    try:
+        if sys.platform == 'win32':
+            installer_path = os.path.join(os.environ.get('TEMP', 'C:\\Temp'), 'OllamaSetup.exe')
+            urllib.request.urlretrieve("https://ollama.com/download/OllamaSetup.exe", installer_path)
+            # Run the installer silently (if supported) or just launch it
+            subprocess.Popen([installer_path, "/S"], shell=True)
+        elif sys.platform == 'linux':
+            subprocess.Popen("curl -fsSL https://ollama.com/install.sh | sh", shell=True)
+        elif sys.platform == 'darwin':
+            # Download the macOS zip, unzip and move to Applications
+            installer_path = os.path.join(os.environ.get('TMPDIR', '/tmp'), 'Ollama-darwin.zip')
+            urllib.request.urlretrieve("https://ollama.com/download/Ollama-darwin.zip", installer_path)
+            subprocess.Popen(f"unzip -o {installer_path} -d /Applications && open /Applications/Ollama.app", shell=True)
+
+        return jsonify({"status": "success", "message": "Installation started"})
+    except Exception as e:
+        return jsonify({"status": "error", "error": str(e)}), 500
 
 @app.route('/api/ai/models', methods=['GET'])
 def get_ollama_models():
