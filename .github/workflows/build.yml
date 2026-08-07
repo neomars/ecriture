@@ -5,11 +5,11 @@ permissions:
 
 on:
   release:
-    types: [published] # Déclenchement lors du clic sur "Publish release"
+    types: [published]
   push:
     tags:
       - 'v*'
-      - '[0-9]*' # Prends en compte 1.0.0 ET v1.0.0
+      - '[0-9]*'
   workflow_dispatch:
 
 jobs:
@@ -21,16 +21,19 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # Configuration pour Windows
           - os: windows-latest
-            artifact_name: ecriture-windows
-            pyinstaller_cmd: pyinstaller --noconfirm --onefile --windowed --add-data "static;static" --add-data "templates;templates" --add-data "locales;locales" --add-data "images;images" --add-data "projects;projects" --name ecriture-windows.exe main.py
-            bin_path: dist/ecriture-windows.exe
+            artifact_name: ecriture-windows.exe
+            pyinstaller_cmd: pyinstaller --noconfirm --onefile --windowed --add-data "static;static" --add-data "templates;templates" --add-data "locales;locales" --add-data "images;images" --add-data "projects;projects" --name ecriture main.py
+            bin_path: dist/ecriture.exe
 
+          # Configuration pour macOS (.dmg)
           - os: macos-latest
-            artifact_name: ecriture-macos
-            pyinstaller_cmd: pyinstaller --noconfirm --onefile --windowed --add-data "static:static" --add-data "templates:templates" --add-data "locales:locales" --add-data "images:images" --add-data "projects:projects" --name ecriture-macos main.py
-            bin_path: dist/ecriture-macos
+            artifact_name: ecriture-macos.dmg
+            pyinstaller_cmd: pyinstaller --noconfirm --onefile --windowed --add-data "static:static" --add-data "templates:templates" --add-data "locales:locales" --add-data "images:images" --add-data "projects:projects" --name ecriture main.py
+            bin_path: dist/ecriture-macos.dmg
 
+          # Configuration pour Linux
           - os: ubuntu-latest
             artifact_name: ecriture-linux
             pyinstaller_cmd: pyinstaller --noconfirm --onefile --add-data "static:static" --add-data "templates:templates" --add-data "locales:locales" --add-data "images:images" --add-data "projects:projects" --name ecriture-linux main.py
@@ -73,13 +76,19 @@ jobs:
       - name: Compilation avec PyInstaller
         run: ${{ matrix.pyinstaller_cmd }}
 
+      # Étape spécifique macOS : Transforme dist/ecriture.app en fichier dist/ecriture-macos.dmg
+      - name: Génération du fichier .dmg pour macOS
+        if: matrix.os == 'macos-latest'
+        run: |
+          hdiutil create -volname "Ecriture" -srcfolder dist/ecriture.app -ov -format UDZO dist/ecriture-macos.dmg
+
       - name: Sauvegarder l'artefact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
           path: ${{ matrix.bin_path }}
 
-  # ÉTAPE 2 : Attacher les 3 binaires à la Release
+  # ÉTAPE 2 : Attacher les 3 fichiers distincts à la Release
   release:
     name: Attacher les fichiers à la Release
     needs: build
