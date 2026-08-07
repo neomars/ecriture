@@ -11,6 +11,10 @@ import re
 
 
 
+import platform
+from packaging import version
+import json
+import urllib.request
 from flask import Flask, jsonify, request, send_file, render_template
 from project_manager import NovelProject
 from ai_client import OllamaClient
@@ -933,6 +937,57 @@ def get_ai_status():
                 "models": [],
                 "sys_info": sys_info
             })
+
+
+CURRENT_VERSION = "1.0.0"
+GITHUB_REPO = "neomars/ecriture"
+API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
+
+def get_os_keyword():
+    system = platform.system().lower()
+    if system == "windows":
+        return "windows"
+    elif system == "darwin":
+        return "macos"
+    return "linux"
+
+@app.route('/api/check_updates', methods=['GET'])
+def check_updates():
+    try:
+        req = urllib.request.Request(
+            API_URL,
+            headers={"User-Agent": "Ecriture-App-Updater"}
+        )
+        with urllib.request.urlopen(req, timeout=5) as response:
+            data = json.loads(response.read().decode("utf-8"))
+
+        latest_tag = data.get("tag_name", "").lstrip("v")
+
+        if version.parse(latest_tag) > version.parse(CURRENT_VERSION):
+            os_keyword = get_os_keyword()
+            download_url = data.get("html_url")
+
+            for asset in data.get("assets", []):
+                asset_name = asset.get("name", "").lower()
+                if os_keyword in asset_name:
+                    download_url = asset.get("browser_download_url")
+                    break
+
+            return jsonify({
+                "update_available": True,
+                "current_version": CURRENT_VERSION,
+                "latest_version": latest_tag,
+                "download_url": download_url,
+                "release_notes": data.get("body", ""),
+                "release_page": data.get("html_url")
+            })
+    except Exception as e:
+        print(f"[Updater] Impossible de vérifier les mises à jour: {e}")
+
+    return jsonify({
+        "update_available": False,
+        "current_version": CURRENT_VERSION
+    })
 
 def _install_ollama_thread():
     import urllib.request

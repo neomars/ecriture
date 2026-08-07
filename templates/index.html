@@ -804,7 +804,12 @@
         <div class="bg-white w-96 rounded-xl shadow-xl p-6 border border-slate-200 text-center">
             <span class="text-5xl mb-3 block">✒️</span>
             <h3 class="text-lg font-bold text-slate-800 mb-2" data-i18n="about">À propos</h3>
-            <div class="text-sm text-slate-500 mb-6" data-i18n="about_text">Écriture v1.0 - Un environnement d'écriture et de planification moderne et sans distraction.</div>
+            <div class="text-sm text-slate-500 mb-4" data-i18n="about_text">Écriture v1.0 - Un environnement d'écriture et de planification moderne et sans distraction.</div>
+
+            <div id="update-container" class="mb-6 p-4 rounded-lg text-sm bg-slate-50 border border-slate-100 hidden">
+                <!-- Update info will be injected here -->
+            </div>
+
             <button onclick="closeAboutModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-semibold shadow-sm transition-all w-full" data-i18n="cancel">Fermer</button>
         </div>
     </div>

@@ -133,6 +133,7 @@
             await loadProjectsList();
             await loadProject();
             await checkOllamaStatus();
+            await window.checkUpdatesOnStartup();
         });
 
         // Check Ollama Status on Startup
@@ -2882,6 +2883,47 @@ function renderStatisticsDashboard() {
         function closeAboutModal() {
             document.getElementById('about-modal').classList.add('hidden');
         }
+
+        window.checkUpdatesOnStartup = async function checkUpdatesOnStartup() {
+            try {
+                const response = await fetch('/api/check_updates');
+                const data = await response.json();
+
+                const updateContainer = document.getElementById('update-container');
+                const aboutText = document.querySelector('[data-i18n="about_text"]');
+
+                // Update version text
+                if (aboutText && data.current_version) {
+                    let text = getTranslation('about_text');
+                    aboutText.innerHTML = text.replace('v1.0', 'v' + data.current_version);
+                }
+
+                if (data.update_available) {
+                    updateContainer.classList.remove('hidden');
+                    updateContainer.classList.add('bg-blue-50', 'border-blue-200');
+                    updateContainer.innerHTML = `
+                        <div class="font-bold text-blue-800 mb-2">🎉 ${getTranslation('update_available_title')} (v${data.latest_version})</div>
+                        <a href="${data.download_url}" target="_blank" class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow-sm transition-colors text-xs font-semibold mb-2 w-full">
+                            ⬇️ ${getTranslation('update_download_btn')}
+                        </a>
+                        <a href="${data.release_page}" target="_blank" class="text-blue-600 hover:underline text-xs block">
+                            ${getTranslation('update_release_notes')}
+                        </a>
+                    `;
+                    // Show about modal automatically on startup if update is available
+                    openAboutModal();
+                } else {
+                    updateContainer.classList.remove('hidden');
+                    updateContainer.classList.add('bg-green-50', 'border-green-200');
+                    updateContainer.innerHTML = `
+                        <div class="text-green-700 font-semibold text-sm">✅ ${getTranslation('update_up_to_date')}</div>
+                    `;
+                }
+            } catch (e) {
+                console.error("Error checking for updates:", e);
+            }
+        }
+
 
         // --- ANNOTATIONS SYSTEM ---
         let activeAnnotationSpan = null;
