@@ -989,46 +989,99 @@ def check_updates():
         "current_version": CURRENT_VERSION
     })
 
+
+INSTALL_STATE = {
+    "status": "idle",
+    "message": "",
+    "progress": 0
+}
+
 def _install_ollama_thread():
+    global INSTALL_STATE
     import urllib.request
+    import urllib.error
     import subprocess
     import sys
     import os
+    import time
+    import json
+
+    INSTALL_STATE["status"] = "installing_ollama"
+    INSTALL_STATE["message"] = "Installation de Ollama..."
+    INSTALL_STATE["progress"] = 0
+
     try:
         if sys.platform == 'win32':
             installer_path = os.path.join(os.environ.get('TEMP', 'C:\\Temp'), 'OllamaSetup.exe')
             urllib.request.urlretrieve("https://ollama.com/download/OllamaSetup.exe", installer_path)
-            subprocess.Popen([installer_path, "/S"], shell=True)
+            subprocess.run([installer_path, "/S"], shell=True)
         elif sys.platform == 'linux':
-            # Try to launch a terminal for the installation as it may require sudo
-            terminals = [
-                ["x-terminal-emulator", "-e"],
-                ["gnome-terminal", "--"],
-                ["konsole", "-e"]
-            ]
-            cmd = 'curl -fsSL https://ollama.com/install.sh | sh'
-            launched = False
-            for term in terminals:
-                try:
-                    subprocess.Popen(term + ['sh', '-c', cmd])
-                    launched = True
-                    break
-                except Exception:
-                    continue
-            if not launched:
-                # Fallback to plain background process
-                subprocess.Popen(cmd, shell=True)
+            # On Linux, installing requires sudo which is hard in background.
+            # We try to use pkexec or similar to run the script.
+            script_path = "/tmp/install_ollama.sh"
+            urllib.request.urlretrieve("https://ollama.com/install.sh", script_path)
+            os.chmod(script_path, 0o755)
+            # This is a best effort, it may fail or prompt in terminal.
+            subprocess.run(["sh", script_path])
         elif sys.platform == 'darwin':
             installer_path = os.path.join(os.environ.get('TMPDIR', '/tmp'), 'Ollama-darwin.zip')
             urllib.request.urlretrieve("https://ollama.com/download/Ollama-darwin.zip", installer_path)
             subprocess.run(["unzip", "-o", installer_path, "-d", "/Applications"])
             subprocess.run(["open", "-a", "Ollama"])
+
+        # Wait for daemon to be ready (up to 2 minutes)
+        INSTALL_STATE["message"] = "Démarrage du service Ollama..."
+        INSTALL_STATE["progress"] = 25
+
+        daemon_ready = False
+        for _ in range(60):
+            try:
+                req = urllib.request.Request("http://localhost:11434/")
+                with urllib.request.urlopen(req, timeout=2) as response:
+                    if response.status == 200:
+                        daemon_ready = True
+                        break
+            except Exception:
+                pass
+            time.sleep(2)
+
+        if not daemon_ready:
+            raise Exception("Le service Ollama n'a pas pu démarrer.")
+
+        INSTALL_STATE["status"] = "installing_model"
+        INSTALL_STATE["message"] = "Téléchargement du modèle Gemma 4..."
+        INSTALL_STATE["progress"] = 30
+
+        # Pull model with streaming
+        req = urllib.request.Request("http://localhost:11434/api/pull", data=json.dumps({"name": "gemma4:latest"}).encode('utf-8'), headers={'Content-Type': 'application/json'})
+        with urllib.request.urlopen(req) as response:
+            for line in response:
+                if line:
+                    data = json.loads(line.decode('utf-8'))
+                    if 'total' in data and 'completed' in data and data['total'] > 0:
+                        progress = int((data['completed'] / data['total']) * 70)
+                        INSTALL_STATE["progress"] = 30 + progress
+                    if 'status' in data:
+                        INSTALL_STATE["message"] = f"Modèle : {data['status']}"
+
+        INSTALL_STATE["status"] = "done"
+        INSTALL_STATE["message"] = "Installation terminée avec succès !"
+        INSTALL_STATE["progress"] = 100
+
     except Exception as e:
         print(f"Error installing Ollama: {e}")
+        INSTALL_STATE["status"] = "error"
+        INSTALL_STATE["message"] = f"Erreur : {str(e)}"
+
+
 
 @app.route('/api/ai/install_ollama', methods=['POST'])
 def install_ollama():
     try:
+        global INSTALL_STATE
+        if INSTALL_STATE["status"] in ["installing_ollama", "installing_model"]:
+            return jsonify({"status": "success", "message": "Installation déjà en cours"})
+
         import threading
         thread = threading.Thread(target=_install_ollama_thread)
         thread.start()
@@ -1036,6 +1089,12 @@ def install_ollama():
         return jsonify({"status": "success", "message": "Installation started"})
     except Exception as e:
         return jsonify({"status": "error", "error": str(e)}), 500
+
+@app.route('/api/ai/install_status', methods=['GET'])
+def get_install_status():
+    global INSTALL_STATE
+    return jsonify(INSTALL_STATE)
+
 
 @app.route('/api/ai/models', methods=['GET'])
 def get_ollama_models():

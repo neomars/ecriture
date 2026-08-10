@@ -265,73 +265,95 @@
             }
         }
 
+
+        let installPollInterval = null;
+
         window.installOllamaAndModel = async function() {
-            // Hide the missing modal
-            closeOllamaMissingModal();
-
-            // Show installing modal with a custom message for Ollama + gemma4
-            const installModal = document.getElementById('ollama-installing-modal');
-            const statusText = document.getElementById('ollama-install-status-text');
-            if (installModal) installModal.classList.remove('hidden');
-            if (statusText) statusText.innerText = "Installation d'Ollama et de gemma4 en cours...";
-
             try {
-                const res = await fetch('/api/ai/install_ollama', { method: 'POST' });
-                if (res.ok) {
-                    // Wait a bit to give the OS time to start the installation before pulling the model
-                    if (statusText) statusText.innerText = "Attente du démarrage du service Ollama...";
-                    let attempts = 0;
-                    const maxAttempts = 20;
-                    const pollInterval = setInterval(async () => {
-                        attempts++;
-                        try {
-                            const statusRes = await fetch('/api/ai/status');
-                            const statusData = await statusRes.json();
-                            if (statusData.installed) {
-                                clearInterval(pollInterval);
-                                // Once installed and responding, start the model installation
-                                startModelInstallation('gemma4:latest');
-                            }
-                        } catch (e) {
-                            // ignore and keep polling
-                        }
-
-                        if (attempts >= maxAttempts) {
-                            clearInterval(pollInterval);
-                            if (statusText) statusText.innerText = "Le service Ollama met trop de temps à répondre. Veuillez le démarrer manuellement.";
-                            if (statusText) statusText.classList.add('text-orange-500');
-                            setTimeout(() => { if (installModal) installModal.classList.add('hidden'); }, 5000);
-                        }
-                    }, 5000);
-
-                } else {
-                    if (statusText) statusText.innerText = "Erreur lors de l'installation d'Ollama.";
-                    if (statusText) statusText.classList.add('text-red-500');
-                    setTimeout(() => { if (installModal) installModal.classList.add('hidden'); }, 3000);
+                const btn = document.querySelector('button[onclick="installOllamaAndModel()"]');
+                if(btn) {
+                    btn.disabled = true;
                 }
-            } catch (err) {
-                console.error(err);
-                if (statusText) statusText.innerText = "Erreur de connexion.";
-                if (statusText) statusText.classList.add('text-red-500');
-                setTimeout(() => { if (installModal) installModal.classList.add('hidden'); }, 3000);
-            }
-        };
 
-        window.closeOllamaMissingModal = function() {
-            const modal = document.getElementById('ollama-missing-modal');
-            if (modal) {
-                modal.classList.add('hidden');
-            }
-        };
+                // Hide actions and show progress
+                const actionsDiv = document.getElementById('ollama-missing-actions');
+                const progressDiv = document.getElementById('ollama-install-progress-container');
+                if(actionsDiv) actionsDiv.classList.add('hidden');
+                if(progressDiv) progressDiv.classList.remove('hidden');
 
-        window.closeOllamaInstalledModal = function() {
-            const modal = document.getElementById('ollama-installed-modal');
-            if (modal) {
-                modal.classList.add('hidden');
-            }
-        };
+                const response = await fetch('/api/ai/install_ollama', {
+                    method: 'POST'
+                });
 
-        // LOAD PROJECTS LIST FOR DROPDOWN
+                if (response.ok) {
+                    // Start polling
+                    installPollInterval = setInterval(pollInstallStatus, 2000);
+                } else {
+                    alert('Erreur lors de la tentative d\'installation.');
+                    resetInstallModal();
+                }
+            } catch (e) {
+                console.error("Error installing Ollama:", e);
+                alert('Erreur de connexion.');
+                resetInstallModal();
+            }
+        }
+
+        async function pollInstallStatus() {
+            try {
+                const response = await fetch('/api/ai/install_status');
+                const data = await response.json();
+
+                const statusText = document.getElementById('ollama-install-status-text');
+                const progressBar = document.getElementById('ollama-install-progress-bar');
+
+                if(!statusText || !progressBar) return;
+
+                if (data.status === 'error') {
+                    clearInterval(installPollInterval);
+                    statusText.innerText = data.message || 'Erreur lors de l\'installation.';
+                    progressBar.classList.replace('bg-indigo-600', 'bg-red-600');
+                    setTimeout(resetInstallModal, 5000);
+                } else if (data.status === 'done') {
+                    clearInterval(installPollInterval);
+                    statusText.innerText = 'Terminé ! Redémarrage...';
+                    progressBar.style.width = '100%';
+                    progressBar.classList.replace('bg-indigo-600', 'bg-green-600');
+
+                    setTimeout(() => {
+                        document.getElementById('ollama-missing-modal').classList.add('hidden');
+                        checkOllamaStatus();
+                    }, 2000);
+                } else {
+                    statusText.innerText = data.message || 'Installation en cours...';
+                    progressBar.style.width = data.progress + '%';
+                }
+            } catch (e) {
+                console.error("Error polling install status:", e);
+            }
+        }
+
+        function resetInstallModal() {
+            if (installPollInterval) clearInterval(installPollInterval);
+
+            const actionsDiv = document.getElementById('ollama-missing-actions');
+            const progressDiv = document.getElementById('ollama-install-progress-container');
+            const progressBar = document.getElementById('ollama-install-progress-bar');
+
+            if(progressDiv) progressDiv.classList.add('hidden');
+            if(actionsDiv) actionsDiv.classList.remove('hidden');
+
+            if(progressBar) {
+                progressBar.style.width = '0%';
+                progressBar.classList.remove('bg-red-600', 'bg-green-600');
+                progressBar.classList.add('bg-indigo-600');
+            }
+
+            const btn = document.querySelector('button[onclick="installOllamaAndModel()"]');
+            if(btn) btn.disabled = false;
+        }
+
+
         async function loadProjectsList() {
             try {
                 const res = await fetch('/api/projects');
