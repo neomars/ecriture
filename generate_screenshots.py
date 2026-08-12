@@ -18,7 +18,7 @@ def generate_all():
 
         # Click a scene to load editor content and make it look nice
         try:
-            page.click("text=Netherfield Park is let at last")
+            page.click("text=Scène 1")
         except Exception:
             pass
         page.wait_for_timeout(500)
@@ -72,10 +72,10 @@ def generate_all():
         print("Generated images/screenshot_timeline.png")
 
         # 5. Click a scene to get back to editor
-        page.click("text=Chapter 1")
+        page.click("text=Acte I")
         page.wait_for_timeout(500)
         try:
-            page.click("text=Netherfield Park is let at last")
+            page.click("text=Scène 1")
         except Exception:
             pass
         page.wait_for_timeout(500)
