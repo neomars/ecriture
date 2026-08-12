@@ -892,7 +892,7 @@ def ai_chat():
 @app.route('/api/ai/status', methods=['GET'])
 def get_ai_status():
     """Checks if Ollama is installed and running locally."""
-    models = ai_client.get_available_models()
+    models = ai_client.get_models()
 
     import shutil
     import psutil
@@ -996,83 +996,36 @@ INSTALL_STATE = {
     "progress": 0
 }
 
+
 def _install_ollama_thread():
     global INSTALL_STATE
-    import urllib.request
-    import urllib.error
-    import subprocess
-    import sys
-    import os
     import time
-    import json
 
-    INSTALL_STATE["status"] = "installing_ollama"
-    INSTALL_STATE["message"] = "Installation de Ollama..."
+    INSTALL_STATE["status"] = "installing_model"
+    INSTALL_STATE["message"] = "Téléchargement du modèle Gemma..."
     INSTALL_STATE["progress"] = 0
 
     try:
-        if sys.platform == 'win32':
-            installer_path = os.path.join(os.environ.get('TEMP', 'C:\\Temp'), 'OllamaSetup.exe')
-            urllib.request.urlretrieve("https://ollama.com/download/OllamaSetup.exe", installer_path)
-            subprocess.run([installer_path, "/S"], shell=True)
-        elif sys.platform == 'linux':
-            # On Linux, installing requires sudo which is hard in background.
-            # We try to use pkexec or similar to run the script.
-            script_path = "/tmp/install_ollama.sh"
-            urllib.request.urlretrieve("https://ollama.com/install.sh", script_path)
-            os.chmod(script_path, 0o755)
-            # This is a best effort, it may fail or prompt in terminal.
-            subprocess.run(["sh", script_path])
-        elif sys.platform == 'darwin':
-            installer_path = os.path.join(os.environ.get('TMPDIR', '/tmp'), 'Ollama-darwin.zip')
-            urllib.request.urlretrieve("https://ollama.com/download/Ollama-darwin.zip", installer_path)
-            subprocess.run(["unzip", "-o", installer_path, "-d", "/Applications"])
-            subprocess.run(["open", "-a", "Ollama"])
+        from huggingface_hub import hf_hub_download
 
-        # Wait for daemon to be ready (up to 2 minutes)
-        INSTALL_STATE["message"] = "Démarrage du service Ollama..."
-        INSTALL_STATE["progress"] = 25
+        # We can't get granular progress easily from hf_hub_download without a custom callback,
+        # but huggingface_hub uses tqdm which outputs to stderr.
+        # We will just set progress to 50% as a placeholder while downloading.
+        INSTALL_STATE["progress"] = 50
 
-        daemon_ready = False
-        for _ in range(60):
-            try:
-                req = urllib.request.Request("http://localhost:11434/")
-                with urllib.request.urlopen(req, timeout=2) as response:
-                    if response.status == 200:
-                        daemon_ready = True
-                        break
-            except Exception:
-                pass
-            time.sleep(2)
-
-        if not daemon_ready:
-            raise Exception("Le service Ollama n'a pas pu démarrer.")
-
-        INSTALL_STATE["status"] = "installing_model"
-        INSTALL_STATE["message"] = "Téléchargement du modèle Gemma 4..."
-        INSTALL_STATE["progress"] = 30
-
-        # Pull model with streaming
-        req = urllib.request.Request("http://localhost:11434/api/pull", data=json.dumps({"name": "gemma4:latest"}).encode('utf-8'), headers={'Content-Type': 'application/json'})
-        with urllib.request.urlopen(req) as response:
-            for line in response:
-                if line:
-                    data = json.loads(line.decode('utf-8'))
-                    if 'total' in data and 'completed' in data and data['total'] > 0:
-                        progress = int((data['completed'] / data['total']) * 70)
-                        INSTALL_STATE["progress"] = 30 + progress
-                    if 'status' in data:
-                        INSTALL_STATE["message"] = f"Modèle : {data['status']}"
+        model_path = hf_hub_download(
+            repo_id="unsloth/gemma-2-2b-it-GGUF",
+            filename="gemma-2-2b-it-Q4_K_M.gguf"
+        )
 
         INSTALL_STATE["status"] = "done"
         INSTALL_STATE["message"] = "Installation terminée avec succès !"
         INSTALL_STATE["progress"] = 100
 
     except Exception as e:
-        print(f"Error installing Ollama: {e}")
+        print(f"Error installing model: {e}")
         INSTALL_STATE["status"] = "error"
         INSTALL_STATE["message"] = f"Erreur : {str(e)}"
-
 
 
 @app.route('/api/ai/install_ollama', methods=['POST'])
@@ -1099,7 +1052,7 @@ def get_install_status():
 @app.route('/api/ai/models', methods=['GET'])
 def get_ollama_models():
     """Queries the local Ollama API to fetch installed models."""
-    models = ai_client.get_available_models()
+    models = ai_client.get_models()
     if models:
         return jsonify({
             "status": "success",

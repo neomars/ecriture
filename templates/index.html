@@ -681,7 +681,7 @@
                     <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2" data-i18n="ai_settings_title">Configuration de l'IA</h4>
                     <div class="space-y-3">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1" data-i18n="ai_model">Modèle Ollama</label>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1" data-i18n="ai_model">Modèle Gemma</label>
                             <select id="settings-ai-model-input" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer">
                                 <!-- Populated dynamically -->
                             </select>
@@ -815,61 +815,61 @@
     </div>
 
     <!-- MODAL: OLLAMA MISSING -->
-    <div id="ollama-missing-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50">
+    <div id="gemma-missing-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50">
         <div class="bg-white w-[500px] max-w-lg rounded-xl shadow-xl p-6 border border-slate-200">
             <div class="text-center mb-4">
                 <span class="text-5xl mb-2 block">🦙</span>
-                <h3 class="text-xl font-bold text-slate-800" data-i18n="ollama_missing_title">Intégration d'Ollama — IA d'écriture locale</h3>
+                <h3 class="text-xl font-bold text-slate-800" data-i18n="gemma_missing_title">Intégration de Gemma — IA d'écriture locale</h3>
             </div>
 
-            <p class="text-sm text-slate-600 mb-4 leading-relaxed" data-i18n="ollama_missing_intro">
-                Ollama n'a pas été détecté en cours d'exécution sur votre système. L'IA locale est une fonctionnalité clé pour démultiplier vos capacités d'écriture avec Écriture :
+            <p class="text-sm text-slate-600 mb-4 leading-relaxed" data-i18n="gemma_missing_intro">
+                Le modèle d'IA local Gemma n'a pas été détecté sur votre système. L'IA locale est une fonctionnalité clé pour démultiplier vos capacités d'écriture avec Écriture :
             </p>
 
             <ul class="space-y-3 mb-6 text-sm text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-lg border border-slate-100">
-                <li data-i18n="ollama_benefit_1">✨ <strong>Génération et Enrichissement :</strong> Décrivez, réécrivez dans différents styles ou étendez vos scènes instantanément depuis votre sélection.</li>
-                <li data-i18n="ollama_benefit_2">🔍 <strong>Atelier de Relecture & Correction :</strong> Bénéficiez d'analyses approfondies de style, de prose et de cohérence narrative, 100% en local et de manière totalement confidentielle.</li>
-                <li data-i18n="ollama_benefit_3">💬 <strong>Assistant IA contextuel :</strong> Chattez avec un assistant d'écriture intelligent qui comprend vos personnages et vos notes pour planifier votre roman.</li>
+                <li data-i18n="gemma_benefit_1">✨ <strong>Génération et Enrichissement :</strong> Décrivez, réécrivez dans différents styles ou étendez vos scènes instantanément depuis votre sélection.</li>
+                <li data-i18n="gemma_benefit_2">🔍 <strong>Atelier de Relecture & Correction :</strong> Bénéficiez d'analyses approfondies de style, de prose et de cohérence narrative, 100% en local et de manière totalement confidentielle.</li>
+                <li data-i18n="gemma_benefit_3">💬 <strong>Assistant IA contextuel :</strong> Chattez avec un assistant d'écriture intelligent qui comprend vos personnages et vos notes pour planifier votre roman.</li>
             </ul>
 
-            <div id="ollama-compatibility-info"></div>
+            <div id="gemma-compatibility-info"></div>
 
 
-            <div id="ollama-install-progress-container" class="hidden mt-4 mb-4">
+            <div id="gemma-install-progress-container" class="hidden mt-4 mb-4">
                 <div class="flex items-center justify-center mb-2">
                     <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    <span id="ollama-install-status-text" class="text-sm font-medium text-slate-700">Préparation...</span>
+                    <span id="gemma-install-status-text" class="text-sm font-medium text-slate-700">Préparation...</span>
                 </div>
                 <div class="w-full bg-slate-200 rounded-full h-2.5 dark:bg-slate-700">
-                    <div id="ollama-install-progress-bar" class="bg-indigo-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    <div id="gemma-install-progress-bar" class="bg-indigo-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
                 </div>
             </div>
 
-            <div id="ollama-missing-actions" class="text-center">
+            <div id="gemma-missing-actions" class="text-center">
 
-                <p class="text-xs text-slate-500 mb-3" data-i18n="ollama_missing_download_prompt">Vous pouvez aussi l'installer manuellement :</p>
-                <a href="https://ollama.com/download" target="_blank" class="inline-flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg text-sm font-semibold shadow-md transition-all w-full mb-3 gap-2">
+                <p class="text-xs text-slate-500 mb-3" class="hidden"></p>
+                <a href="#" class="hidden" target="_blank" class="inline-flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg text-sm font-semibold shadow-md transition-all w-full mb-3 gap-2">
                     <span>📥</span>
-                    <span data-i18n="ollama_missing_download_btn">Télécharger Ollama</span>
+                    <span data-i18n="gemma_missing_download_btn">Continuer sans IA</span>
                 </a>
-                <button onclick="closeOllamaMissingModal()" class="text-slate-500 hover:text-slate-700 text-xs font-semibold py-1.5 transition-colors" data-i18n="ollama_missing_close">Continuer sans IA</button>
+                <button onclick="closeGemmaMissingModal()" class="text-slate-500 hover:text-slate-700 text-xs font-semibold py-1.5 transition-colors" data-i18n="gemma_missing_close">Continuer sans IA</button>
             </div>
             </div>
         </div>
     </div>
 
     <!-- MODAL: OLLAMA INSTALLED -->
-    <div id="ollama-installed-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50">
+    <div id="gemma-installed-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50">
         <div class="bg-white w-[400px] max-w-md rounded-xl shadow-xl p-6 border border-slate-200 text-center">
             <span class="text-5xl mb-3 block">🎉</span>
-            <h3 class="text-lg font-bold text-slate-800 mb-2">Ollama</h3>
-            <div id="ollama-installed-message" class="text-sm text-slate-600 mb-6 leading-relaxed">
-                OLLAMA installé. Version llama3
+            <h3 class="text-lg font-bold text-slate-800 mb-2">Gemma</h3>
+            <div id="gemma-installed-message" class="text-sm text-slate-600 mb-6 leading-relaxed">
+                Gemma installé. Version llama3
             </div>
-            <button onclick="closeOllamaInstalledModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg text-sm font-semibold shadow-sm transition-all w-full" data-i18n="btn_close">Fermer</button>
+            <button onclick="closeGemmaInstalledModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg text-sm font-semibold shadow-sm transition-all w-full" data-i18n="btn_close">Fermer</button>
         </div>
     </div>
 
@@ -1119,15 +1119,15 @@
 
 
     <!-- MODAL: OLLAMA INSTALLING MODEL -->
-    <div id="ollama-installing-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center">
+    <div id="gemma-installing-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center">
         <div class="bg-white w-[400px] rounded-xl shadow-xl p-6 border border-slate-200 text-center">
             <h3 class="text-lg font-bold text-slate-800 mb-2">Installation du modèle IA</h3>
             <p class="text-sm text-slate-600 mb-4">Téléchargement de <span class="font-semibold text-indigo-600">gemma4:latest</span>. Veuillez patienter...</p>
 
             <div class="w-full bg-slate-200 rounded-full h-2.5 mb-2">
-                <div id="ollama-install-progress-bar" class="bg-indigo-600 h-2.5 rounded-full" style="width: 0%"></div>
+                <div id="gemma-install-progress-bar" class="bg-indigo-600 h-2.5 rounded-full" style="width: 0%"></div>
             </div>
-            <div id="ollama-install-status-text" class="text-xs text-slate-500 font-semibold mb-4">Initialisation...</div>
+            <div id="gemma-install-status-text" class="text-xs text-slate-500 font-semibold mb-4">Initialisation...</div>
         </div>
     </div>
 

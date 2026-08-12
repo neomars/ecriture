@@ -1,76 +1,95 @@
 import json
-import urllib.request
-import urllib.error
+
+import threading
+import json
+import os
 
 class OllamaClient:
-    """
-    Reusable, thread-safe client object to communicate with local Ollama instances.
-    Provides standard tag checking, chat query wrappers, and detailed offline fallbacks.
-    """
-    def __init__(self, base_url="http://localhost:11434"):
-        self.base_url = base_url.rstrip('/')
+    _instance = None
+    _lock = threading.Lock()
 
-    def get_available_models(self):
-        """
-        Queries the Ollama instance to list all installed models.
-        Returns a list of model names (strings), or empty list if offline.
-        """
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            with cls._lock:
+                if cls._instance is None:
+                    cls._instance = super(OllamaClient, cls).__new__(cls)
+                    cls._instance._llm = None
+                    cls._instance.model_repo = "unsloth/gemma-2-2b-it-GGUF"
+                    cls._instance.model_filename = "gemma-2-2b-it-Q4_K_M.gguf"
+        return cls._instance
+
+    def _load_model(self):
+        if self._llm is not None:
+            return self._llm
+
+        with self._lock:
+            if self._llm is not None:
+                return self._llm
+
+            try:
+                from huggingface_hub import hf_hub_download
+                model_path = hf_hub_download(
+                    repo_id=self.model_repo,
+                    filename=self.model_filename,
+                    local_files_only=True
+                )
+
+                from llama_cpp import Llama
+                self._llm = Llama(
+                    model_path=model_path,
+                    n_ctx=2048,
+                    n_threads=4,
+                    verbose=False
+                )
+                return self._llm
+            except Exception as e:
+                print(f"Error loading model: {e}")
+                return None
+
+    def check_status(self):
         try:
-            req = urllib.request.Request(f"{self.base_url}/api/tags", method="GET")
-            with urllib.request.urlopen(req, timeout=2) as response:
-                tags_data = json.loads(response.read().decode('utf-8'))
-                return [m["name"] for m in tags_data.get("models", [])]
+            from huggingface_hub import hf_hub_download
+            model_path = hf_hub_download(
+                repo_id=self.model_repo,
+                filename=self.model_filename,
+                local_files_only=True
+            )
+            return {"status": "online"}
         except Exception:
-            return []
+            return {"status": "offline"}
 
-    def select_best_model(self, requested_model):
-        """
-        Validates the requested model against currently installed ones.
-        Falls back to the first available model if the requested one is not found.
-        """
-        available = self.get_available_models()
-        if not available:
-            return requested_model
+    def get_models(self):
+        return ["gemma-2-2b-it"]
 
-        # Check direct or :latest match
-        if requested_model in available or f"{requested_model}:latest" in available:
-            return requested_model
+    def select_best_model(self, preferred_model):
+        return "gemma-2-2b-it"
 
-        # Fallback to first available model
-        return available[0]
 
-    def chat(self, messages, model="llama3", temperature=0.7, timeout=25):
-        """
-        Sends a list of message dictionaries to the Ollama chat endpoint.
-        Returns a dictionary indicating status, message content, and model used.
-        Raises an exception if the HTTP call fails.
-        """
-        resolved_model = self.select_best_model(model)
-        chat_payload = {
-            "model": resolved_model,
-            "messages": messages,
-            "stream": False,
-            "options": {
-                "temperature": temperature
-            }
-        }
+    def generate_chat(self, messages, model="gemma-2-2b-it", temperature=0.7, timeout=60):
+        try:
+            status = self.check_status()
+            if status["status"] != "online":
+                raise Exception("Local model not installed.")
 
-        req = urllib.request.Request(
-            f"{self.base_url}/api/chat",
-            data=json.dumps(chat_payload).encode('utf-8'),
-            headers={'Content-Type': 'application/json'},
-            method="POST"
-        )
+            llm = self._load_model()
+            if not llm:
+                raise Exception("Failed to load Llama engine.")
 
-        with urllib.request.urlopen(req, timeout=timeout) as response:
-            chat_response = json.loads(response.read().decode('utf-8'))
-            content = chat_response.get("message", {}).get("content", "").strip()
+            response = llm.create_chat_completion(
+                messages=messages,
+                temperature=temperature,
+                max_tokens=512
+            )
+
+            content = response["choices"][0]["message"]["content"]
             return {
                 "status": "success",
-                "message": content,
-                "model": resolved_model
+                "message": content.strip(),
+                "model": "gemma-2-2b-it"
             }
-
+        except Exception as e:
+            print(f"Error calling local AI: {e}")
+            raise
     def get_fallback_response(self, category, text_or_messages, style="elegant", lang="fr"):
         """
         Generates simulated fallback responses when Ollama is offline.

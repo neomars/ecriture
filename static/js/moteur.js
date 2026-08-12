@@ -132,38 +132,38 @@
 
             await loadProjectsList();
             await loadProject();
-            await checkOllamaStatus();
+            await checkGemmaStatus();
             await window.checkUpdatesOnStartup();
         });
 
-        // Check Ollama Status on Startup
-        async function checkOllamaStatus() {
+        // Check Gemma Status on Startup
+        async function checkGemmaStatus() {
             try {
                 const res = await fetch('/api/ai/status');
                 if (res.ok) {
                     const data = await res.json();
                     if (!data.installed) {
-                        showOllamaMissingModal(data.sys_info);
+                        showGemmaMissingModal(data.sys_info);
                     } else {
-                        // Ollama is installed, check for gemma4:latest
+                        // Gemma is installed, check for gemma4:latest
                         const hasGemma = data.models.includes('gemma4:latest') || data.models.includes('gemma4');
                         if (!hasGemma) {
                             startModelInstallation('gemma4:latest');
                         }
                     }
                 } else {
-                    showOllamaMissingModal();
+                    showGemmaMissingModal();
                 }
             } catch (err) {
-                console.error("Error checking Ollama status:", err);
-                showOllamaMissingModal();
+                console.error("Error checking Gemma status:", err);
+                showGemmaMissingModal();
             }
         }
 
         function startModelInstallation(modelName) {
-            const modal = document.getElementById('ollama-installing-modal');
-            const progressBar = document.getElementById('ollama-install-progress-bar');
-            const statusText = document.getElementById('ollama-install-status-text');
+            const modal = document.getElementById('gemma-installing-modal');
+            const progressBar = document.getElementById('gemma-install-progress-bar');
+            const statusText = document.getElementById('gemma-install-status-text');
 
             if (modal) modal.classList.remove('hidden');
 
@@ -225,12 +225,12 @@
             };
         }
 
-        function showOllamaMissingModal(sysInfo) {
-            const modal = document.getElementById('ollama-missing-modal');
+        function showGemmaMissingModal(sysInfo) {
+            const modal = document.getElementById('gemma-missing-modal');
             if (modal) {
                 if (sysInfo) {
                     const canInstall = sysInfo.total_ram_gb >= 12 && sysInfo.free_disk_gb >= 5;
-                    const compatibilityDiv = document.getElementById('ollama-compatibility-info');
+                    const compatibilityDiv = document.getElementById('gemma-compatibility-info');
 
                     let osNameDisplay = "";
                     if (sysInfo.os === "win32") {
@@ -246,8 +246,8 @@
                             compatibilityDiv.innerHTML = `
                                 <div class="bg-green-50 p-4 rounded-lg border border-green-200 mb-4">
                                     <p class="text-sm text-green-800 mb-2">Votre système est compatible ! (RAM: ${sysInfo.total_ram_gb} Go, Espace libre: ${sysInfo.free_disk_gb} Go)</p>
-                                    <button onclick="installOllamaAndModel()" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded transition-colors">
-                                        Installer Ollama ${osNameDisplay} et gemma4
+                                    <button onclick="installGemmaModel()" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded transition-colors">
+                                        Installer Gemma ${osNameDisplay} et gemma4
                                     </button>
                                 </div>
                             `;
@@ -268,20 +268,20 @@
 
         let installPollInterval = null;
 
-        window.installOllamaAndModel = async function() {
+        window.installGemmaModel = async function() {
             try {
-                const btn = document.querySelector('button[onclick="installOllamaAndModel()"]');
+                const btn = document.querySelector('button[onclick="installGemmaModel()"]');
                 if(btn) {
                     btn.disabled = true;
                 }
 
                 // Hide actions and show progress
-                const actionsDiv = document.getElementById('ollama-missing-actions');
-                const progressDiv = document.getElementById('ollama-install-progress-container');
+                const actionsDiv = document.getElementById('gemma-missing-actions');
+                const progressDiv = document.getElementById('gemma-install-progress-container');
                 if(actionsDiv) actionsDiv.classList.add('hidden');
                 if(progressDiv) progressDiv.classList.remove('hidden');
 
-                const response = await fetch('/api/ai/install_ollama', {
+                const response = await fetch('/api/ai/install_gemma', {
                     method: 'POST'
                 });
 
@@ -293,7 +293,7 @@
                     resetInstallModal();
                 }
             } catch (e) {
-                console.error("Error installing Ollama:", e);
+                console.error("Error installing Gemma:", e);
                 alert('Erreur de connexion.');
                 resetInstallModal();
             }
@@ -304,8 +304,8 @@
                 const response = await fetch('/api/ai/install_status');
                 const data = await response.json();
 
-                const statusText = document.getElementById('ollama-install-status-text');
-                const progressBar = document.getElementById('ollama-install-progress-bar');
+                const statusText = document.getElementById('gemma-install-status-text');
+                const progressBar = document.getElementById('gemma-install-progress-bar');
 
                 if(!statusText || !progressBar) return;
 
@@ -321,8 +321,8 @@
                     progressBar.classList.replace('bg-indigo-600', 'bg-green-600');
 
                     setTimeout(() => {
-                        document.getElementById('ollama-missing-modal').classList.add('hidden');
-                        checkOllamaStatus();
+                        document.getElementById('gemma-missing-modal').classList.add('hidden');
+                        checkGemmaStatus();
                     }, 2000);
                 } else {
                     statusText.innerText = data.message || 'Installation en cours...';
@@ -336,9 +336,9 @@
         function resetInstallModal() {
             if (installPollInterval) clearInterval(installPollInterval);
 
-            const actionsDiv = document.getElementById('ollama-missing-actions');
-            const progressDiv = document.getElementById('ollama-install-progress-container');
-            const progressBar = document.getElementById('ollama-install-progress-bar');
+            const actionsDiv = document.getElementById('gemma-missing-actions');
+            const progressDiv = document.getElementById('gemma-install-progress-container');
+            const progressBar = document.getElementById('gemma-install-progress-bar');
 
             if(progressDiv) progressDiv.classList.add('hidden');
             if(actionsDiv) actionsDiv.classList.remove('hidden');
@@ -349,7 +349,7 @@
                 progressBar.classList.add('bg-indigo-600');
             }
 
-            const btn = document.querySelector('button[onclick="installOllamaAndModel()"]');
+            const btn = document.querySelector('button[onclick="installGemmaModel()"]');
             if(btn) btn.disabled = false;
         }
 
@@ -2661,7 +2661,7 @@ function renderStatisticsDashboard() {
                         const data = await res.json();
                         if (data.installed) {
                             const defaultModel = (projectData && projectData.settings && projectData.settings.ai_model) || "llama3";
-                            const msgEl = document.getElementById('ollama-installed-message');
+                            const msgEl = document.getElementById('gemma-installed-message');
                             if (msgEl) {
                                 const modelsStr = data.models && data.models.length > 0 ? data.models.join(', ') : 'aucun';
                                 if (activeLang === 'fr') {
@@ -2670,22 +2670,22 @@ function renderStatisticsDashboard() {
                                     msgEl.innerHTML = `OLLAMA installed. Version ${defaultModel}<br><span class="text-xs text-slate-500 font-medium">(Available LLMs: ${modelsStr})</span>`;
                                 }
                             }
-                            showOllamaInstalledModal();
+                            showGemmaInstalledModal();
                         } else {
-                            showOllamaMissingModal();
+                            showGemmaMissingModal();
                         }
                     } else {
-                        showOllamaMissingModal();
+                        showGemmaMissingModal();
                     }
                 } catch (err) {
-                    console.error("Error checking Ollama status on toggle:", err);
-                    showOllamaMissingModal();
+                    console.error("Error checking Gemma status on toggle:", err);
+                    showGemmaMissingModal();
                 }
             }
         }
 
-        function showOllamaInstalledModal() {
-            const modal = document.getElementById('ollama-installed-modal');
+        function showGemmaInstalledModal() {
+            const modal = document.getElementById('gemma-installed-modal');
             if (modal) {
                 modal.classList.remove('hidden');
             }
@@ -2700,7 +2700,7 @@ function renderStatisticsDashboard() {
             persistProject();
         }
 
-        async function populateOllamaModels() {
+        async function populateGemmaModels() {
             const selectEl = document.getElementById('settings-ai-model-input');
             if (!selectEl) return;
 
@@ -2728,7 +2728,7 @@ function renderStatisticsDashboard() {
                     }
                 }
             } catch (err) {
-                console.error("Failed to fetch Ollama models:", err);
+                console.error("Failed to fetch Gemma models:", err);
             }
 
             const offlineText = activeLang === 'fr' ? " (Simulé / Hors ligne)" : " (Simulated / Offline)";
@@ -2776,7 +2776,7 @@ function renderStatisticsDashboard() {
             document.getElementById('settings-ai-temp-input').value = aiTemp;
             document.getElementById('settings-ai-temp-display').innerText = parseFloat(aiTemp).toFixed(1);
 
-            await populateOllamaModels();
+            await populateGemmaModels();
 
             document.getElementById('settings-ai-context-input').checked = (projectData.settings.inject_lore_context !== undefined) ? !!projectData.settings.inject_lore_context : true;
 
