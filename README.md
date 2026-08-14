@@ -65,14 +65,14 @@
 
 ---
 
-## 📥 Téléchargement
+## 📥 Téléchargement & installation 
 
 Les versions exécutables prêtes à l'emploi (Windows, macOS, Linux) sont disponibles sur la page des releases :
 👉 **[https://github.com/neomars/ecriture/releases](https://github.com/neomars/ecriture/releases)**
 
 ---
 
-## 🚀 Installation & Lancement
+## 🚀 ou … Installation depuis les fichiers source (pour utilisateur averti)
 
 ### Prérequis
 *   **Python 3.8** ou supérieur installé.
