@@ -73,7 +73,7 @@ Les versions exécutables prêtes à l'emploi (Windows, macOS, Linux) sont dispo
 
 ---
 
-## 🚀 Installation & Lancement
+## 🚀 Installation des fichiers source (pour utilisateur averti)
 
 ### Prérequis
 *   **Python 3.8** ou supérieur installé.
