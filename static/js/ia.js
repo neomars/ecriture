@@ -203,15 +203,23 @@
             feedbackEl.innerText = activeLang === 'fr' ? "Analyse en cours par l'IA... Veuillez patienter." : "AI analysis in progress... Please wait.";
 
             try {
+                let loreContext = "";
+                if (activeRelectureCategory === "worldbuilding") {
+                    loreContext = projectData.characters.map(c =>
+                        `Nom: ${c.name}\nApparence: ${c.appearance}\nTraits: ${c.traits.join(', ')}\nNotes: ${c.notes}\n`
+                    ).join('\n');
+                }
+
                 const response = await fetch('/api/relecture/ai', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        category: activeRelectureCategory, // "style" or "coherence"
+                        category: activeRelectureCategory, // "style", "coherence" or "worldbuilding"
                         text: text,
                         temperature: (projectData.settings.ai_temperature !== undefined) ? projectData.settings.ai_temperature : 0.7,
                         model: projectData.settings.ai_model || "llama3",
-                        lang: activeLang
+                        lang: activeLang,
+                        lore_context: loreContext
                     })
                 });
 
@@ -307,3 +315,195 @@
 
             renderChat();
         }
+
+        // LORE EXTRACTION
+        async function extractLoreFromScene() {
+            const editor = document.getElementById('editor-content');
+            const text = editor ? editor.innerText : "";
+            if (!text || !text.trim()) {
+                alert(activeLang === 'fr' ? "Le texte est vide." : "Text is empty.");
+                return;
+            }
+
+            const btn = document.querySelector('button[onclick="extractLoreFromScene()"]');
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = `⏳ Extraction...`;
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/ai/extract_characters', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        text: text,
+                        temperature: 0.1,
+                        model: projectData.settings.ai_model || "llama3"
+                    })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.status === "success" && data.characters && data.characters.length > 0) {
+                        let newChars = 0;
+                        data.characters.forEach(extractedChar => {
+                            // Check if char exists
+                            let exists = projectData.characters.find(c =>
+                                c.name.toLowerCase() === extractedChar.name.toLowerCase() ||
+                                (c.aliases && c.aliases.map(a => a.toLowerCase()).includes(extractedChar.name.toLowerCase()))
+                            );
+
+                            if (!exists) {
+                                const newChar = {
+                                    id: `char-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                                    name: extractedChar.name,
+                                    type: "personnage",
+                                    description: extractedChar.notes || "",
+                                    role: "",
+                                    aliases: [],
+                                    traits: extractedChar.traits || [],
+                                    appearance: extractedChar.appearance || "",
+                                    relations: [],
+                                    linked_scenes: [],
+                                    notes: extractedChar.notes || ""
+                                };
+                                projectData.characters.push(newChar);
+                                newChars++;
+                            } else {
+                                // Update existing char conditionally
+                                if (!exists.appearance && extractedChar.appearance) exists.appearance = extractedChar.appearance;
+                                if (extractedChar.traits) {
+                                    extractedChar.traits.forEach(t => {
+                                        if (!exists.traits.includes(t)) exists.traits.push(t);
+                                    });
+                                }
+                            }
+                        });
+
+                        triggerAutoSave();
+                        renderTree();
+                        alert(activeLang === 'fr' ? `${newChars} personnage(s) extrait(s) et ajouté(s) avec succès !` : `${newChars} character(s) extracted and added successfully!`);
+                    } else {
+                        alert(activeLang === 'fr' ? "Aucun personnage détecté." : "No characters detected.");
+                    }
+                } else {
+                    alert(activeLang === 'fr' ? "Erreur d'extraction." : "Extraction error.");
+                }
+            } catch (err) {
+                alert(activeLang === 'fr' ? "Erreur réseau." : "Network error.");
+            } finally {
+                btn.innerHTML = originalContent;
+                btn.disabled = false;
+            }
+        }
+        window.extractLoreFromScene = extractLoreFromScene;
+
+        // CHARACTER INTERVIEW
+        let interviewCharId = null;
+        let interviewMessages = [];
+
+        function openInterviewModal(charId) {
+            const char = projectData.characters.find(c => c.id === charId);
+            if (!char) return;
+
+            interviewCharId = charId;
+            interviewMessages = [];
+
+            document.getElementById('interview-character-name').innerText = char.name;
+
+            // Initial system prompt to set personality
+            const sysPrompt = `Tu dois incarner le personnage suivant et répondre exactement comme lui. Ne sors JAMAIS de ton personnage.\n` +
+                `Nom: ${char.name}\n` +
+                `Apparence: ${char.appearance}\n` +
+                `Traits: ${char.traits.join(', ')}\n` +
+                `Notes: ${char.notes}\n` +
+                `Description: ${char.description}\n`;
+
+            interviewMessages.push({ role: "system", content: sysPrompt });
+
+            const firstMsg = activeLang === 'fr' ?
+                `*Vous vous asseyez en face de ${char.name}.* Bonjour, pouvons-nous discuter ?` :
+                `*You sit across from ${char.name}.* Hello, can we talk?`;
+
+            interviewMessages.push({ role: "user", content: firstMsg });
+
+            document.getElementById('interview-modal').classList.remove('hidden');
+            document.getElementById('interview-chat-messages').innerHTML = "";
+            document.getElementById('interview-chat-input').value = "";
+
+            // Trigger first AI response
+            _sendInterviewRequest();
+        }
+        window.openInterviewModal = openInterviewModal;
+
+        function closeInterviewModal() {
+            document.getElementById('interview-modal').classList.add('hidden');
+            interviewCharId = null;
+            interviewMessages = [];
+        }
+        window.closeInterviewModal = closeInterviewModal;
+
+        function renderInterviewChat() {
+            const container = document.getElementById('interview-chat-messages');
+            container.innerHTML = "";
+
+            interviewMessages.forEach(msg => {
+                if (msg.role === "system") return; // hide system prompts
+
+                const div = document.createElement('div');
+                if (msg.role === "user") {
+                    div.className = "bg-indigo-600 text-white p-2.5 rounded-lg border border-indigo-700 self-end ml-6 shadow-2xs";
+                    div.innerText = msg.content;
+                } else if (msg.role === "assistant") {
+                    div.className = "bg-white text-slate-700 p-2.5 rounded-lg border border-slate-200 self-start mr-6 shadow-2xs";
+                    div.innerText = msg.content;
+                }
+                container.appendChild(div);
+            });
+            container.scrollTop = container.scrollHeight;
+        }
+
+        async function _sendInterviewRequest() {
+            renderInterviewChat();
+
+            // Add loading
+            const loadingIdx = interviewMessages.length;
+            interviewMessages.push({ role: "assistant", content: "..." });
+            renderInterviewChat();
+
+            try {
+                const res = await fetch('/api/ai/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        messages: interviewMessages.slice(0, loadingIdx),
+                        temperature: 0.8,
+                        model: projectData.settings.ai_model || "llama3",
+                        inject_lore_context: false // We already injected it in system prompt
+                    })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    interviewMessages[loadingIdx].content = data.message;
+                } else {
+                    interviewMessages[loadingIdx].content = activeLang === 'fr' ? "Le personnage ne répond pas." : "Character doesn't reply.";
+                }
+            } catch (e) {
+                interviewMessages[loadingIdx].content = "Error.";
+            }
+            renderInterviewChat();
+        }
+
+        function sendInterviewMessage() {
+            const input = document.getElementById('interview-chat-input');
+            const content = input.value.trim();
+            if (!content) return;
+
+            input.value = "";
+            interviewMessages.push({ role: "user", content: content });
+
+            _sendInterviewRequest();
+        }
+        window.sendInterviewMessage = sendInterviewMessage;
+
+    })();
