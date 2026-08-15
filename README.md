@@ -1,5 +1,6 @@
 # Écriture - Outil d'aide à la rédaction de romans / Novel Writing Assistant
 
+*Écrire, partager, transmettre sont des droits fondamentaux. 
 *Créé par Martial Limousin - 2026.*
 *Licence libre CeCILL / CeCILL Free Software License Agreement ([http://www.cecill.info](http://www.cecill.info/licences/Licence_CeCILL_V2.1-fr.html)).*
 
