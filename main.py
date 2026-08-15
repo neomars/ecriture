@@ -795,7 +795,7 @@ def export_draft():
 @app.route('/api/ai', methods=['POST'])
 def handle_ai_tool():
     """Handles contextual AI writing tools: Describe, Rewrite, and Expand."""
-    from ai_prompts import DESCRIBE_PROMPT, REWRITE_PROMPT, EXPAND_PROMPT
+    from ai_prompts import DESCRIBE_PROMPT, REWRITE_PROMPT, EXPAND_PROMPT, SHOW_DONT_TELL_PROMPT, SENSORY_PROMPT
 
     payload = request.json or {}
     tool = payload.get("tool", "describe").lower().strip()
