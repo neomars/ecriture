@@ -102,6 +102,10 @@
                 titleText = `${formatTranslation("ai_rewrite") || "Réécrire"} (${styleName})`;
             } else if (tool === "expand") {
                 titleText = formatTranslation("ai_expand") || "Développer";
+            } else if (tool === "show_dont_tell") {
+                titleText = formatTranslation("ai_show_dont_tell") || "Show, Don't Tell";
+            } else if (tool === "sensory") {
+                titleText = formatTranslation("ai_sensory") || "Détails Sensoriels";
             }
             document.getElementById('ai-preview-tool-title').innerText = titleText;
 

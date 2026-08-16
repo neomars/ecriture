@@ -814,6 +814,10 @@ def handle_ai_tool():
         system_prompt = REWRITE_PROMPT.format(style=style)
     elif tool == "expand":
         system_prompt = EXPAND_PROMPT
+    elif tool == "show_dont_tell":
+        system_prompt = SHOW_DONT_TELL_PROMPT
+    elif tool == "sensory":
+        system_prompt = SENSORY_PROMPT
     else:
         return jsonify({"error": f"Unknown tool: {tool}"}), 400
 
