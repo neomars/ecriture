@@ -117,6 +117,11 @@
                 </div>
             </div>
 
+            <!-- Brainstorm Button -->
+            <button onclick="openBrainstormModal()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all flex items-center space-x-1">
+                💡 <span data-i18n="brainstorm_btn">Idées</span>
+            </button>
+
             <!-- Extract Lore Button -->
             <button onclick="extractLoreFromScene()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all flex items-center space-x-1">
                 🪄 <span data-i18n="extract_lore_btn">Extraire Lore</span>
@@ -303,7 +308,7 @@
                     </button>
                     <!-- Rewrite Dropdown Trigger -->
                     <div class="relative" id="ai-rewrite-dropdown-wrapper">
-                        <button onclick="toggleRewriteDropdown(event)" class="hover:text-indigo-300 flex items-center space-x-1 transition-colors">
+                        <button onclick="toggleRewriteDropdown(event)" class="hover:text-indigo-300 flex items-center space-x-1 border-r border-slate-700 pr-2 transition-colors">
                             <span>✍️</span>
                             <span data-i18n="ai_rewrite">Réécrire</span>
                             <span>▾</span>
@@ -327,6 +332,26 @@
                             </button>
                             <button onclick="triggerContextAI('rewrite', 'cynical')" class="w-full text-left px-3 py-1.5 hover:bg-slate-700 flex items-center space-x-1 transition-colors">
                                 <span>🃏</span> <span data-i18n="style_cynical">Cynique</span>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- POV Dropdown Trigger -->
+                    <div class="relative" id="ai-pov-dropdown-wrapper">
+                        <button onclick="togglePovDropdown(event)" class="hover:text-indigo-300 flex items-center space-x-1 transition-colors">
+                            <span>🎥</span>
+                            <span data-i18n="ai_pov">POV</span>
+                            <span>▾</span>
+                        </button>
+                        <!-- POV Dropdown (appears on click) -->
+                        <div id="ai-pov-dropdown-menu" class="absolute hidden left-0 top-full mt-1.5 w-48 bg-slate-800 text-slate-100 rounded shadow-lg py-1 border border-slate-700 z-50">
+                            <button onclick="triggerContextAI('pov', 'first_person')" class="w-full text-left px-3 py-1.5 hover:bg-slate-700 flex items-center space-x-1 transition-colors">
+                                <span>👤</span> <span data-i18n="pov_first">1ère personne (Je)</span>
+                            </button>
+                            <button onclick="triggerContextAI('pov', 'third_person')" class="w-full text-left px-3 py-1.5 hover:bg-slate-700 flex items-center space-x-1 transition-colors">
+                                <span>👥</span> <span data-i18n="pov_third">3ème personne (Il/Elle)</span>
+                            </button>
+                            <button onclick="triggerContextAI('pov', 'other_witness')" class="w-full text-left px-3 py-1.5 hover:bg-slate-700 flex items-center space-x-1 transition-colors">
+                                <span>👀</span> <span data-i18n="pov_witness">Témoin externe</span>
                             </button>
                         </div>
                     </div>
@@ -1191,5 +1216,53 @@
         </div>
     </div>
 
+
+    <!-- MODAL: BRAINSTORM & CREATIVE UNBLOCKING -->
+    <div id="brainstorm-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50">
+        <div class="bg-white w-[600px] max-w-2xl rounded-xl shadow-xl p-6 border border-slate-200 flex flex-col max-h-[85vh]">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center space-x-2">
+                    <span>💡</span> <span data-i18n="brainstorm_title">Déblocage Créatif & Brainstorming</span>
+                </h3>
+                <button onclick="closeBrainstormModal()" class="text-slate-400 hover:text-slate-600">✕</button>
+            </div>
+
+            <!-- Category Tabs -->
+            <div class="flex space-x-1 bg-slate-100 p-1 rounded-lg mb-4 text-xs shrink-0">
+                <button id="tab-brainstorm-complications" onclick="selectBrainstormTab('complications')" class="flex-1 py-1.5 rounded-md font-semibold transition-all bg-white text-slate-800 shadow-xs" data-i18n="brainstorm_tab_complications">Complications</button>
+                <button id="tab-brainstorm-names" onclick="selectBrainstormTab('names')" class="flex-1 py-1.5 rounded-md font-semibold transition-all text-slate-500 hover:text-slate-800" data-i18n="brainstorm_tab_names">Générateur de Noms</button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto">
+                <!-- Complications Pane -->
+                <div id="brainstorm-pane-complications" class="space-y-4">
+                    <p class="text-sm text-slate-600" data-i18n="brainstorm_complications_desc">La scène s'enlise ? L'IA va analyser votre scène actuelle et proposer 3 imprévus narratifs cohérents pour relancer l'action.</p>
+                    <button onclick="generateComplications()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg text-sm shadow-sm transition-all w-full flex items-center justify-center space-x-2">
+                        <span>⚡</span> <span data-i18n="brainstorm_complications_btn">Générer des Complications</span>
+                    </button>
+                    <div id="complications-result" class="hidden mt-4 p-4 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
+                    </div>
+                </div>
+
+                <!-- Names Pane -->
+                <div id="brainstorm-pane-names" class="hidden space-y-4">
+                    <p class="text-sm text-slate-600" data-i18n="brainstorm_names_desc">Créez des noms de personnages, d'auberges, de planètes ou de villes respectant des racines linguistiques précises.</p>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1" data-i18n="brainstorm_names_style_label">Style / Racines (ex: Elfique, Cyberpunk, Japonais...)</label>
+                        <input type="text" id="names-style-input" data-i18n-placeholder="brainstorm_names_style_placeholder" placeholder="Ex: Noms de tavernes naines, Prénoms elfiques, Villes futuristes..." class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <button onclick="generateNames()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg text-sm shadow-sm transition-all w-full flex items-center justify-center space-x-2">
+                        <span>✨</span> <span data-i18n="brainstorm_names_btn">Générer 10 Noms</span>
+                    </button>
+                    <div id="names-result" class="hidden mt-4 p-4 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end pt-4 border-t border-slate-100 mt-4 shrink-0">
+                <button onclick="closeBrainstormModal()" class="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-700 transition-colors" data-i18n="btn_close">Fermer</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
