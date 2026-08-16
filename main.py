@@ -795,7 +795,7 @@ def export_draft():
 @app.route('/api/ai', methods=['POST'])
 def handle_ai_tool():
     """Handles contextual AI writing tools: Describe, Rewrite, and Expand."""
-    from ai_prompts import DESCRIBE_PROMPT, REWRITE_PROMPT, EXPAND_PROMPT, SHOW_DONT_TELL_PROMPT, SENSORY_PROMPT
+    from ai_prompts import DESCRIBE_PROMPT, REWRITE_PROMPT, EXPAND_PROMPT, SHOW_DONT_TELL_PROMPT, SENSORY_PROMPT, POV_PROMPT, COMPLICATIONS_PROMPT, NAMES_PROMPT
 
     payload = request.json or {}
     tool = payload.get("tool", "describe").lower().strip()
@@ -804,7 +804,7 @@ def handle_ai_tool():
     inject_lore = payload.get("inject_lore_context", True)
     scene_id = payload.get("scene_id")
 
-    if not text:
+    if not text and tool not in ["names", "complications"]:
         return jsonify({"error": "No text selected"}), 400
 
     # Match the appropriate system prompt
@@ -812,12 +812,18 @@ def handle_ai_tool():
         system_prompt = DESCRIBE_PROMPT
     elif tool == "rewrite":
         system_prompt = REWRITE_PROMPT.format(style=style)
+    elif tool == "pov":
+        system_prompt = POV_PROMPT.format(style=style)
     elif tool == "expand":
         system_prompt = EXPAND_PROMPT
     elif tool == "show_dont_tell":
         system_prompt = SHOW_DONT_TELL_PROMPT
     elif tool == "sensory":
         system_prompt = SENSORY_PROMPT
+    elif tool == "complications":
+        system_prompt = COMPLICATIONS_PROMPT
+    elif tool == "names":
+        system_prompt = NAMES_PROMPT.format(style=style)
     else:
         return jsonify({"error": f"Unknown tool: {tool}"}), 400
 

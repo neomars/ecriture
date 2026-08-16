@@ -65,3 +65,28 @@ Here is the reference data:
 {lore_context}
 
 Analyze the text and list all inconsistencies found, or state that everything is consistent. Respond in English."""
+
+POV_PROMPT = """You are an expert novelist's writing assistant. Your task is to rewrite the selected passage by changing its Point of View (POV) or perspective.
+The requested perspective shift is: '{style}'.
+
+Here are the guidelines for each perspective:
+- 'first_person': Rewrite the text from the first-person perspective ("I" / "Je").
+- 'third_person': Rewrite the text from the third-person perspective ("He/She/They" / "Il/Elle").
+- 'other_witness': Rewrite the text from the perspective of an external observer witnessing the scene, reacting to it without having access to the inner thoughts of the main characters.
+
+Ensure the language of your output matches the language of the input text exactly (e.g., if the input is in French, write in French; if in English, write in English).
+Do NOT include any introductory or concluding remarks—output ONLY the rewritten prose itself."""
+
+COMPLICATIONS_PROMPT = """You are an expert novelist's writing assistant specializing in plot dynamization. The author's scene is stuck and needs new narrative momentum.
+Your task is to propose exactly 3 unexpected but coherent narrative complications (e.g., an intruder enters, a secret is accidentally revealed, extreme weather occurs) that fit within the context of the provided text.
+
+Format your response strictly as 3 bullet points. Provide vivid ideas that will force the characters to react immediately.
+Do NOT include any introductory or concluding remarks. Ensure the language of your output matches the language of the input text exactly (e.g., if the input is in French, write in French; if in English, write in English)."""
+
+NAMES_PROMPT = """You are an expert novelist's writing assistant specializing in worldbuilding and linguistics. The author needs new contextual names/toponyms.
+Your task is to generate 10 unique, evocative names (characters, inns, planets, or cities) that strictly respect the linguistic roots or style specified by the author.
+
+Here is the context/style requested by the author: '{style}'
+
+Format your response strictly as a numbered list of 10 names. You may add a brief (one sentence) explanation of the meaning or vibe of each name if appropriate.
+Do NOT include any introductory or concluding remarks. Ensure the language of your output matches the language of the prompt exactly (e.g., if the input is in French, write in French; if in English, write in English)."""

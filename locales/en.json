@@ -158,5 +158,20 @@
     "style_slang": "Slang",
     "style_medieval": "Medieval",
     "style_brutal": "Brutal",
-    "style_cynical": "Cynical"
+    "style_cynical": "Cynical",
+    "brainstorm_btn": "Ideas",
+    "brainstorm_title": "Creative Unblocking & Brainstorming",
+    "brainstorm_tab_complications": "Complications",
+    "brainstorm_tab_names": "Name Generator",
+    "brainstorm_complications_desc": "Is the scene stuck? The AI will analyze your current scene and propose 3 coherent narrative complications to restart the action.",
+    "brainstorm_complications_btn": "Generate Complications",
+    "brainstorm_names_desc": "Create names for characters, inns, planets, or cities that strictly follow specific linguistic roots.",
+    "brainstorm_names_style_label": "Style / Roots (e.g., Elven, Cyberpunk, Japanese...)",
+    "brainstorm_names_style_placeholder": "E.g., Dwarven tavern names, Elven first names, Futuristic cities...",
+    "brainstorm_names_btn": "Generate 10 Names",
+    "ai_pov": "Point of View",
+    "pov_first": "First person (I)",
+    "pov_third": "Third person (He/She)",
+    "pov_witness": "External witness",
+    "error_empty_scene": "The current scene is empty. Add text to generate complications."
 }

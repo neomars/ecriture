@@ -53,6 +53,8 @@
                     menu.classList.add('hidden');
                     const rewriteMenu = document.getElementById('ai-rewrite-dropdown-menu');
                     if (rewriteMenu) rewriteMenu.classList.add('hidden');
+                    const povMenu = document.getElementById('ai-pov-dropdown-menu');
+                    if (povMenu) povMenu.classList.add('hidden');
                     const synonymsMenu = document.getElementById('synonyms-dropdown-menu');
                     if (synonymsMenu) synonymsMenu.classList.add('hidden');
                 }, 150);
@@ -73,9 +75,11 @@
         async function triggerContextAI(tool, style = "") {
             const menu = document.getElementById('ai-selection-menu');
             const rewriteMenu = document.getElementById('ai-rewrite-dropdown-menu');
+            const povMenu = document.getElementById('ai-pov-dropdown-menu');
             const card = document.getElementById('ai-preview-card');
             if (menu) menu.classList.add('hidden');
             if (rewriteMenu) rewriteMenu.classList.add('hidden');
+            if (povMenu) povMenu.classList.add('hidden');
             if (!card) return;
 
             // Save last call params
@@ -100,6 +104,12 @@
             } else if (tool === "rewrite") {
                 const styleName = style.charAt(0).toUpperCase() + style.slice(1);
                 titleText = `${formatTranslation("ai_rewrite") || "Réécrire"} (${styleName})`;
+            } else if (tool === "pov") {
+                let povName = style;
+                if (style === "first_person") povName = "1ère p.";
+                if (style === "third_person") povName = "3ème p.";
+                if (style === "other_witness") povName = "Témoin";
+                titleText = `POV (${povName})`;
             } else if (tool === "expand") {
                 titleText = formatTranslation("ai_expand") || "Développer";
             } else if (tool === "show_dont_tell") {
@@ -511,3 +521,124 @@
         window.sendInterviewMessage = sendInterviewMessage;
 
     })();
+
+        // POV DROPDOWN
+        function togglePovDropdown(event) {
+            event.stopPropagation();
+            const menu = document.getElementById('ai-pov-dropdown-menu');
+            if (menu) {
+                menu.classList.toggle('hidden');
+            }
+        }
+        window.togglePovDropdown = togglePovDropdown;
+
+        // BRAINSTORM MODAL
+        function openBrainstormModal() {
+            document.getElementById('brainstorm-modal').classList.remove('hidden');
+            selectBrainstormTab('complications');
+        }
+        window.openBrainstormModal = openBrainstormModal;
+
+        function closeBrainstormModal() {
+            document.getElementById('brainstorm-modal').classList.add('hidden');
+            document.getElementById('complications-result').classList.add('hidden');
+            document.getElementById('names-result').classList.add('hidden');
+        }
+        window.closeBrainstormModal = closeBrainstormModal;
+
+        function selectBrainstormTab(tab) {
+            document.getElementById('brainstorm-pane-complications').classList.add('hidden');
+            document.getElementById('brainstorm-pane-names').classList.add('hidden');
+
+            document.getElementById('tab-brainstorm-complications').className = "flex-1 py-1.5 rounded-md font-semibold transition-all text-slate-500 hover:text-slate-800";
+            document.getElementById('tab-brainstorm-names').className = "flex-1 py-1.5 rounded-md font-semibold transition-all text-slate-500 hover:text-slate-800";
+
+            if (tab === 'complications') {
+                document.getElementById('brainstorm-pane-complications').classList.remove('hidden');
+                document.getElementById('tab-brainstorm-complications').className = "flex-1 py-1.5 rounded-md font-semibold transition-all bg-white text-slate-800 shadow-xs";
+            } else {
+                document.getElementById('brainstorm-pane-names').classList.remove('hidden');
+                document.getElementById('tab-brainstorm-names').className = "flex-1 py-1.5 rounded-md font-semibold transition-all bg-white text-slate-800 shadow-xs";
+            }
+        }
+        window.selectBrainstormTab = selectBrainstormTab;
+
+        async function generateComplications() {
+            const editor = document.getElementById('editor-content');
+            const text = editor ? editor.innerText.trim() : "";
+
+            if (!text) {
+                alert(formatTranslation("error_empty_scene") || "The current scene is empty. Add text to generate complications.");
+                return;
+            }
+
+            const resultContainer = document.getElementById('complications-result');
+            resultContainer.innerText = activeLang === 'fr' ? "⏳ Analyse et génération en cours..." : "⏳ Analyzing and generating...";
+            resultContainer.classList.remove('hidden');
+
+            try {
+                const injectLore = (projectData && projectData.settings && projectData.settings.inject_lore_context !== undefined) ? projectData.settings.inject_lore_context : true;
+                const sceneId = (activeNodeType === "scene") ? activeNodeId : null;
+                const response = await fetch('/api/ai', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        tool: 'complications',
+                        text: text,
+                        temperature: (projectData && projectData.settings && projectData.settings.ai_temperature !== undefined) ? projectData.settings.ai_temperature : 0.7,
+                        model: (projectData && projectData.settings) ? projectData.settings.ai_model : "llama3",
+                        inject_lore_context: injectLore,
+                        scene_id: sceneId
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    resultContainer.innerText = data.message;
+                } else {
+                    resultContainer.innerText = "Error: " + (data.error || "Failed to generate complications.");
+                }
+            } catch (err) {
+                console.error("AI Complications error:", err);
+                resultContainer.innerText = "Error: Failed to connect to AI service.";
+            }
+        }
+        window.generateComplications = generateComplications;
+
+        async function generateNames() {
+            const styleInput = document.getElementById('names-style-input').value.trim();
+            if (!styleInput) {
+                alert(activeLang === 'fr' ? "Veuillez entrer un style ou des racines linguistiques." : "Please enter a style or linguistic roots.");
+                return;
+            }
+
+            const resultContainer = document.getElementById('names-result');
+            resultContainer.innerText = activeLang === 'fr' ? "⏳ Génération en cours..." : "⏳ Generating...";
+            resultContainer.classList.remove('hidden');
+
+            try {
+                const response = await fetch('/api/ai', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        tool: 'names',
+                        style: styleInput,
+                        text: "", // Text is not needed for names generation
+                        temperature: (projectData && projectData.settings && projectData.settings.ai_temperature !== undefined) ? projectData.settings.ai_temperature : 0.7,
+                        model: (projectData && projectData.settings) ? projectData.settings.ai_model : "llama3",
+                        inject_lore_context: false
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    resultContainer.innerText = data.message;
+                } else {
+                    resultContainer.innerText = "Error: " + (data.error || "Failed to generate names.");
+                }
+            } catch (err) {
+                console.error("AI Names error:", err);
+                resultContainer.innerText = "Error: Failed to connect to AI service.";
+            }
+        }
+        window.generateNames = generateNames;
