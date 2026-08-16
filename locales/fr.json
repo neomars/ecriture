@@ -5,10 +5,7 @@
     "ai_rewrite": "Réécrire",
     "ai_expand": "Développer",
     "style_elegant": "Soutenu",
-    "style_dramatic": "Dramatique",
     "style_poetic": "Poétique",
-    "style_humorous": "Humoristique",
-    "style_action": "Action",
     "btn_apply": "Appliquer",
     "btn_regenerate": "Régénérer",
     "btn_cancel": "Annuler",
@@ -155,5 +152,11 @@
     "update_available_title": "Nouvelle version disponible !",
     "update_download_btn": "Télécharger la mise à jour",
     "update_release_notes": "Voir les notes de version",
-    "update_up_to_date": "Votre logiciel est à jour."
+    "update_up_to_date": "Votre logiciel est à jour.",
+    "ai_show_dont_tell": "Show, Don't Tell",
+    "ai_sensory": "Détails Sensoriels",
+    "style_slang": "Argotique",
+    "style_medieval": "Médiéval",
+    "style_brutal": "Brutal",
+    "style_cynical": "Cynique"
 }

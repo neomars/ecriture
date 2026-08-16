@@ -5,10 +5,7 @@
     "ai_rewrite": "Rewrite",
     "ai_expand": "Expand",
     "style_elegant": "Elegant",
-    "style_dramatic": "Dramatic",
     "style_poetic": "Poetic",
-    "style_humorous": "Humorous",
-    "style_action": "Action",
     "btn_apply": "Apply",
     "btn_regenerate": "Regenerate",
     "btn_cancel": "Cancel",
@@ -155,5 +152,11 @@
     "update_available_title": "New version available!",
     "update_download_btn": "Download update",
     "update_release_notes": "View release notes",
-    "update_up_to_date": "Your software is up to date."
+    "update_up_to_date": "Your software is up to date.",
+    "ai_show_dont_tell": "Show, Don't Tell",
+    "ai_sensory": "Sensory Details",
+    "style_slang": "Slang",
+    "style_medieval": "Medieval",
+    "style_brutal": "Brutal",
+    "style_cynical": "Cynical"
 }

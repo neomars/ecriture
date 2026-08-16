@@ -252,65 +252,85 @@
         <main class="flex-1 h-full bg-white flex flex-col overflow-hidden relative">
 
             <!-- Contextual AI Selection Menu -->
-            <div id="ai-selection-menu" class="hidden absolute bg-slate-900 text-white rounded-lg shadow-xl px-3 py-1.5 flex items-center space-x-2 text-xs font-semibold z-50 transition-all duration-150">
-                <!-- Formatting Actions -->
-                <div class="flex items-center space-x-2 border-r border-slate-700 pr-2">
-                    <button onclick="applySelectionFormatting('removeFormat')" class="hover:text-indigo-300 font-sans px-1 text-sm" title="Annuler le style / Clear style">🚫</button>
-                    <button onclick="applySelectionFormatting('italic')" class="hover:text-indigo-300 font-serif italic px-1 text-sm" title="Italique">I</button>
-                    <button onclick="applySelectionFormatting('bold')" class="hover:text-indigo-300 font-serif font-bold px-1 text-sm" title="Gras">B</button>
-                    <button onclick="applySelectionFormatting('bold_italic')" class="hover:text-indigo-300 font-serif font-bold italic px-1 text-sm" title="Gras + Italique">B+I</button>
-                    <button onclick="applySelectionFormatting('smallcaps')" class="hover:text-indigo-300 font-serif px-1 text-xs tracking-wide" style="font-variant: small-caps;" title="Petites capitales">sc</button>
-                    <button onclick="applySelectionFormatting('dialogue')" class="hover:text-indigo-300 font-serif px-1 text-sm" title="Dialogue">💬</button>
-                    <button onclick="applySelectionFormatting('annotation')" class="hover:text-indigo-300 font-serif px-1 text-sm" title="Annoter">✍️</button>
-                </div>
-                <!-- Synonyms Dropdown Trigger -->
-                <div class="relative border-r border-slate-700 pr-2" id="synonyms-dropdown-wrapper">
-                    <button onclick="toggleSynonymsDropdown(event)" class="hover:text-indigo-300 flex items-center space-x-1 transition-colors">
-                        <span>📖</span>
-                        <span data-i18n="synonyms_btn">Synonymes</span>
-                        <span>▾</span>
-                    </button>
-                    <!-- Synonyms list dropdown (rendered dynamically on click) -->
-                    <div id="synonyms-dropdown-menu" class="absolute hidden left-0 top-full mt-1.5 w-48 bg-slate-800 text-slate-100 rounded shadow-lg py-2 border border-slate-700 z-50 max-h-48 overflow-y-auto px-2 space-y-1">
-                        <!-- Loaded dynamically -->
+            <div id="ai-selection-menu" class="hidden absolute bg-slate-900 text-white rounded-lg shadow-xl px-3 py-1.5 flex flex-col space-y-2 text-xs font-semibold z-50 transition-all duration-150">
+                <!-- Top Row: Formatting & Synonyms -->
+                <div class="flex items-center space-x-2">
+                    <!-- Formatting Actions -->
+                    <div class="flex items-center space-x-2 border-r border-slate-700 pr-2">
+                        <button onclick="applySelectionFormatting('removeFormat')" class="hover:text-indigo-300 font-sans px-1 text-sm" title="Annuler le style / Clear style">🚫</button>
+                        <button onclick="applySelectionFormatting('italic')" class="hover:text-indigo-300 font-serif italic px-1 text-sm" title="Italique">I</button>
+                        <button onclick="applySelectionFormatting('bold')" class="hover:text-indigo-300 font-serif font-bold px-1 text-sm" title="Gras">B</button>
+                        <button onclick="applySelectionFormatting('bold_italic')" class="hover:text-indigo-300 font-serif font-bold italic px-1 text-sm" title="Gras + Italique">B+I</button>
+                        <button onclick="applySelectionFormatting('smallcaps')" class="hover:text-indigo-300 font-serif px-1 text-xs tracking-wide" style="font-variant: small-caps;" title="Petites capitales">sc</button>
+                        <button onclick="applySelectionFormatting('dialogue')" class="hover:text-indigo-300 font-serif px-1 text-sm" title="Dialogue">💬</button>
+                        <button onclick="applySelectionFormatting('annotation')" class="hover:text-indigo-300 font-serif px-1 text-sm" title="Annoter">✍️</button>
+                    </div>
+                    <!-- Synonyms Dropdown Trigger -->
+                    <div class="relative" id="synonyms-dropdown-wrapper">
+                        <button onclick="toggleSynonymsDropdown(event)" class="hover:text-indigo-300 flex items-center space-x-1 transition-colors">
+                            <span>📖</span>
+                            <span data-i18n="synonyms_btn">Synonymes</span>
+                            <span>▾</span>
+                        </button>
+                        <!-- Synonyms list dropdown (rendered dynamically on click) -->
+                        <div id="synonyms-dropdown-menu" class="absolute hidden left-0 top-full mt-1.5 w-48 bg-slate-800 text-slate-100 rounded shadow-lg py-2 border border-slate-700 z-50 max-h-48 overflow-y-auto px-2 space-y-1">
+                            <!-- Loaded dynamically -->
+                        </div>
                     </div>
                 </div>
-                <!-- Describe Button -->
-                <button onclick="triggerContextAI('describe')" class="hover:text-indigo-300 flex items-center space-x-1 border-r border-slate-700 pr-2 transition-colors">
-                    <span>🔍</span>
-                    <span data-i18n="ai_describe">Décrire</span>
-                </button>
-                <!-- Rewrite Dropdown Trigger -->
-                <div class="relative border-r border-slate-700 pr-2" id="ai-rewrite-dropdown-wrapper">
-                    <button onclick="toggleRewriteDropdown(event)" class="hover:text-indigo-300 flex items-center space-x-1 transition-colors">
-                        <span>✍️</span>
-                        <span data-i18n="ai_rewrite">Réécrire</span>
-                        <span>▾</span>
+
+                <!-- Bottom Row: AI Tools -->
+                <div class="flex items-center space-x-2 pt-1 border-t border-slate-700">
+                    <!-- Describe Button -->
+                    <button onclick="triggerContextAI('describe')" class="hover:text-indigo-300 flex items-center space-x-1 border-r border-slate-700 pr-2 transition-colors">
+                        <span>🔍</span>
+                        <span data-i18n="ai_describe">Décrire</span>
                     </button>
-                    <!-- Rewrite Styles Dropdown (appears on click) -->
-                    <div id="ai-rewrite-dropdown-menu" class="absolute hidden left-0 top-full mt-1.5 w-36 bg-slate-800 text-slate-100 rounded shadow-lg py-1 border border-slate-700 z-50">
-                        <button onclick="triggerContextAI('rewrite', 'elegant')" class="w-full text-left px-3 py-1.5 hover:bg-slate-700 flex items-center space-x-1 transition-colors">
-                            <span>📘</span> <span data-i18n="style_elegant">Soutenu</span>
+                    <!-- Expand Button -->
+                    <button onclick="triggerContextAI('expand')" class="hover:text-indigo-300 flex items-center space-x-1 border-r border-slate-700 pr-2 transition-colors">
+                        <span>➕</span>
+                        <span data-i18n="ai_expand">Développer</span>
+                    </button>
+                    <!-- Show Don't Tell Button -->
+                    <button onclick="triggerContextAI('show_dont_tell')" class="hover:text-indigo-300 flex items-center space-x-1 border-r border-slate-700 pr-2 transition-colors">
+                        <span>👁️</span>
+                        <span data-i18n="ai_show_dont_tell">Show, Don't Tell</span>
+                    </button>
+                    <!-- Sensory Details Button -->
+                    <button onclick="triggerContextAI('sensory')" class="hover:text-indigo-300 flex items-center space-x-1 border-r border-slate-700 pr-2 transition-colors">
+                        <span>👃</span>
+                        <span data-i18n="ai_sensory">Détails Sensoriels</span>
+                    </button>
+                    <!-- Rewrite Dropdown Trigger -->
+                    <div class="relative" id="ai-rewrite-dropdown-wrapper">
+                        <button onclick="toggleRewriteDropdown(event)" class="hover:text-indigo-300 flex items-center space-x-1 transition-colors">
+                            <span>✍️</span>
+                            <span data-i18n="ai_rewrite">Réécrire</span>
+                            <span>▾</span>
                         </button>
-                        <button onclick="triggerContextAI('rewrite', 'dramatic')" class="w-full text-left px-3 py-1.5 hover:bg-slate-700 flex items-center space-x-1 transition-colors">
-                            <span>🎭</span> <span data-i18n="style_dramatic">Dramatique</span>
-                        </button>
-                        <button onclick="triggerContextAI('rewrite', 'poetic')" class="w-full text-left px-3 py-1.5 hover:bg-slate-700 flex items-center space-x-1 transition-colors">
-                            <span>✨</span> <span data-i18n="style_poetic">Poétique</span>
-                        </button>
-                        <button onclick="triggerContextAI('rewrite', 'humorous')" class="w-full text-left px-3 py-1.5 hover:bg-slate-700 flex items-center space-x-1 transition-colors">
-                            <span>🃏</span> <span data-i18n="style_humorous">Humoristique</span>
-                        </button>
-                        <button onclick="triggerContextAI('rewrite', 'action')" class="w-full text-left px-3 py-1.5 hover:bg-slate-700 flex items-center space-x-1 transition-colors">
-                            <span>🏃</span> <span data-i18n="style_action">Action</span>
-                        </button>
+                        <!-- Rewrite Styles Dropdown (appears on click) -->
+                        <div id="ai-rewrite-dropdown-menu" class="absolute hidden left-0 top-full mt-1.5 w-40 bg-slate-800 text-slate-100 rounded shadow-lg py-1 border border-slate-700 z-50">
+                            <button onclick="triggerContextAI('rewrite', 'slang')" class="w-full text-left px-3 py-1.5 hover:bg-slate-700 flex items-center space-x-1 transition-colors">
+                                <span>🗣️</span> <span data-i18n="style_slang">Argotique</span>
+                            </button>
+                            <button onclick="triggerContextAI('rewrite', 'elegant')" class="w-full text-left px-3 py-1.5 hover:bg-slate-700 flex items-center space-x-1 transition-colors">
+                                <span>📘</span> <span data-i18n="style_elegant">Soutenu</span>
+                            </button>
+                            <button onclick="triggerContextAI('rewrite', 'medieval')" class="w-full text-left px-3 py-1.5 hover:bg-slate-700 flex items-center space-x-1 transition-colors">
+                                <span>🛡️</span> <span data-i18n="style_medieval">Médiéval</span>
+                            </button>
+                            <button onclick="triggerContextAI('rewrite', 'poetic')" class="w-full text-left px-3 py-1.5 hover:bg-slate-700 flex items-center space-x-1 transition-colors">
+                                <span>✨</span> <span data-i18n="style_poetic">Poétique</span>
+                            </button>
+                            <button onclick="triggerContextAI('rewrite', 'brutal')" class="w-full text-left px-3 py-1.5 hover:bg-slate-700 flex items-center space-x-1 transition-colors">
+                                <span>🩸</span> <span data-i18n="style_brutal">Brutal</span>
+                            </button>
+                            <button onclick="triggerContextAI('rewrite', 'cynical')" class="w-full text-left px-3 py-1.5 hover:bg-slate-700 flex items-center space-x-1 transition-colors">
+                                <span>🃏</span> <span data-i18n="style_cynical">Cynique</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <!-- Expand Button -->
-                <button onclick="triggerContextAI('expand')" class="hover:text-indigo-300 flex items-center space-x-1 transition-colors">
-                    <span>➕</span>
-                    <span data-i18n="ai_expand">Développer</span>
-                </button>
             </div>
 
             <!-- AI Contextual Tool Result Preview Card -->
