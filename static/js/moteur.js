@@ -1778,6 +1778,19 @@ function renderStatisticsDashboard() {
             // Ensure compatibility
             ensureCharacterFields(char);
 
+            // 0. INTERVIEW BUTTON
+            const isAiEnabled = (localStorage.getItem('ai-enabled') !== 'false');
+            if (isAiEnabled) {
+                const interviewDiv = document.createElement('div');
+                interviewDiv.className = "mb-4";
+                interviewDiv.innerHTML = `
+                    <button onclick="openInterviewModal('${char.id}')" class="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-3 py-2 rounded-lg text-xs font-semibold transition-all flex justify-center items-center space-x-2">
+                        <span>💬</span> <span data-i18n="interview_btn">Interviewer (IA)</span>
+                    </button>
+                `;
+                container.appendChild(interviewDiv);
+            }
+
             // 1. ROLE / FONCTION
             const roleDiv = document.createElement('div');
             roleDiv.className = "space-y-1";

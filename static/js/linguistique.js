@@ -351,14 +351,14 @@
 
         function selectRelectureCategory(cat) {
             const isAiEnabled = (localStorage.getItem('ai-enabled') !== 'false');
-            if (!isAiEnabled && (cat === 'style' || cat === 'coherence')) {
+            if (!isAiEnabled && (cat === 'style' || cat === 'coherence' || cat === 'worldbuilding')) {
                 return;
             }
 
             activeRelectureCategory = cat;
 
             // Highlight active button
-            const buttons = ["repetitions", "rythme", "style", "coherence"];
+            const buttons = ["repetitions", "rythme", "style", "coherence", "worldbuilding"];
             buttons.forEach(b => {
                 const btn = document.getElementById(`relecture-btn-${b}`);
                 if (btn) {
@@ -391,14 +391,20 @@
                 // Update AI Title based on selected AI category
                 const titleEl = document.getElementById('relecture-ai-title');
                 if (titleEl) {
-                    titleEl.innerText = cat === "style" ? "Style & Prose (IA)" : "Cohérence (IA)";
+                    if (cat === "style") titleEl.innerText = "Style & Prose (IA)";
+                    else if (cat === "coherence") titleEl.innerText = "Cohérence (IA)";
+                    else if (cat === "worldbuilding") titleEl.innerText = "Worldbuilding & Lore (IA)";
                 }
 
                 const feedbackEl = document.getElementById('relecture-ai-feedback');
                 if (feedbackEl) {
-                    feedbackEl.innerText = cat === "style"
-                        ? (activeLang === 'fr' ? "Pour lancer l'analyse intelligente de style et prose, cliquez sur le bouton ci-dessus." : "To run the style and prose smart analysis, click the button above.")
-                        : (activeLang === 'fr' ? "Pour lancer l'analyse intelligente de cohérence narrative, cliquez sur le bouton ci-dessus." : "To run the narrative coherence smart analysis, click the button above.");
+                    if (cat === "style") {
+                        feedbackEl.innerText = activeLang === 'fr' ? "Pour lancer l'analyse intelligente de style et prose, cliquez sur le bouton ci-dessus." : "To run the style and prose smart analysis, click the button above.";
+                    } else if (cat === "coherence") {
+                        feedbackEl.innerText = activeLang === 'fr' ? "Pour lancer l'analyse intelligente de cohérence narrative, cliquez sur le bouton ci-dessus." : "To run the narrative coherence smart analysis, click the button above.";
+                    } else if (cat === "worldbuilding") {
+                        feedbackEl.innerText = activeLang === 'fr' ? "Pour lancer l'analyse intelligente de worldbuilding (anachronismes et incohérences de lore), cliquez sur le bouton ci-dessus." : "To run the smart worldbuilding analysis (anachronisms and lore inconsistencies), click the button above.";
+                    }
                 }
             }
         }

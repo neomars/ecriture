@@ -117,6 +117,11 @@
                 </div>
             </div>
 
+            <!-- Extract Lore Button -->
+            <button onclick="extractLoreFromScene()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all flex items-center space-x-1">
+                🪄 <span data-i18n="extract_lore_btn">Extraire Lore</span>
+            </button>
+
             <!-- Relecture Button -->
             <button onclick="openRelectureModal()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all flex items-center space-x-1">
                 🔍 <span data-i18n="relecture_btn">Relecture</span>
@@ -937,6 +942,9 @@
                     <button id="relecture-btn-coherence" onclick="selectRelectureCategory('coherence')" class="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all flex items-center space-x-2">
                         <span>🧩</span> <span data-i18n="cat_coherence">Cohérence (IA)</span>
                     </button>
+                    <button id="relecture-btn-worldbuilding" onclick="selectRelectureCategory('worldbuilding')" class="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all flex items-center space-x-2">
+                        <span>🌍</span> <span data-i18n="cat_worldbuilding">Worldbuilding & Lore (IA)</span>
+                    </button>
                 </div>
 
                 <!-- Right: Analysis Display / Text Interaction -->
@@ -1128,6 +1136,38 @@
                 <div id="gemma-install-progress-bar" class="bg-indigo-600 h-2.5 rounded-full" style="width: 0%"></div>
             </div>
             <div id="gemma-install-status-text" class="text-xs text-slate-500 font-semibold mb-4">Initialisation...</div>
+        </div>
+    </div>
+
+    <!-- MODAL: CHARACTER INTERVIEW -->
+    <div id="interview-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50">
+        <div class="bg-white w-[500px] h-[600px] rounded-xl shadow-xl border border-slate-200 flex flex-col">
+            <!-- Header -->
+            <div class="flex justify-between items-center p-4 border-b border-slate-100 bg-indigo-50/50 rounded-t-xl shrink-0">
+                <div class="flex items-center space-x-2">
+                    <span class="text-xl">💬</span>
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-800" id="interview-character-name">Nom du personnage</h3>
+                        <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Interview (IA)</p>
+                    </div>
+                </div>
+                <button onclick="closeInterviewModal()" class="text-slate-400 hover:text-slate-600 focus:outline-none">✕</button>
+            </div>
+
+            <!-- Chat Area -->
+            <div id="interview-chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50 flex flex-col">
+                <!-- Messages will be injected here -->
+            </div>
+
+            <!-- Input Area -->
+            <div class="p-3 border-t border-slate-200 bg-white rounded-b-xl shrink-0">
+                <div class="flex items-center space-x-2">
+                    <input type="text" id="interview-chat-input" onkeydown="if(event.key==='Enter') sendInterviewMessage()" placeholder="Posez une question..." class="flex-1 bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-inner">
+                    <button onclick="sendInterviewMessage()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg text-sm shadow-sm transition-all">
+                        Envoyer
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 

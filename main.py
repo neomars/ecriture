@@ -1095,6 +1095,14 @@ def api_relecture_ai():
                 "flow, and sample rewrites where applicable.\n"
                 "Respond in English."
             )
+    elif category == "worldbuilding":
+        lore_context = payload.get("lore_context", "Aucun contexte fourni.")
+        if lang == "fr":
+            from ai_prompts import LORE_COHERENCE_PROMPT_FR
+            system_prompt = LORE_COHERENCE_PROMPT_FR.format(lore_context=lore_context)
+        else:
+            from ai_prompts import LORE_COHERENCE_PROMPT_EN
+            system_prompt = LORE_COHERENCE_PROMPT_EN.format(lore_context=lore_context)
     else: # coherence
         if lang == "fr":
             system_prompt = (
@@ -1383,6 +1391,47 @@ def pull_ai_model():
 
     from flask import Response
     return Response(generate(), mimetype='text/event-stream')
+
+
+
+@app.route('/api/ai/extract_characters', methods=['POST'])
+def api_extract_characters():
+    """Extract character information from text using AI."""
+    payload = request.json or {}
+    text = payload.get("text", "").strip()
+    selected_model = payload.get("model", "llama3").strip()
+    temperature = payload.get("temperature", 0.1)  # Low temp for data extraction
+
+    if not text:
+        return jsonify({"status": "empty", "characters": []})
+
+    from ai_prompts import EXTRACT_LORE_PROMPT
+
+    messages = [
+        {"role": "system", "content": EXTRACT_LORE_PROMPT},
+        {"role": "user", "content": text}
+    ]
+
+    try:
+        res = ai_client.chat(messages, model=selected_model, temperature=temperature, timeout=30)
+        # Try to parse the JSON
+        import json
+        import re
+
+        content = res["message"]
+        # Find JSON array using regex in case model wrapped it in backticks
+        match = re.search(r'\[.*\]', content, re.DOTALL)
+        if match:
+            json_str = match.group(0)
+            try:
+                characters = json.loads(json_str)
+                return jsonify({"status": "success", "characters": characters})
+            except json.JSONDecodeError:
+                pass
+
+        return jsonify({"status": "error", "message": "Failed to parse JSON response"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
 
 
 if __name__ == "__main__":

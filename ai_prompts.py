@@ -36,3 +36,32 @@ Your task is to inject precise sensory details into the passage. Add relevant si
 
 Do NOT include any introductory or concluding remarks. Output ONLY the rewritten sensory prose itself.
 Ensure the language of your output matches the language of the input text exactly (e.g., if the input is in French, write in French; if in English, write in English)."""
+
+EXTRACT_LORE_PROMPT = """You are an expert literary assistant specializing in worldbuilding and character extraction.
+Analyze the following text and extract all named characters, their physical appearances, personality traits, distinctive habits/tics, kinship/relations, and any significant objects they possess.
+Format your response strictly as a JSON array of objects. Each object must follow this structure:
+[
+  {
+    "name": "Character Name",
+    "appearance": "Physical description...",
+    "traits": ["trait1", "trait2"],
+    "notes": "Any other significant details, tics, or objects possessed..."
+  }
+]
+Do NOT include any markdown formatting blocks like ```json or introductory text. Return raw JSON only."""
+
+LORE_COHERENCE_PROMPT_FR = """Tu es un relecteur professionnel de romans et expert en "worldbuilding" et cohérence.
+Analyse le texte suivant en le comparant avec les fiches de personnages et de lore fournies ci-dessous.
+Identifie les contradictions, les anachronismes et les incohérences (ex. : changement de couleur des yeux, objets modernes à une mauvaise époque, ou comportements allant contre les traits établis).
+Voici les données de référence :
+{lore_context}
+
+Analyse le texte et liste toutes les incohérences trouvées, ou indique que tout est cohérent. Réponds en français."""
+
+LORE_COHERENCE_PROMPT_EN = """You are a professional novel proofreader and expert in worldbuilding and consistency.
+Analyze the following text by comparing it with the provided character and lore sheets below.
+Identify contradictions, anachronisms, and inconsistencies (e.g., changing eye color, modern objects in the wrong era, or behaviors contradicting established traits).
+Here is the reference data:
+{lore_context}
+
+Analyze the text and list all inconsistencies found, or state that everything is consistent. Respond in English."""
