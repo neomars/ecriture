@@ -158,5 +158,20 @@
     "style_slang": "Argotique",
     "style_medieval": "Médiéval",
     "style_brutal": "Brutal",
-    "style_cynical": "Cynique"
+    "style_cynical": "Cynique",
+    "brainstorm_btn": "Idées",
+    "brainstorm_title": "Déblocage Créatif & Brainstorming",
+    "brainstorm_tab_complications": "Complications",
+    "brainstorm_tab_names": "Générateur de Noms",
+    "brainstorm_complications_desc": "La scène s'enlise ? L'IA va analyser votre scène actuelle et proposer 3 imprévus narratifs cohérents pour relancer l'action.",
+    "brainstorm_complications_btn": "Générer des Complications",
+    "brainstorm_names_desc": "Créez des noms de personnages, d'auberges, de planètes ou de villes respectant des racines linguistiques précises.",
+    "brainstorm_names_style_label": "Style / Racines (ex: Elfique, Cyberpunk, Japonais...)",
+    "brainstorm_names_style_placeholder": "Ex: Noms de tavernes naines, Prénoms elfiques, Villes futuristes...",
+    "brainstorm_names_btn": "Générer 10 Noms",
+    "ai_pov": "Point de Vue",
+    "pov_first": "Première personne (Je)",
+    "pov_third": "Troisième personne (Il/Elle)",
+    "pov_witness": "Témoin externe",
+    "error_empty_scene": "La scène actuelle est vide. Ajoutez du texte pour générer des complications."
 }
