@@ -27,7 +27,7 @@ jobs:
           - os: macos-latest
             artifact_name: ecriture-macos.dmg
             pyinstaller_cmd: pyinstaller --noconfirm --onefile --windowed --add-data "static:static" --add-data "templates:templates" --add-data "locales:locales" --add-data "images:images" --add-data "projects:projects" --name ecriture main.py
-            bin_path: dist/ecriture
+            bin_path: dist/ecriture-macos.dmg
 
           # Configuration pour Linux
           - os: ubuntu-latest
@@ -74,6 +74,17 @@ jobs:
       # 6. Exécuter la commande de compilation spécifique à l'OS
       - name: Compilation avec PyInstaller
         run: ${{ matrix.pyinstaller_cmd }}
+
+      - name: Créer le DMG (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          mkdir -p dist/dmg
+          if [ -d "dist/ecriture.app" ]; then
+            cp -R dist/ecriture.app dist/dmg/
+          elif [ -f "dist/ecriture" ]; then
+            cp dist/ecriture dist/dmg/
+          fi
+          hdiutil create -volname "ecriture" -srcfolder dist/dmg -ov -format UDZO dist/ecriture-macos.dmg
 
       # 7. Sauvegarder l'exécutable dans les artefacts GitHub
       - name: Upload de l'artefact
