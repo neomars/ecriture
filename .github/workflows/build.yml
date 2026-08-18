@@ -25,7 +25,7 @@ jobs:
 
           # Configuration pour macOS
           - os: macos-latest
-            artifact_name: ecriture-macos
+            artifact_name: ecriture-macos.dmg
             pyinstaller_cmd: pyinstaller --noconfirm --onefile --windowed --add-data "static:static" --add-data "templates:templates" --add-data "locales:locales" --add-data "images:images" --add-data "projects:projects" --name ecriture main.py
             bin_path: dist/ecriture
 
