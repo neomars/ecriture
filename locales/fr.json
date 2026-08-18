@@ -141,6 +141,8 @@
     "ollama_missing_download_prompt": "Vous pouvez aussi l'installer manuellement :",
     "ollama_missing_download_btn": "Télécharger Ollama",
     "ollama_missing_close": "Continuer sans IA",
+    "gemma_installed": "Gemma installé. Version {model}<br><span class=\"text-xs text-slate-500 font-medium\">(LLM disponibles : {models})</span>",
+    "gemma_none": "aucun",
     "btn_close": "Fermer",
     "backup_settings_title": "Configuration des Sauvegardes",
     "backup_local_path_label": "Répertoire de destination des sauvegardes :",
