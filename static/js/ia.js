@@ -2,7 +2,7 @@
         let activeSelection = { start: 0, end: 0, text: "" };
         let lastAiToolCall = { tool: "", style: "", text: "" };
 
-        function handleTextSelection(e) {
+        window.handleTextSelection = function handleTextSelection(e) {
             const editor = document.getElementById('editor-content');
             const menu = document.getElementById('ai-selection-menu');
             if (!editor || !menu) return;
@@ -64,15 +64,16 @@
         function closeAiPreview() {
             document.getElementById('ai-preview-card').classList.add('hidden');
         }
+        window.closeAiPreview = closeAiPreview;
 
-        function toggleRewriteDropdown(event) {
+        window.toggleRewriteDropdown = function toggleRewriteDropdown(event) {
             event.stopPropagation();
             const menu = document.getElementById('ai-rewrite-dropdown-menu');
             if (menu) {
                 menu.classList.toggle('hidden');
             }
         }
-        async function triggerContextAI(tool, style = "") {
+        window.triggerContextAI = async function triggerContextAI(tool, style = "") {
             const menu = document.getElementById('ai-selection-menu');
             const rewriteMenu = document.getElementById('ai-rewrite-dropdown-menu');
             const povMenu = document.getElementById('ai-pov-dropdown-menu');
@@ -161,8 +162,9 @@
                 triggerContextAI(lastAiToolCall.tool, lastAiToolCall.style);
             }
         }
+        window.regenerateAI = regenerateAI;
 
-        function applyAiSuggestion() {
+        window.applyAiSuggestion = function applyAiSuggestion() {
             const editor = document.getElementById('editor-content');
             const resultContainer = document.getElementById('ai-preview-result-container');
             if (!editor || !resultContainer) return;
@@ -520,7 +522,7 @@
         }
         window.sendInterviewMessage = sendInterviewMessage;
 
-    })();
+
 
         // POV DROPDOWN
         function togglePovDropdown(event) {

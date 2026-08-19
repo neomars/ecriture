@@ -123,7 +123,7 @@
 
             // Initialize AI option from localStorage
             const storedAiVal = localStorage.getItem('ai-enabled');
-            const aiEnabled = (storedAiVal !== 'false'); // defaults to true
+            const aiEnabled = (storedAiVal === 'true'); // defaults to false
             const aiCheckbox = document.getElementById('ai-toggle-checkbox');
             if (aiCheckbox) {
                 aiCheckbox.checked = aiEnabled;
@@ -265,6 +265,22 @@
             }
         }
 
+        function closeGemmaInstalledModal() {
+            const modal = document.getElementById('gemma-installed-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        }
+        window.closeGemmaInstalledModal = closeGemmaInstalledModal;
+
+        function closeGemmaMissingModal() {
+            const modal = document.getElementById('gemma-missing-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        }
+        window.closeGemmaMissingModal = closeGemmaMissingModal;
+
 
         let installPollInterval = null;
 
@@ -281,7 +297,7 @@
                 if(actionsDiv) actionsDiv.classList.add('hidden');
                 if(progressDiv) progressDiv.classList.remove('hidden');
 
-                const response = await fetch('/api/ai/install_gemma', {
+                const response = await fetch('/api/ai/install_ollama', {
                     method: 'POST'
                 });
 
@@ -2676,12 +2692,10 @@ function renderStatisticsDashboard() {
                             const defaultModel = (projectData && projectData.settings && projectData.settings.ai_model) || "llama3";
                             const msgEl = document.getElementById('gemma-installed-message');
                             if (msgEl) {
-                                const modelsStr = data.models && data.models.length > 0 ? data.models.join(', ') : 'aucun';
-                                if (activeLang === 'fr') {
-                                    msgEl.innerHTML = `OLLAMA installé. Version ${defaultModel}<br><span class="text-xs text-slate-500 font-medium">(LLM disponibles : ${modelsStr})</span>`;
-                                } else {
-                                    msgEl.innerHTML = `OLLAMA installed. Version ${defaultModel}<br><span class="text-xs text-slate-500 font-medium">(Available LLMs: ${modelsStr})</span>`;
-                                }
+                                const noneStr = translations["gemma_none"] || (activeLang === 'fr' ? 'aucun' : 'none');
+                                const modelsStr = data.models && data.models.length > 0 ? data.models.join(', ') : noneStr;
+                                let translationStr = translations["gemma_installed"] || `Gemma installed. Version {model}<br><span class="text-xs text-slate-500 font-medium">(Available LLMs: {models})</span>`;
+                                msgEl.innerHTML = translationStr.replace('{model}', defaultModel).replace('{models}', modelsStr);
                             }
                             showGemmaInstalledModal();
                         } else {

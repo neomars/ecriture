@@ -1007,35 +1007,60 @@ INSTALL_STATE = {
 }
 
 
-def _install_ollama_thread():
+def _install_ollama_thread(lang="fr"):
     global INSTALL_STATE
     import time
+    from tqdm.auto import tqdm
+
+    def get_str(key):
+        # Extremely basic fallback translation
+        if lang == "en":
+            with open("locales/en.json", "r", encoding="utf-8") as f:
+                return json.load(f).get(key, key)
+        else:
+            with open("locales/fr.json", "r", encoding="utf-8") as f:
+                return json.load(f).get(key, key)
+
+    class CustomTqdm(tqdm):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+
+        def update(self, n=1):
+            super().update(n)
+            if self.total and self.total > 0:
+                percent = (self.n / self.total) * 100
+                INSTALL_STATE["progress"] = min(99, int(percent))
 
     INSTALL_STATE["status"] = "installing_model"
-    INSTALL_STATE["message"] = "Téléchargement du modèle Gemma..."
+    INSTALL_STATE["message"] = get_str("gemma_installing_model")
     INSTALL_STATE["progress"] = 0
 
     try:
         from huggingface_hub import hf_hub_download
+        import huggingface_hub.file_download as file_download
 
-        # We can't get granular progress easily from hf_hub_download without a custom callback,
-        # but huggingface_hub uses tqdm which outputs to stderr.
-        # We will just set progress to 50% as a placeholder while downloading.
-        INSTALL_STATE["progress"] = 50
+        original_tqdm = file_download.tqdm
+        file_download.tqdm = CustomTqdm
 
-        model_path = hf_hub_download(
-            repo_id="unsloth/gemma-2-2b-it-GGUF",
-            filename="gemma-2-2b-it-Q4_K_M.gguf"
-        )
+        try:
+            model_path = hf_hub_download(
+                repo_id="bartowski/gemma-2-2b-it-GGUF",
+                filename="gemma-2-2b-it-Q4_K_M.gguf"
+            )
+        finally:
+            file_download.tqdm = original_tqdm
 
         INSTALL_STATE["status"] = "done"
-        INSTALL_STATE["message"] = "Installation terminée avec succès !"
+        INSTALL_STATE["message"] = get_str("gemma_install_success")
         INSTALL_STATE["progress"] = 100
 
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         print(f"Error installing model: {e}")
         INSTALL_STATE["status"] = "error"
-        INSTALL_STATE["message"] = f"Erreur : {str(e)}"
+        err_msg = get_str("gemma_install_error").replace("{error}", str(e))
+        INSTALL_STATE["message"] = err_msg
 
 
 @app.route('/api/ai/install_ollama', methods=['POST'])
@@ -1046,7 +1071,8 @@ def install_ollama():
             return jsonify({"status": "success", "message": "Installation déjà en cours"})
 
         import threading
-        thread = threading.Thread(target=_install_ollama_thread)
+        lang = "fr" # could parse from headers/cookies if needed, default to fr.
+        thread = threading.Thread(target=_install_ollama_thread, args=(lang,))
         thread.start()
 
         return jsonify({"status": "success", "message": "Installation started"})

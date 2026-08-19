@@ -3,7 +3,7 @@
             // No-op for contenteditable, handled via keydown handler to prevent cursor resetting
         }
 
-        function applySelectionFormatting(type) {
+        window.applySelectionFormatting = function applySelectionFormatting(type) {
             const editor = document.getElementById('editor-content');
             if (!editor) return;
 
@@ -90,7 +90,7 @@
             if (selectionMenu) selectionMenu.classList.add('hidden');
         }
 
-        function toggleSynonymsDropdown(event) {
+        window.toggleSynonymsDropdown = function toggleSynonymsDropdown(event) {
             event.stopPropagation();
             const menu = document.getElementById('synonyms-dropdown-menu');
             if (!menu) return;
