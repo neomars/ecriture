@@ -297,7 +297,7 @@
                 if(actionsDiv) actionsDiv.classList.add('hidden');
                 if(progressDiv) progressDiv.classList.remove('hidden');
 
-                const response = await fetch('/api/ai/install_gemma', {
+                const response = await fetch('/api/ai/install_ollama', {
                     method: 'POST'
                 });
 

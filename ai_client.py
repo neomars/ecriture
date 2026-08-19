@@ -18,6 +18,16 @@ class OllamaClient:
                     cls._instance.model_filename = "gemma-2-2b-it-Q4_K_M.gguf"
         return cls._instance
 
+
+    def _get_str(self, lang, key):
+        import json
+        if lang == "en":
+            with open("locales/en.json", "r", encoding="utf-8") as f:
+                return json.load(f).get(key, key)
+        else:
+            with open("locales/fr.json", "r", encoding="utf-8") as f:
+                return json.load(f).get(key, key)
+
     def _load_model(self):
         if self._llm is not None:
             return self._llm
@@ -180,26 +190,26 @@ class OllamaClient:
         else:
             if any(kw in user_text_lower for kw in ["plan", "intrigue", "plot"]):
                 return (
-                    "[Assistant IA (Ollama Simulation - Hors ligne)]\n"
-                    "Pour structurer votre intrigue, je vous suggère de suivre le schéma narratif :\n"
-                    "1. Situation initiale : Présentation du protagoniste et du cadre.\n"
-                    "2. Élément déclencheur : Un bouleversement majeur.\n"
-                    "3. Péripéties : Obstacles et évolution des personnages.\n"
-                    "4. Climax : Le point de tension maximale.\n"
+                    self._get_str(lang, "gemma_simulation_title") + "\n" +
+                    "Pour structurer votre intrigue, je vous suggère de suivre le schéma narratif :\n" +
+                    "1. Situation initiale : Présentation du protagoniste et du cadre.\n" +
+                    "2. Élément déclencheur : Un bouleversement majeur.\n" +
+                    "3. Péripéties : Obstacles et évolution des personnages.\n" +
+                    "4. Climax : Le point de tension maximale.\n" +
                     "5. Dénouement : Résolution de l'intrigue."
                 )
             elif any(kw in user_text_lower for kw in ["personnage", "character", "heros", "héro"]):
                 return (
-                    "[Assistant IA (Ollama Simulation - Hors ligne)]\n"
-                    "Voici quelques idées pour approfondir un personnage :\n"
-                    "- Quel est son plus grand secret ?\n"
-                    "- Quelle est sa motivation principale (désir profond vs. besoin inconscient) ?\n"
+                    self._get_str(lang, "gemma_simulation_title") + "\n" +
+                    "Voici quelques idées pour approfondir un personnage :\n" +
+                    "- Quel est son plus grand secret ?\n" +
+                    "- Quelle est sa motivation principale (désir profond vs. besoin inconscient) ?\n" +
                     "- Ajoutez un défaut physique ou une habitude unique pour le rendre mémorable."
                 )
             else:
                 return (
-                    "[Assistant IA (Ollama Simulation - Hors ligne)]\n"
-                    "Bonjour ! Je suis votre assistant d'écriture Écriture.\n"
-                    "Ollama semble être hors ligne sur http://localhost:11434.\n"
-                    "Voici une suggestion pour continuer : déterminez l'enjeu principal de votre scène actuelle !"
+                    self._get_str(lang, "gemma_simulation_title") + "\n" +
+                    self._get_str(lang, "gemma_simulation_hello") + "\n" +
+                    self._get_str(lang, "gemma_error_loading") + "\n" +
+                    self._get_str(lang, "gemma_simulation_suggestion")
                 )

@@ -143,6 +143,10 @@
     "ollama_missing_close": "Continuer sans IA",
     "gemma_installed": "Gemma installé. Version {model}<br><span class=\"text-xs text-slate-500 font-medium\">(LLM disponibles : {models})</span>",
     "gemma_none": "aucun",
+    "gemma_installing_model": "Téléchargement du modèle Gemma...",
+    "gemma_install_success": "Installation terminée avec succès !",
+    "gemma_install_error": "Erreur : {error}",
+    "gemma_error_loading": "Le modèle AI local n'a pas pu être chargé.",
     "btn_close": "Fermer",
     "backup_settings_title": "Configuration des Sauvegardes",
     "backup_local_path_label": "Répertoire de destination des sauvegardes :",
@@ -175,5 +179,8 @@
     "pov_first": "Première personne (Je)",
     "pov_third": "Troisième personne (Il/Elle)",
     "pov_witness": "Témoin externe",
-    "error_empty_scene": "La scène actuelle est vide. Ajoutez du texte pour générer des complications."
+    "error_empty_scene": "La scène actuelle est vide. Ajoutez du texte pour générer des complications.",
+    "gemma_simulation_title": "[Assistant IA (Gemma Simulation - Hors ligne)]",
+    "gemma_simulation_hello": "Bonjour ! Je suis votre assistant d'écriture Écriture.",
+    "gemma_simulation_suggestion": "Voici une suggestion pour continuer : déterminez l'enjeu principal de votre scène actuelle !"
 }

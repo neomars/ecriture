@@ -143,6 +143,10 @@
     "ollama_missing_close": "Continue without AI",
     "gemma_installed": "Gemma installed. Version {model}<br><span class=\"text-xs text-slate-500 font-medium\">(Available LLMs: {models})</span>",
     "gemma_none": "none",
+    "gemma_installing_model": "Downloading Gemma model...",
+    "gemma_install_success": "Installation completed successfully!",
+    "gemma_install_error": "Error: {error}",
+    "gemma_error_loading": "The local AI model could not be loaded.",
     "btn_close": "Close",
     "backup_settings_title": "Backups Configuration",
     "backup_local_path_label": "Backup destination directory:",
@@ -175,5 +179,8 @@
     "pov_first": "First person (I)",
     "pov_third": "Third person (He/She)",
     "pov_witness": "External witness",
-    "error_empty_scene": "The current scene is empty. Add text to generate complications."
+    "error_empty_scene": "The current scene is empty. Add text to generate complications.",
+    "gemma_simulation_title": "[AI Assistant (Gemma Simulation - Offline)]",
+    "gemma_simulation_hello": "Hello! I am your writing assistant.",
+    "gemma_simulation_suggestion": "Here is a suggestion to continue: determine the main stakes of your current scene!"
 }
