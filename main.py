@@ -848,7 +848,7 @@ def handle_ai_tool():
 
     # Call Ollama via unified Client
     try:
-        res = ai_client.chat(messages, model=selected_model, temperature=temperature, timeout=15)
+        res = ai_client.generate_chat(messages, model=selected_model, temperature=temperature, timeout=15)
         return jsonify({
             "status": "success",
             "message": res["message"],
@@ -884,7 +884,7 @@ def ai_chat():
 
     # Call Ollama via unified client
     try:
-        res = ai_client.chat(messages, model=selected_model, temperature=temperature, timeout=15)
+        res = ai_client.generate_chat(messages, model=selected_model, temperature=temperature, timeout=15)
         return jsonify({
             "status": "success",
             "message": res["message"],
@@ -1162,7 +1162,7 @@ def api_relecture_ai():
 
     # Call Ollama via unified client
     try:
-        res = ai_client.chat(messages, model=selected_model, temperature=temperature, timeout=25)
+        res = ai_client.generate_chat(messages, model=selected_model, temperature=temperature, timeout=25)
         return jsonify({
             "status": "success",
             "feedback": res["message"],
@@ -1449,7 +1449,7 @@ def api_extract_characters():
     ]
 
     try:
-        res = ai_client.chat(messages, model=selected_model, temperature=temperature, timeout=30)
+        res = ai_client.generate_chat(messages, model=selected_model, temperature=temperature, timeout=30)
         # Try to parse the JSON
         import json
         import re

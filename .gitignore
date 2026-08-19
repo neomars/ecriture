@@ -5,3 +5,4 @@ __pycache__/
 venv/
 .pytest_cache/
 !images/*.png
+novel_export_temp.*

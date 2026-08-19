@@ -14,7 +14,7 @@ class OllamaClient:
                 if cls._instance is None:
                     cls._instance = super(OllamaClient, cls).__new__(cls)
                     cls._instance._llm = None
-                    cls._instance.model_repo = "unsloth/gemma-2-2b-it-GGUF"
+                    cls._instance.model_repo = "bartowski/gemma-2-2b-it-GGUF"
                     cls._instance.model_filename = "gemma-2-2b-it-Q4_K_M.gguf"
         return cls._instance
 
@@ -57,6 +57,7 @@ class OllamaClient:
                 return None
 
     def check_status(self):
+        import traceback
         try:
             from huggingface_hub import hf_hub_download
             model_path = hf_hub_download(
@@ -65,17 +66,23 @@ class OllamaClient:
                 local_files_only=True
             )
             return {"status": "online"}
-        except Exception:
+        except Exception as e:
+            print("[DEBUG] check_status failed:")
+            traceback.print_exc()
             return {"status": "offline"}
 
     def get_models(self):
-        return ["gemma-2-2b-it"]
+        status = self.check_status()
+        if status["status"] == "online":
+            return ["gemma-2-2b-it"]
+        return []
 
     def select_best_model(self, preferred_model):
         return "gemma-2-2b-it"
 
 
     def generate_chat(self, messages, model="gemma-2-2b-it", temperature=0.7, timeout=60):
+        import traceback
         try:
             status = self.check_status()
             if status["status"] != "online":
@@ -98,7 +105,8 @@ class OllamaClient:
                 "model": "gemma-2-2b-it"
             }
         except Exception as e:
-            print(f"Error calling local AI: {e}")
+            print(f"[DEBUG] generate_chat failed: {e}")
+            traceback.print_exc()
             raise
     def get_fallback_response(self, category, text_or_messages, style="elegant", lang="fr"):
         """

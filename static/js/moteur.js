@@ -146,9 +146,9 @@
                         showGemmaMissingModal(data.sys_info);
                     } else {
                         // Gemma is installed, check for gemma4:latest
-                        const hasGemma = data.models.includes('gemma4:latest') || data.models.includes('gemma4');
+                        const hasGemma = data.models.includes('gemma-2-2b-it');
                         if (!hasGemma) {
-                            startModelInstallation('gemma4:latest');
+                            startModelInstallation('gemma-2-2b-it');
                         }
                     }
                 } else {
@@ -167,62 +167,57 @@
 
             if (modal) modal.classList.remove('hidden');
 
-            const eventSource = new EventSource('/api/ai/pull?model=' + encodeURIComponent(modelName));
+            fetch('/api/ai/install_ollama', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    const interval = setInterval(() => {
+                        fetch('/api/ai/install_status')
+                            .then(res => res.json())
+                            .then(statusData => {
+                                if (statusData.message) {
+                                    statusText.innerText = statusData.message;
+                                }
+                                if (statusData.progress !== undefined) {
+                                    progressBar.style.width = statusData.progress + '%';
+                                }
 
-            eventSource.onmessage = function(event) {
-                const data = JSON.parse(event.data);
+                                if (statusData.status === 'done' || statusData.status === 'error') {
+                                    clearInterval(interval);
+                                    if (statusData.status === 'done') {
+                                        setTimeout(() => { if (modal) modal.classList.add('hidden'); }, 1500);
 
-                if (data.status) {
-                    statusText.innerText = data.status;
-                }
+                                        // Set as default model
+                                        if (projectData && projectData.settings) {
+                                            projectData.settings.ai_model = modelName;
+                                            const selectEl = document.getElementById('settings-ai-model');
+                                            if (selectEl) {
+                                                // Add option if it doesn't exist yet
+                                                let optionExists = Array.from(selectEl.options).some(opt => opt.value === modelName);
+                                                if (!optionExists) {
+                                                    const newOpt = document.createElement('option');
+                                                    newOpt.value = modelName;
+                                                    newOpt.text = modelName;
+                                                    selectEl.add(newOpt);
+                                                }
+                                                selectEl.value = modelName;
+                                            }
+                                            persistProject();
+                                        }
 
-                if (data.completed && data.total) {
-                    const percent = Math.round((data.completed / data.total) * 100);
-                    progressBar.style.width = percent + '%';
-                    statusText.innerText = `Téléchargement : ${percent}%`;
-                }
-
-                if (data.status === 'success') {
-                    eventSource.close();
-                    if (modal) modal.classList.add('hidden');
-
-                    // Set as default model
-                    if (projectData && projectData.settings) {
-                        projectData.settings.ai_model = modelName;
-                        const selectEl = document.getElementById('settings-ai-model');
-                        if (selectEl) {
-                            // Add option if it doesn't exist yet
-                            let optionExists = Array.from(selectEl.options).some(opt => opt.value === modelName);
-                            if (!optionExists) {
-                                const newOpt = document.createElement('option');
-                                newOpt.value = modelName;
-                                newOpt.text = modelName;
-                                selectEl.add(newOpt);
-                            }
-                            selectEl.value = modelName;
-                        }
-                        persistProject();
-                    }
-                }
-
-                if (data.error) {
-                    eventSource.close();
-                    statusText.innerText = "Erreur : " + data.error;
-                    statusText.classList.add('text-red-500');
-                    setTimeout(() => {
-                        if (modal) modal.classList.add('hidden');
-                    }, 3000);
-                }
-            };
-
-            eventSource.onerror = function() {
-                eventSource.close();
-                statusText.innerText = "Erreur de connexion lors du téléchargement.";
-                statusText.classList.add('text-red-500');
-                setTimeout(() => {
-                    if (modal) modal.classList.add('hidden');
-                }, 3000);
-            };
+                                        // Reload page to reflect AI status
+                                        setTimeout(() => window.location.reload(), 2000);
+                                    }
+                                }
+                            })
+                            .catch(err => {
+                                clearInterval(interval);
+                                statusText.innerText = "Erreur de connexion lors du téléchargement.";
+                            });
+                    }, 1000);
+                })
+                .catch(err => {
+                    statusText.innerText = "Erreur de démarrage de l'installation.";
+                });
         }
 
         function showGemmaMissingModal(sysInfo) {
