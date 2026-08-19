@@ -75,7 +75,7 @@ class OllamaClient:
         return "gemma-2-2b-it"
 
 
-    def generate_chat(self, messages, model="gemma-2-2b-it", temperature=0.7, timeout=60):
+    def chat(self, messages, model="gemma-2-2b-it", temperature=0.7, timeout=60):
         try:
             status = self.check_status()
             if status["status"] != "online":
