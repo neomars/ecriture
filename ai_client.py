@@ -14,7 +14,7 @@ class OllamaClient:
                 if cls._instance is None:
                     cls._instance = super(OllamaClient, cls).__new__(cls)
                     cls._instance._llm = None
-                    cls._instance.model_repo = "unsloth/gemma-2-2b-it-GGUF"
+                    cls._instance.model_repo = "bartowski/gemma-2-2b-it-GGUF"
                     cls._instance.model_filename = "gemma-2-2b-it-Q4_K_M.gguf"
         return cls._instance
 
