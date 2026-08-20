@@ -52,7 +52,7 @@ class OllamaClient:
             hf_hub_download(
                 repo_id=self.model_repo,
                 filename=self.model_filename,
-                local_files_only=False
+                local_files_only=True
             )
             return {"status": "online"}
         except Exception as e:

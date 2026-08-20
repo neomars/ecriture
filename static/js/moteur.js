@@ -162,8 +162,8 @@
 
         function startModelInstallation(modelName) {
             const modal = document.getElementById('gemma-installing-modal');
-            const progressBar = document.getElementById('gemma-install-progress-bar');
-            const statusText = document.getElementById('gemma-install-status-text');
+            const progressBar = document.getElementById('gemma-auto-install-progress-bar');
+            const statusText = document.getElementById('gemma-auto-install-status-text');
 
             if (modal) modal.classList.remove('hidden');
 
