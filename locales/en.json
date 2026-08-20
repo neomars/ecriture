@@ -182,5 +182,17 @@
     "error_empty_scene": "The current scene is empty. Add text to generate complications.",
     "gemma_simulation_title": "[AI Assistant (Gemma Simulation - Offline)]",
     "gemma_simulation_hello": "Hello! I am your writing assistant.",
-    "gemma_simulation_suggestion": "Here is a suggestion to continue: determine the main stakes of your current scene!"
+    "gemma_simulation_suggestion": "Here is a suggestion to continue: determine the main stakes of your current scene!",
+    "fallback_describe": "A rich and sensory description of '{text}': Subtle textures and fine details catch the ambient light, casting delicate shadows that evoke a deep sense of atmospheric presence and quiet contemplation.",
+    "fallback_rewrite_elegant": "Elegant version of '{text}': A polished expression, woven with sophisticated syntax and literary precision.",
+    "fallback_rewrite_dramatic": "Dramatic version of '{text}': Suddenly, a suffocating tension filled the room, matching the perilous stakes of this critical hour.",
+    "fallback_rewrite_poetic": "Poetic version of '{text}': Like starlight kissing the dark surface of a sleeping lake, the words shimmer with ethereal grace.",
+    "fallback_rewrite_humorous": "Humorous version of '{text}': Well, let's add a playful twist to '{text}'—with a dash of wit and a side of healthy sarcasm!",
+    "fallback_rewrite_action": "Action version of '{text}': High-octane response. Heart pounding. Every second counted. Move or die!",
+    "fallback_expand": "Expanded version of '{text}': Elaborating further on this moment, we unfold layers of quiet thoughts and sensory nuances, breathing full dimension into the atmosphere and pacing of the narrative.",
+    "fallback_relecture_style": "**Style & Prose Analysis (Offline Simulation):**\n\n1. **Vocabulary richness:** Your prose flow is excellent, but several common verbs (like *do*, *say*, *look*) could be replaced with more evocative synonyms (like *craft*, *declare*, *gaze*).\n2. **Pacing & Cadence:** The sentence lengths are well-balanced. Try shortening clauses during highly dramatic action beats to enhance momentum.\n3. **Style Suggestions:** Cut down on unnecessary adverbs (e.g., *walking slowly* can be *sauntering*).",
+    "fallback_relecture_coherence": "**Coherence Analysis (Offline Simulation):**\n\n1. **Action Consistency:** No narrative anachronisms or glaring contradictions detected in this scene.\n2. **Character Motivations:** Character decisions and physical actions align well with their established lore and traits.\n3. **Spatial & Temporal Logic:** The sequence of movements and descriptions of scenery maintain a solid sense of space.",
+    "fallback_chat_plot": "[Assistant IA (Simulation - Offline)]\nTo structure your plot, I suggest following the narrative arc:\n1. Initial Situation: Introduction of the protagonist and setting.\n2. Inciting Incident: A major disruption.\n3. Rising Action: Obstacles and character development.\n4. Climax: The point of maximum tension.\n5. Resolution: Resolution of the plot.",
+    "fallback_chat_character": "[Assistant IA (Simulation - Offline)]\nHere are some ideas to deepen a character:\n- What is their biggest secret?\n- What is their main motivation (deep desire vs. unconscious need)?\n- Add a physical flaw or unique habit to make them memorable.",
+    "fallback_chat_general": "[Assistant IA (Simulation - Offline)]\nHello! I am your writing assistant Écriture.\nThe local AI seems to be offline.\nHere is a suggestion to continue: determine the main stakes of your current scene!"
 }
