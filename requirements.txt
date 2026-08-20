@@ -25,3 +25,4 @@ lxml
 psutil
 llama-cpp-python
 huggingface-hub
+tqdm
