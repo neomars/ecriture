@@ -323,7 +323,7 @@
                     const data = await res.json();
                     chatMessages[loadingIndex] = { role: "assistant", content: data.message };
                 } else {
-                    chatMessages[loadingIndex] = { role: "assistant", content: "Error: Could not retrieve response from Ollama." };
+                    chatMessages[loadingIndex] = { role: "assistant", content: "Error: Could not retrieve response from Gemma." };
                 }
             } catch (err) {
                 chatMessages[loadingIndex] = { role: "assistant", content: "Error: Network connection failed." };
