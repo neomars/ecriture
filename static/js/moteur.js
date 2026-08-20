@@ -167,7 +167,7 @@
 
             if (modal) modal.classList.remove('hidden');
 
-            fetch('/api/ai/install_ollama', { method: 'POST' })
+            fetch('/api/ai/install_engine', { method: 'POST' })
                 .then(res => res.json())
                 .then(data => {
                     const interval = setInterval(() => {
@@ -292,7 +292,7 @@
                 if(actionsDiv) actionsDiv.classList.add('hidden');
                 if(progressDiv) progressDiv.classList.remove('hidden');
 
-                const response = await fetch('/api/ai/install_ollama', {
+                const response = await fetch('/api/ai/install_engine', {
                     method: 'POST'
                 });
 

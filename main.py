@@ -17,7 +17,7 @@ import json
 import urllib.request
 from flask import Flask, jsonify, request, send_file, render_template
 from project_manager import NovelProject
-from ai_client import OllamaClient
+from ai_client import AIClient
 
 def get_synonyms(word, lang="fr"):
     """Lookup synonyms from the WOLF synonyms table in lexique.db, utilizing lemma fallback."""
@@ -66,7 +66,7 @@ def get_synonyms(word, lang="fr"):
         return []
 
 app = Flask(__name__, template_folder='templates')
-ai_client = OllamaClient()
+ai_client = AIClient()
 
 PROJECTS_DIR = "projects"
 ACTIVE_CONFIG_FILE = "active_project.txt"
@@ -1069,8 +1069,8 @@ def _install_gemma_thread(lang="fr"):
         INSTALL_STATE["message"] = err_msg
 
 
-@app.route('/api/ai/install_ollama', methods=['POST'])
-def install_ollama():
+@app.route('/api/ai/install_engine', methods=['POST'])
+def install_engine():
     try:
         global INSTALL_STATE
         if INSTALL_STATE["status"] in ["installing_ollama", "installing_model"]:
@@ -1092,7 +1092,7 @@ def get_install_status():
 
 
 @app.route('/api/ai/models', methods=['GET'])
-def get_ollama_models():
+def get_ai_models():
     """Queries the local Ollama API to fetch installed models."""
     models = ai_client.get_models()
     if models:
