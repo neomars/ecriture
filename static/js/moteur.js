@@ -336,7 +336,17 @@
                         checkGemmaStatus();
                     }, 2000);
                 } else {
-                    statusText.innerText = data.message || 'Installation en cours...';
+                    let etaStr = '';
+                    if (data.eta !== undefined && data.eta !== null) {
+                        const mins = Math.floor(data.eta / 60);
+                        const secs = Math.floor(data.eta % 60);
+                        if (mins > 0) {
+                            etaStr = ` - Environ ${mins} min ${secs} sec restants`;
+                        } else {
+                            etaStr = ` - Environ ${secs} sec restantes`;
+                        }
+                    }
+                    statusText.innerText = (data.message || 'Installation en cours...') + ` (${data.progress}%)` + etaStr;
                     progressBar.style.width = data.progress + '%';
                 }
             } catch (e) {
