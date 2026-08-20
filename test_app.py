@@ -228,7 +228,7 @@ class TestEcritureWebApp(unittest.TestCase):
         self.assertIsInstance(data['models'], list)
 
     def test_ai_status_endpoint(self):
-        """Test that the /api/ai/status endpoint returns whether Ollama is installed/online."""
+        """Test that the /api/ai/status endpoint returns whether AI is installed/online."""
         response = self.client.get('/api/ai/status')
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data)
