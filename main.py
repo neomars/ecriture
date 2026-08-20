@@ -902,6 +902,7 @@ def ai_chat():
 @app.route('/api/ai/status', methods=['GET'])
 def get_ai_status():
     """Checks if Ollama is installed and running locally."""
+    ai_status = ai_client.check_status()
     models = ai_client.get_models()
 
     import shutil
@@ -922,7 +923,7 @@ def get_ai_status():
         "os": os_name
     }
 
-    if models:
+    if ai_status.get("status") == "online":
         return jsonify({
             "status": "online",
             "installed": True,
@@ -930,23 +931,13 @@ def get_ai_status():
             "sys_info": sys_info
         })
     else:
-        import urllib.request
-        try:
-            req = urllib.request.Request("http://localhost:11434/api/tags", method="GET")
-            with urllib.request.urlopen(req, timeout=1.5) as response:
-                return jsonify({
-                    "status": "online",
-                    "installed": True,
-                    "models": [],
-                    "sys_info": sys_info
-                })
-        except Exception:
-            return jsonify({
-                "status": "offline",
-                "installed": False,
-                "models": [],
-                "sys_info": sys_info
-            })
+        return jsonify({
+            "status": "offline",
+            "installed": False,
+            "error": ai_status.get("error", "Unknown error"),
+            "traceback": ai_status.get("traceback", ""),
+            "sys_info": sys_info
+        })
 
 
 CURRENT_VERSION = "1.0.0"
