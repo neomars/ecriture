@@ -998,7 +998,7 @@ INSTALL_STATE = {
 }
 
 
-def _install_ollama_thread(lang="fr"):
+def _install_gemma_thread(lang="fr"):
     global INSTALL_STATE
     import time
     from tqdm.auto import tqdm
@@ -1006,21 +1006,36 @@ def _install_ollama_thread(lang="fr"):
     def get_str(key):
         # Extremely basic fallback translation
         if lang == "en":
+            import json
             with open("locales/en.json", "r", encoding="utf-8") as f:
                 return json.load(f).get(key, key)
         else:
+            import json
             with open("locales/fr.json", "r", encoding="utf-8") as f:
                 return json.load(f).get(key, key)
 
     class CustomTqdm(tqdm):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
+            self._last_update_time = time.time()
 
         def update(self, n=1):
             super().update(n)
-            if self.total and self.total > 0:
-                percent = (self.n / self.total) * 100
-                INSTALL_STATE["progress"] = min(99, int(percent))
+            current_time = time.time()
+            if current_time - self._last_update_time > 1.0 or self.n == self.total:
+                self._last_update_time = current_time
+                if self.total and self.total > 0:
+                    percent = (self.n / self.total) * 100
+                    INSTALL_STATE["progress"] = min(99, int(percent))
+
+                    elapsed = current_time - self.start_t
+                    if elapsed > 0 and self.n > 0:
+                        speed = self.n / elapsed
+                        remaining_bytes = self.total - self.n
+                        eta_seconds = remaining_bytes / speed
+                        INSTALL_STATE["eta"] = int(eta_seconds)
+                    else:
+                        INSTALL_STATE["eta"] = None
 
     INSTALL_STATE["status"] = "installing_model"
     INSTALL_STATE["message"] = get_str("gemma_installing_model")
@@ -1063,7 +1078,7 @@ def install_ollama():
 
         import threading
         lang = "fr" # could parse from headers/cookies if needed, default to fr.
-        thread = threading.Thread(target=_install_ollama_thread, args=(lang,))
+        thread = threading.Thread(target=_install_gemma_thread, args=(lang,))
         thread.start()
 
         return jsonify({"status": "success", "message": "Installation started"})
