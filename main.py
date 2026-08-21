@@ -846,7 +846,7 @@ def handle_ai_tool():
     selected_model = payload.get("model", "llama3").strip()
     temperature = payload.get("temperature", 0.7)
 
-    # Call Ollama via unified Client
+    # Call Gemma via unified Client
     try:
         res = ai_client.generate_chat(messages, model=selected_model, temperature=temperature, timeout=15)
         return jsonify({
@@ -866,7 +866,7 @@ def handle_ai_tool():
 
 @app.route('/api/ai/chat', methods=['POST'])
 def ai_chat():
-    """Proxy or fallback endpoint for a local Ollama AI assistant."""
+    """Proxy or fallback endpoint for a local Gemma AI assistant."""
     payload = request.json or {}
     messages = payload.get("messages", [])
     selected_model = payload.get("model", "llama3").strip()
@@ -882,7 +882,7 @@ def ai_chat():
             # Insert at the beginning or as a system prompt
             messages.insert(0, {"role": "system", "content": system_msg})
 
-    # Call Ollama via unified client
+    # Call Gemma via unified client
     try:
         res = ai_client.generate_chat(messages, model=selected_model, temperature=temperature, timeout=15)
         return jsonify({
@@ -901,7 +901,7 @@ def ai_chat():
 
 @app.route('/api/ai/status', methods=['GET'])
 def get_ai_status():
-    """Checks if Ollama is installed and running locally."""
+    """Checks if Gemma is installed and running locally."""
     ai_status = ai_client.check_status()
     models = ai_client.get_models()
 
@@ -1042,19 +1042,38 @@ def _install_gemma_thread(lang="fr"):
     INSTALL_STATE["progress"] = 0
 
     try:
-        from huggingface_hub import hf_hub_download
-        import huggingface_hub.file_download as file_download
+        import urllib.request
+        import urllib.error
+        import os
+        import time
 
-        original_tqdm = file_download.tqdm
-        file_download.tqdm = CustomTqdm
+        url = "https://neomars.freeboxos.fr:3535/share/SXyfQB1empSwlfSU/gemma-2-2b-it-Q8_0.gguf"
+        model_dir = os.path.join(os.path.expanduser("~"), ".cache", "ecriture")
+        os.makedirs(model_dir, exist_ok=True)
+        model_path = os.path.join(model_dir, "gemma-2-2b-it-Q8_0.gguf")
 
-        try:
-            model_path = hf_hub_download(
-                repo_id="bartowski/gemma-2-2b-it-GGUF",
-                filename="gemma-2-2b-it-Q4_K_M.gguf"
-            )
-        finally:
-            file_download.tqdm = original_tqdm
+        # Set up a context to bypass potential ssl errors if required, but default to normal.
+        import ssl
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, context=ctx) as response, open(model_path, 'wb') as out_file:
+            total_size = int(response.info().get('Content-Length').strip())
+
+            t = CustomTqdm(total=total_size, unit='iB', unit_scale=True)
+            t.start_t = time.time()
+
+            chunk_size = 1024 * 1024 # 1MB chunks
+            while True:
+                chunk = response.read(chunk_size)
+                if not chunk:
+                    break
+                out_file.write(chunk)
+                t.update(len(chunk))
+
+            t.close()
 
         INSTALL_STATE["status"] = "done"
         INSTALL_STATE["message"] = get_str("gemma_install_success")
@@ -1073,7 +1092,7 @@ def _install_gemma_thread(lang="fr"):
 def install_engine():
     try:
         global INSTALL_STATE
-        if INSTALL_STATE["status"] in ["installing_ollama", "installing_model"]:
+        if INSTALL_STATE["status"] in ["installing_model"]:
             return jsonify({"status": "success", "message": "Installation déjà en cours"})
 
         import threading
@@ -1093,7 +1112,7 @@ def get_install_status():
 
 @app.route('/api/ai/models', methods=['GET'])
 def get_ai_models():
-    """Queries the local Ollama API to fetch installed models."""
+    """Queries the local Gemma API to fetch installed models."""
     models = ai_client.get_models()
     if models:
         return jsonify({
@@ -1166,7 +1185,7 @@ def api_relecture_ai():
         {"role": "user", "content": text}
     ]
 
-    # Call Ollama via unified client
+    # Call Gemma via unified client
     try:
         res = ai_client.generate_chat(messages, model=selected_model, temperature=temperature, timeout=25)
         return jsonify({
@@ -1405,7 +1424,7 @@ def import_document():
 
 @app.route('/api/ai/pull', methods=['GET'])
 def pull_ai_model():
-    """Pulls an Ollama model and streams progress via Server-Sent Events (SSE)."""
+    """Pulls an Gemma model and streams progress via Server-Sent Events (SSE)."""
     model_name = request.args.get('model', 'gemma4:latest')
 
     def generate():

@@ -14,8 +14,9 @@ class AIClient:
                 if cls._instance is None:
                     cls._instance = super(AIClient, cls).__new__(cls)
                     cls._instance._llm = None
-                    cls._instance.model_repo = "unsloth/gemma-2-2b-it-GGUF"
-                    cls._instance.model_filename = "gemma-2-2b-it-Q4_K_M.gguf"
+                    cls._instance.model_filename = "gemma-2-2b-it-Q8_0.gguf"
+                    cls._instance.model_dir = os.path.join(os.path.expanduser("~"), ".cache", "ecriture")
+                    cls._instance.model_path = os.path.join(cls._instance.model_dir, cls._instance.model_filename)
         return cls._instance
 
     def _load_model(self):
@@ -27,18 +28,15 @@ class AIClient:
                 return self._llm
 
             try:
-                from huggingface_hub import hf_hub_download
-                model_path = hf_hub_download(
-                    repo_id=self.model_repo,
-                    filename=self.model_filename,
-                    local_files_only=False
-                )
+                if not os.path.exists(self.model_path):
+                    raise Exception(f"Model file not found at {self.model_path}")
 
                 from llama_cpp import Llama
                 self._llm = Llama(
-                    model_path=model_path,
+                    model_path=self.model_path,
                     n_ctx=2048,
                     n_threads=4,
+                    n_gpu_layers=-1,
                     verbose=False
                 )
                 return self._llm
@@ -48,13 +46,10 @@ class AIClient:
 
     def check_status(self):
         try:
-            from huggingface_hub import hf_hub_download
-            hf_hub_download(
-                repo_id=self.model_repo,
-                filename=self.model_filename,
-                local_files_only=True
-            )
-            return {"status": "online"}
+            if os.path.exists(self.model_path):
+                return {"status": "online"}
+            else:
+                return {"status": "offline", "error": "Model file not found"}
         except Exception as e:
             return {"status": "offline", "error": str(e), "traceback": __import__('traceback').format_exc()}
 
@@ -75,8 +70,28 @@ class AIClient:
             if not llm:
                 raise Exception("Failed to load Llama engine.")
 
+            # Gemma 2 templates do not support the 'system' role natively in their chat_template.
+            # We must merge any 'system' messages into the first 'user' message, or change their role to 'user'.
+            formatted_messages = []
+            system_content = []
+
+            for msg in messages:
+                if msg.get("role") == "system":
+                    system_content.append(msg.get("content", ""))
+                else:
+                    if msg.get("role") == "user" and system_content:
+                        combined_content = "\n\n".join(system_content) + "\n\n" + msg.get("content", "")
+                        formatted_messages.append({"role": "user", "content": combined_content})
+                        system_content = []
+                    else:
+                        formatted_messages.append(msg)
+
+            # If there are trailing system messages without a user message (unlikely), append as user
+            if system_content:
+                formatted_messages.append({"role": "user", "content": "\n\n".join(system_content)})
+
             response = llm.create_chat_completion(
-                messages=messages,
+                messages=formatted_messages,
                 temperature=temperature,
                 max_tokens=512
             )
