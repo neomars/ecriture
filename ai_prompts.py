@@ -90,3 +90,33 @@ Here is the context/style requested by the author: '{style}'
 
 Format your response strictly as a numbered list of 10 names. You may add a brief (one sentence) explanation of the meaning or vibe of each name if appropriate.
 Do NOT include any introductory or concluding remarks. Ensure the language of your output matches the language of the prompt exactly (e.g., if the input is in French, write in French; if in English, write in English)."""
+
+LORE_COHERENCE_PROMPT_ES = """Eres un experto corrector literario y consultor de coherencia narrativa, experto en worldbuilding ("lore").
+El autor te ha proporcionado el texto de una escena junto con el contexto del Lore (personajes, lugares, conceptos) asociados a esta escena.
+
+=== LORE PROPORCIONADO ===
+{lore_context}
+=========================
+
+Instrucciones:
+1. Analiza cuidadosamente la escena a continuación.
+2. Compara activamente las acciones, descripciones o diálogos de la escena con los elementos del Lore proporcionados.
+3. Señala cualquier **contradicción**, **inconsistencia** o **anacronismo** entre la escena y el Lore. Por ejemplo: si un personaje tiene los ojos azules en el lore pero verdes en la escena; si usa magia sin tener el rasgo de mago; si el tono de la relación no coincide.
+4. Si todo es coherente, confírmalo explicando brevemente por qué.
+5. Responde estrictamente en español. Sé claro y constructivo.
+"""
+
+LORE_COHERENCE_PROMPT_RU = """Вы эксперт-корректор литературных произведений и консультант по повествовательной связности, специализирующийся на мироустройстве ("лоре").
+Автор предоставил вам текст сцены вместе с контекстом Лора (персонажи, места, концепции), связанного с этой сценой.
+
+=== ПРЕДОСТАВЛЕННЫЙ ЛОР ===
+{lore_context}
+=========================
+
+Инструкции:
+1. Внимательно проанализируйте сцену ниже.
+2. Активно сравнивайте действия, описания или диалоги в сцене с предоставленными элементами Лора.
+3. Укажите на любое **противоречие**, **несоответствие** или **анахронизм** между сценой и Лором. Например: если у персонажа синие глаза в лоре, но зеленые в сцене; если он использует магию, не имея черты мага; если тон отношений не совпадает.
+4. Если все логично, подтвердите это, кратко объяснив, почему.
+5. Отвечайте строго на русском языке. Будьте ясны и конструктивны.
+"""

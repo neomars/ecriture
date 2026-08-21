@@ -147,7 +147,7 @@
                     resultContainer.classList.remove('hidden');
                     document.getElementById('ai-preview-actions').classList.remove('hidden');
                 } else {
-                    alert("AI error: " + (data.error || "Failed to generate"));
+                    alert((translations["error_ai_context"] || "AI error: Failed to generate") + ": " + (data.error || ""));
                     closeAiPreview();
                 }
             } catch (err) {
@@ -213,11 +213,11 @@
             }
 
             if (!text || !text.trim()) {
-                feedbackEl.innerText = activeLang === 'fr' ? "Texte vide ou introuvable pour lancer l'analyse." : "Empty or missing text to analyze.";
+                feedbackEl.innerText = translations["error_empty_text_analysis"] || "Empty or missing text to analyze.";
                 return;
             }
 
-            feedbackEl.innerText = activeLang === 'fr' ? "Analyse en cours par l'IA... Veuillez patienter." : "AI analysis in progress... Please wait.";
+            feedbackEl.innerText = translations["ai_analysis_in_progress"] || "AI analysis in progress... Please wait.";
 
             try {
                 let loreContext = "";
@@ -244,10 +244,10 @@
                     const data = await response.json();
                     feedbackEl.innerText = data.feedback;
                 } else {
-                    feedbackEl.innerText = activeLang === 'fr' ? "Erreur : Impossible d'obtenir un retour de l'IA." : "Error: Could not retrieve feedback from AI.";
+                    feedbackEl.innerText = translations["error_ai_feedback"] || "Error: Could not retrieve feedback from AI.";
                 }
             } catch (err) {
-                feedbackEl.innerText = activeLang === 'fr' ? "Erreur de connexion réseau." : "Network connection error.";
+                feedbackEl.innerText = translations["error_network_connection"] || "Network connection error.";
             }
         }
 
@@ -325,10 +325,10 @@
                     const data = await res.json();
                     chatMessages[loadingIndex] = { role: "assistant", content: data.message };
                 } else {
-                    chatMessages[loadingIndex] = { role: "assistant", content: "Error: Could not retrieve response from Gemma." };
+                    chatMessages[loadingIndex] = { role: "assistant", content: translations["error_ai_chat"] || "Error: Could not retrieve response from AI." };
                 }
             } catch (err) {
-                chatMessages[loadingIndex] = { role: "assistant", content: "Error: Network connection failed." };
+                chatMessages[loadingIndex] = { role: "assistant", content: translations["error_network_connection"] || "Error: Network connection failed." };
             }
 
             renderChat();
@@ -339,13 +339,13 @@
             const editor = document.getElementById('editor-content');
             const text = editor ? editor.innerText : "";
             if (!text || !text.trim()) {
-                alert(activeLang === 'fr' ? "Le texte est vide." : "Text is empty.");
+                alert(translations["text_is_empty"] || "Text is empty.");
                 return;
             }
 
             const btn = document.querySelector('button[onclick="extractLoreFromScene()"]');
             const originalContent = btn.innerHTML;
-            btn.innerHTML = `⏳ Extraction...`;
+            btn.innerHTML = `⏳ ${translations["analyzing"] || "Analyzing and generating..."}`;
             btn.disabled = true;
 
             try {
@@ -400,15 +400,15 @@
 
                         triggerAutoSave();
                         renderTree();
-                        alert(activeLang === 'fr' ? `${newChars} personnage(s) extrait(s) et ajouté(s) avec succès !` : `${newChars} character(s) extracted and added successfully!`);
+                        alert(formatTranslation("chars_extracted_success", { count: newChars }) || `${newChars} character(s) extracted and added successfully!`);
                     } else {
-                        alert(activeLang === 'fr' ? "Aucun personnage détecté." : "No characters detected.");
+                        alert(translations["no_characters_detected"] || "No characters detected.");
                     }
                 } else {
-                    alert(activeLang === 'fr' ? "Erreur d'extraction." : "Extraction error.");
+                    alert(translations["extraction_error"] || "Extraction error.");
                 }
             } catch (err) {
-                alert(activeLang === 'fr' ? "Erreur réseau." : "Network error.");
+                alert(translations["network_error"] || "Network error.");
             } finally {
                 btn.innerHTML = originalContent;
                 btn.disabled = false;
@@ -579,7 +579,7 @@
             }
 
             const resultContainer = document.getElementById('complications-result');
-            resultContainer.innerText = activeLang === 'fr' ? "⏳ Analyse et génération en cours..." : "⏳ Analyzing and generating...";
+            resultContainer.innerText = `⏳ ${translations["analyzing"] || "Analyzing and generating..."}`;
             resultContainer.classList.remove('hidden');
 
             try {
@@ -603,11 +603,11 @@
                 if (response.ok) {
                     resultContainer.innerText = data.message;
                 } else {
-                    resultContainer.innerText = "Error: " + (data.error || "Failed to generate complications.");
+                    resultContainer.innerText = (translations["error_ai_complications"] || "Error: Failed to generate complications.") + (data.error ? " " + data.error : "");
                 }
             } catch (err) {
                 console.error("AI Complications error:", err);
-                resultContainer.innerText = "Error: Failed to connect to AI service.";
+                resultContainer.innerText = translations["error_ai_service_connect"] || "Error: Failed to connect to AI service.";
             }
         }
         window.generateComplications = generateComplications;
@@ -615,12 +615,12 @@
         async function generateNames() {
             const styleInput = document.getElementById('names-style-input').value.trim();
             if (!styleInput) {
-                alert(activeLang === 'fr' ? "Veuillez entrer un style ou des racines linguistiques." : "Please enter a style or linguistic roots.");
+                alert(translations["enter_style_alert"] || "Please enter a style or linguistic roots.");
                 return;
             }
 
             const resultContainer = document.getElementById('names-result');
-            resultContainer.innerText = activeLang === 'fr' ? "⏳ Génération en cours..." : "⏳ Generating...";
+            resultContainer.innerText = `⏳ ${translations["generating"] || "Generating..."}`;
             resultContainer.classList.remove('hidden');
 
             try {
@@ -642,11 +642,11 @@
                 if (response.ok) {
                     resultContainer.innerText = data.message;
                 } else {
-                    resultContainer.innerText = "Error: " + (data.error || "Failed to generate names.");
+                    resultContainer.innerText = (translations["error_ai_names"] || "Error: Failed to generate names.") + (data.error ? " " + data.error : "");
                 }
             } catch (err) {
                 console.error("AI Names error:", err);
-                resultContainer.innerText = "Error: Failed to connect to AI service.";
+                resultContainer.innerText = translations["error_ai_service_connect"] || "Error: Failed to connect to AI service.";
             }
         }
         window.generateNames = generateNames;

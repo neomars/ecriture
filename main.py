@@ -235,7 +235,7 @@ def get_scene_context(scene_id):
 
 # Ensure the active project data has a default language setting if not present
 if "lang" not in project.data["settings"]:
-    project.data["settings"]["lang"] = "fr"
+    project.data["settings"]["lang"] = "en"
 
 @app.route('/')
 def index():
@@ -828,7 +828,9 @@ def handle_ai_tool():
     else:
         return jsonify({"error": f"Unknown tool: {tool}"}), 400
 
-    lang_instruction = f"\n\nRespond strictly in this language: {'French' if lang == 'fr' else 'English'}."
+    mapping = {'fr': 'French', 'es': 'Spanish', 'ru': 'Russian'}
+    lang_name = mapping.get(lang, 'English')
+    lang_instruction = f"Respond strictly in this language: {lang_name}."
     system_prompt += lang_instruction
 
     # Prepend Lore context to the system prompt if enabled and context is found
@@ -879,7 +881,9 @@ def ai_chat():
     scene_id = payload.get("scene_id")
     lang = payload.get("lang", "fr")
 
-    lang_instruction = f"Respond strictly in this language: {'French' if lang == 'fr' else 'English'}."
+    mapping = {'fr': 'French', 'es': 'Spanish', 'ru': 'Russian'}
+    lang_name = mapping.get(lang, 'English')
+    lang_instruction = f"Respond strictly in this language: {lang_name}."
     system_msgs = [lang_instruction]
 
     # Prepend system message with lore context if enabled and context is found
@@ -888,6 +892,10 @@ def ai_chat():
         if lore_ctx:
             if lang == 'fr':
                 system_msgs.append(f"Voici des informations sur le contexte et le Lore de la scène en cours. Intègre et respecte ces éléments si nécessaire dans vos réponses :\n\n{lore_ctx}")
+            elif lang == 'es':
+                system_msgs.append(f"Aquí hay información sobre el contexto y la tradición de la escena actual. Integra y respeta estos elementos si es necesario en tus respuestas:\n\n{lore_ctx}")
+            elif lang == 'ru':
+                system_msgs.append(f"Здесь представлена информация о контексте и лоре текущей сцены. Интегрируйте и учитывайте эти элементы при необходимости в своих ответах:\n\n{lore_ctx}")
             else:
                 system_msgs.append(f"Here is information on the context and lore of the current scene. Integrate and respect these elements if necessary in your answers:\n\n{lore_ctx}")
 
@@ -1147,7 +1155,8 @@ def api_relecture_ai():
     lang = payload.get("lang", "fr").strip()
 
     if not text:
-        return jsonify({"feedback": "Texte vide" if lang == "fr" else "Empty text", "status": "empty"})
+        empty_msg = {"fr": "Texte vide", "es": "Texto vacío", "ru": "Текст пуст"}.get(lang, "Empty text")
+        return jsonify({"feedback": empty_msg, "status": "empty"})
 
     # Formulate prompt based on category and language
     if category == "style":
@@ -1158,6 +1167,22 @@ def api_relecture_ai():
                 "Suggère des améliorations précises de vocabulaire, de rythme des phrases, de style, "
                 "de fluidité et des reformulations d'échantillons de texte s'il y a lieu.\n"
                 "Réponds en français."
+            )
+        elif lang == "es":
+            system_prompt = (
+                "Eres un corrector profesional de novelas y editor literario de estilo y prosa.\n"
+                "Analiza el siguiente texto y proporciona comentarios constructivos detallados.\n"
+                "Sugiere mejoras precisas de vocabulario, ritmo de oraciones, estilo, "
+                "fluidez y reescrituras de muestra donde corresponda.\n"
+                "Responde en español."
+            )
+        elif lang == "ru":
+            system_prompt = (
+                "Вы профессиональный корректор романов и литературный редактор стиля и прозы.\n"
+                "Проанализируйте следующий текст и дайте подробные конструктивные отзывы.\n"
+                "Предложите точные улучшения словарного запаса, ритма предложений, стиля, "
+                "текучести и образцы перефразирования текста, где это применимо.\n"
+                "Отвечайте на русском языке."
             )
         else:
             system_prompt = (
@@ -1172,6 +1197,12 @@ def api_relecture_ai():
         if lang == "fr":
             from ai_prompts import LORE_COHERENCE_PROMPT_FR
             system_prompt = LORE_COHERENCE_PROMPT_FR.format(lore_context=lore_context)
+        elif lang == "es":
+            from ai_prompts import LORE_COHERENCE_PROMPT_ES
+            system_prompt = LORE_COHERENCE_PROMPT_ES.format(lore_context=lore_context)
+        elif lang == "ru":
+            from ai_prompts import LORE_COHERENCE_PROMPT_RU
+            system_prompt = LORE_COHERENCE_PROMPT_RU.format(lore_context=lore_context)
         else:
             from ai_prompts import LORE_COHERENCE_PROMPT_EN
             system_prompt = LORE_COHERENCE_PROMPT_EN.format(lore_context=lore_context)
@@ -1480,7 +1511,9 @@ def api_extract_characters():
 
     from ai_prompts import EXTRACT_LORE_PROMPT
 
-    lang_instruction = f"\n\nOutput keys and structural elements as defined, but translate the extracted content values strictly into: {'French' if lang == 'fr' else 'English'}."
+    mapping = {'fr': 'French', 'es': 'Spanish', 'ru': 'Russian'}
+    lang_name = mapping.get(lang, 'English')
+    lang_instruction = f"Respond strictly in this language: {lang_name}."
     messages = [
         {"role": "system", "content": EXTRACT_LORE_PROMPT + lang_instruction},
         {"role": "user", "content": text}

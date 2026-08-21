@@ -565,8 +565,10 @@
                     projectData.characters.forEach(c => ensureCharacterFields(c));
                 }
 
-                // Read language preference
-                activeLang = projectData.settings.lang || "fr";
+                // Read language preference, fallback to localStorage, then English
+                let storedLang = localStorage.getItem('app-lang');
+                activeLang = storedLang || projectData.settings.lang || "en";
+                projectData.settings.lang = activeLang;
                 document.getElementById('lang-select').value = activeLang;
 
                 // Load appropriate language translation file
@@ -2726,6 +2728,7 @@ function renderStatisticsDashboard() {
         // LANGUAGE CHANGE HANDLER
         async function changeLanguage(lang) {
             projectData.settings.lang = lang;
+            localStorage.setItem('app-lang', lang);
             await loadLocale(lang);
             renderTree();
             updateRightSidebar();
