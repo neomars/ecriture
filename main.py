@@ -803,6 +803,7 @@ def handle_ai_tool():
     text = payload.get("text", "").strip()
     inject_lore = payload.get("inject_lore_context", True)
     scene_id = payload.get("scene_id")
+    lang = payload.get("lang", "fr")
 
     if not text and tool not in ["names", "complications"]:
         return jsonify({"error": "No text selected"}), 400
@@ -826,6 +827,9 @@ def handle_ai_tool():
         system_prompt = NAMES_PROMPT.format(style=style)
     else:
         return jsonify({"error": f"Unknown tool: {tool}"}), 400
+
+    lang_instruction = f"\n\nRespond strictly in this language: {'French' if lang == 'fr' else 'English'}."
+    system_prompt += lang_instruction
 
     # Prepend Lore context to the system prompt if enabled and context is found
     if inject_lore and scene_id:
@@ -873,14 +877,21 @@ def ai_chat():
     temperature = payload.get("temperature", 0.7)
     inject_lore = payload.get("inject_lore_context", True)
     scene_id = payload.get("scene_id")
+    lang = payload.get("lang", "fr")
+
+    lang_instruction = f"Respond strictly in this language: {'French' if lang == 'fr' else 'English'}."
+    system_msgs = [lang_instruction]
 
     # Prepend system message with lore context if enabled and context is found
     if inject_lore and scene_id:
         lore_ctx = get_scene_context(scene_id)
         if lore_ctx:
-            system_msg = f"Voici des informations sur le contexte et le Lore de la scène en cours. Intègre et respecte ces éléments si nécessaire dans vos réponses :\n\n{lore_ctx}"
-            # Insert at the beginning or as a system prompt
-            messages.insert(0, {"role": "system", "content": system_msg})
+            if lang == 'fr':
+                system_msgs.append(f"Voici des informations sur le contexte et le Lore de la scène en cours. Intègre et respecte ces éléments si nécessaire dans vos réponses :\n\n{lore_ctx}")
+            else:
+                system_msgs.append(f"Here is information on the context and lore of the current scene. Integrate and respect these elements if necessary in your answers:\n\n{lore_ctx}")
+
+    messages.insert(0, {"role": "system", "content": "\n\n".join(system_msgs)})
 
     # Call Gemma via unified client
     try:
@@ -1462,14 +1473,16 @@ def api_extract_characters():
     text = payload.get("text", "").strip()
     selected_model = payload.get("model", "llama3").strip()
     temperature = payload.get("temperature", 0.1)  # Low temp for data extraction
+    lang = payload.get("lang", "fr")
 
     if not text:
         return jsonify({"status": "empty", "characters": []})
 
     from ai_prompts import EXTRACT_LORE_PROMPT
 
+    lang_instruction = f"\n\nOutput keys and structural elements as defined, but translate the extracted content values strictly into: {'French' if lang == 'fr' else 'English'}."
     messages = [
-        {"role": "system", "content": EXTRACT_LORE_PROMPT},
+        {"role": "system", "content": EXTRACT_LORE_PROMPT + lang_instruction},
         {"role": "user", "content": text}
     ]
 

@@ -70,25 +70,41 @@ class AIClient:
             if not llm:
                 raise Exception("Failed to load Llama engine.")
 
-            # Gemma 2 templates do not support the 'system' role natively in their chat_template.
-            # We must merge any 'system' messages into the first 'user' message, or change their role to 'user'.
+            # Gemma 2 templates require strictly alternating user/assistant messages, starting with user.
+            # We must merge any 'system' messages into the first 'user' message, drop leading assistant messages,
+            # and merge consecutive messages of the same role.
             formatted_messages = []
             system_content = []
 
             for msg in messages:
-                if msg.get("role") == "system":
-                    system_content.append(msg.get("content", ""))
-                else:
-                    if msg.get("role") == "user" and system_content:
-                        combined_content = "\n\n".join(system_content) + "\n\n" + msg.get("content", "")
-                        formatted_messages.append({"role": "user", "content": combined_content})
-                        system_content = []
-                    else:
-                        formatted_messages.append(msg)
+                role = msg.get("role")
+                content = msg.get("content", "")
 
-            # If there are trailing system messages without a user message (unlikely), append as user
+                if role == "system":
+                    system_content.append(content)
+                elif role == "user":
+                    if system_content:
+                        content = "\n\n".join(system_content) + "\n\n" + content
+                        system_content = []
+
+                    if not formatted_messages or formatted_messages[-1]["role"] == "assistant":
+                        formatted_messages.append({"role": "user", "content": content})
+                    else:
+                        formatted_messages[-1]["content"] += "\n\n" + content
+                elif role == "assistant":
+                    if formatted_messages and formatted_messages[-1]["role"] == "user":
+                        formatted_messages.append({"role": "assistant", "content": content})
+                    elif formatted_messages and formatted_messages[-1]["role"] == "assistant":
+                        formatted_messages[-1]["content"] += "\n\n" + content
+                    else:
+                        # Drop leading assistant messages to satisfy Gemma 2 format
+                        pass
+
             if system_content:
-                formatted_messages.append({"role": "user", "content": "\n\n".join(system_content)})
+                if not formatted_messages or formatted_messages[-1]["role"] == "assistant":
+                    formatted_messages.append({"role": "user", "content": "\n\n".join(system_content)})
+                else:
+                    formatted_messages[-1]["content"] += "\n\n" + "\n\n".join(system_content)
 
             response = llm.create_chat_completion(
                 messages=formatted_messages,
