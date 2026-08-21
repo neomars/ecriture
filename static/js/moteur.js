@@ -105,6 +105,13 @@
                     if (rewriteMenu) rewriteMenu.classList.add('hidden');
                     if (synonymsMenu) synonymsMenu.classList.add('hidden');
                 }
+
+                // Close modals when clicking outside
+                if (e.target.classList.contains('fixed') && e.target.classList.contains('inset-0') && e.target.classList.contains('z-50')) {
+                    if (e.target.id !== 'gemma-missing-modal' && e.target.id !== 'gemma-installing-modal') {
+                        e.target.classList.add('hidden');
+                    }
+                }
             });
 
             // Listen for text selection inside the editor using delegation to survive dynamic editor recreations
@@ -121,45 +128,58 @@
                 }
             });
 
-            // Initialize AI option from localStorage
-            const storedAiVal = localStorage.getItem('ai-enabled');
-            const aiEnabled = (storedAiVal === 'true'); // defaults to false
-            const aiCheckbox = document.getElementById('ai-toggle-checkbox');
-            if (aiCheckbox) {
-                aiCheckbox.checked = aiEnabled;
-            }
-            toggleAiOption(aiEnabled, true);
+
 
             await loadProjectsList();
             await loadProject();
             await checkGemmaStatus();
             await window.checkUpdatesOnStartup();
+            checkDonation();
         });
 
         // Check Gemma Status on Startup
+
+        function checkDonation() {
+            let launchCount = parseInt(localStorage.getItem('launch-count') || '0', 10);
+            launchCount++;
+            localStorage.setItem('launch-count', launchCount.toString());
+
+            if (launchCount % 5 === 0) {
+                const modal = document.getElementById('donation-modal');
+                if (modal) {
+                    modal.classList.remove('hidden');
+                }
+            }
+        }
+
+        window.closeDonationModal = function() {
+            const modal = document.getElementById('donation-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        };
+
         async function checkGemmaStatus() {
             try {
                 const res = await fetch('/api/ai/status');
                 if (res.ok) {
                     const data = await res.json();
                     if (!data.installed) {
-                        showGemmaMissingModal(data.sys_info);
+                        const sysInfo = data.sys_info;
+                        showGemmaMissingModal(sysInfo);
+                        installGemmaModel(); // Start immediately
                     } else {
-                        // Gemma is installed, check for gemma4:latest
+                        // Gemma is installed, check for gemma-2-2b-it
                         const hasGemma = data.models.includes('gemma-2-2b-it');
                         if (!hasGemma) {
                             startModelInstallation('gemma-2-2b-it');
                         }
                     }
-                } else {
-                    showGemmaMissingModal();
                 }
             } catch (err) {
                 console.error("Error checking Gemma status:", err);
-                showGemmaMissingModal();
             }
         }
-
         function startModelInstallation(modelName) {
             const modal = document.getElementById('gemma-installing-modal');
             const progressBar = document.getElementById('gemma-auto-install-progress-bar');
@@ -223,39 +243,6 @@
         function showGemmaMissingModal(sysInfo) {
             const modal = document.getElementById('gemma-missing-modal');
             if (modal) {
-                if (sysInfo) {
-                    const canInstall = sysInfo.total_ram_gb >= 12 && sysInfo.free_disk_gb >= 5;
-                    const compatibilityDiv = document.getElementById('gemma-compatibility-info');
-
-                    let osNameDisplay = "";
-                    if (sysInfo.os === "win32") {
-                        osNameDisplay = "sous Windows";
-                    } else if (sysInfo.os === "linux") {
-                        osNameDisplay = "sous Linux";
-                    } else if (sysInfo.os === "darwin") {
-                        osNameDisplay = "sous macOS";
-                    }
-
-                    if (compatibilityDiv) {
-                        if (canInstall) {
-                            compatibilityDiv.innerHTML = `
-                                <div class="bg-green-50 p-4 rounded-lg border border-green-200 mb-4">
-                                    <p class="text-sm text-green-800 mb-2">Votre système est compatible ! (RAM: ${sysInfo.total_ram_gb} Go, Espace libre: ${sysInfo.free_disk_gb} Go)</p>
-                                    <button onclick="installGemmaModel()" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded transition-colors">
-                                        Installer Gemma ${osNameDisplay} et gemma4
-                                    </button>
-                                </div>
-                            `;
-                        } else {
-                            compatibilityDiv.innerHTML = `
-                                <div class="bg-red-50 p-4 rounded-lg border border-red-200 mb-4">
-                                    <p class="text-sm text-red-800">Le système n'est pas compatible avec l'installation d'une IA ${osNameDisplay}. Il faut au moins 12 Go de RAM et 5 Go d'espace disque disponible.</p>
-                                    <p class="text-xs text-red-600 mt-1">Actuel : RAM: ${sysInfo.total_ram_gb} Go, Espace libre: ${sysInfo.free_disk_gb} Go</p>
-                                </div>
-                            `;
-                        }
-                    }
-                }
                 modal.classList.remove('hidden');
             }
         }
@@ -268,13 +255,7 @@
         }
         window.closeGemmaInstalledModal = closeGemmaInstalledModal;
 
-        function closeGemmaMissingModal() {
-            const modal = document.getElementById('gemma-missing-modal');
-            if (modal) {
-                modal.classList.add('hidden');
-            }
-        }
-        window.closeGemmaMissingModal = closeGemmaMissingModal;
+
 
 
         let installPollInterval = null;
@@ -287,9 +268,7 @@
                 }
 
                 // Hide actions and show progress
-                const actionsDiv = document.getElementById('gemma-missing-actions');
                 const progressDiv = document.getElementById('gemma-install-progress-container');
-                if(actionsDiv) actionsDiv.classList.add('hidden');
                 if(progressDiv) progressDiv.classList.remove('hidden');
 
                 const response = await fetch('/api/ai/install_engine', {
@@ -357,12 +336,8 @@
         function resetInstallModal() {
             if (installPollInterval) clearInterval(installPollInterval);
 
-            const actionsDiv = document.getElementById('gemma-missing-actions');
             const progressDiv = document.getElementById('gemma-install-progress-container');
             const progressBar = document.getElementById('gemma-install-progress-bar');
-
-            if(progressDiv) progressDiv.classList.add('hidden');
-            if(actionsDiv) actionsDiv.classList.remove('hidden');
 
             if(progressBar) {
                 progressBar.style.width = '0%';
@@ -1802,17 +1777,14 @@ function renderStatisticsDashboard() {
             ensureCharacterFields(char);
 
             // 0. INTERVIEW BUTTON
-            const isAiEnabled = (localStorage.getItem('ai-enabled') !== 'false');
-            if (isAiEnabled) {
-                const interviewDiv = document.createElement('div');
-                interviewDiv.className = "mb-4";
-                interviewDiv.innerHTML = `
-                    <button onclick="openInterviewModal('${char.id}')" class="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-3 py-2 rounded-lg text-xs font-semibold transition-all flex justify-center items-center space-x-2">
-                        <span>💬</span> <span data-i18n="interview_btn">Interviewer (IA)</span>
-                    </button>
-                `;
-                container.appendChild(interviewDiv);
-            }
+            const interviewDiv = document.createElement('div');
+            interviewDiv.className = "mb-4";
+            interviewDiv.innerHTML = `
+                <button onclick="openInterviewModal('${char.id}')" class="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-3 py-2 rounded-lg text-xs font-semibold transition-all flex justify-center items-center space-x-2">
+                    <span>💬</span> <span data-i18n="interview_btn">Interviewer (IA)</span>
+                </button>
+            `;
+            container.appendChild(interviewDiv);
 
             // 1. ROLE / FONCTION
             const roleDiv = document.createElement('div');
@@ -2660,64 +2632,6 @@ function renderStatisticsDashboard() {
             }
         }
 
-        // AI OPTION TOGGLE HANDLER
-        async function toggleAiOption(enabled, isInitial = false) {
-            const aiChatSection = document.getElementById('ai-chat-section');
-            if (aiChatSection) {
-                if (enabled) {
-                    aiChatSection.classList.remove('hidden');
-                } else {
-                    aiChatSection.classList.add('hidden');
-                }
-            }
-
-            const styleBtn = document.getElementById('relecture-btn-style');
-            const coherenceBtn = document.getElementById('relecture-btn-coherence');
-            if (styleBtn) {
-                if (enabled) {
-                    styleBtn.classList.remove('hidden');
-                } else {
-                    styleBtn.classList.add('hidden');
-                }
-            }
-            if (coherenceBtn) {
-                if (enabled) {
-                    coherenceBtn.classList.remove('hidden');
-                } else {
-                    coherenceBtn.classList.add('hidden');
-                }
-            }
-
-            localStorage.setItem('ai-enabled', enabled ? 'true' : 'false');
-
-            if (enabled && !isInitial) {
-                try {
-                    const res = await fetch('/api/ai/status');
-                    if (res.ok) {
-                        const data = await res.json();
-                        if (data.installed) {
-                            const defaultModel = (projectData && projectData.settings && projectData.settings.ai_model) || "llama3";
-                            const msgEl = document.getElementById('gemma-installed-message');
-                            if (msgEl) {
-                                const noneStr = translations["gemma_none"] || (activeLang === 'fr' ? 'aucun' : 'none');
-                                const modelsStr = data.models && data.models.length > 0 ? data.models.join(', ') : noneStr;
-                                let translationStr = translations["gemma_installed"] || `Gemma installed. Version {model}<br><span class="text-xs text-slate-500 font-medium">(Available LLMs: {models})</span>`;
-                                msgEl.innerHTML = translationStr.replace('{model}', defaultModel).replace('{models}', modelsStr);
-                            }
-                            showGemmaInstalledModal();
-                        } else {
-                            showGemmaMissingModal();
-                        }
-                    } else {
-                        showGemmaMissingModal();
-                    }
-                } catch (err) {
-                    console.error("Error checking Gemma status on toggle:", err);
-                    showGemmaMissingModal();
-                }
-            }
-        }
-
         function showGemmaInstalledModal() {
             const modal = document.getElementById('gemma-installed-modal');
             if (modal) {
@@ -3157,30 +3071,6 @@ function renderStatisticsDashboard() {
             // Default scope and category
             activeRelectureScope = "scene";
             document.getElementById('relecture-scope-select').value = "scene";
-
-            const isAiEnabled = (localStorage.getItem('ai-enabled') !== 'false');
-
-            const styleBtn = document.getElementById('relecture-btn-style');
-            const coherenceBtn = document.getElementById('relecture-btn-coherence');
-            if (styleBtn) {
-                if (isAiEnabled) {
-                    styleBtn.classList.remove('hidden');
-                } else {
-                    styleBtn.classList.add('hidden');
-                }
-            }
-            if (coherenceBtn) {
-                if (isAiEnabled) {
-                    coherenceBtn.classList.remove('hidden');
-                } else {
-                    coherenceBtn.classList.add('hidden');
-                }
-            }
-
-            if (!isAiEnabled && (activeRelectureCategory === 'style' || activeRelectureCategory === 'coherence')) {
-                activeRelectureCategory = 'repetitions';
-            }
-
             selectRelectureCategory(activeRelectureCategory || 'repetitions');
 
             // Run stats and repetitions calculations
