@@ -242,21 +242,6 @@
                 });
         }
 
-        function showGemmaMissingModal(sysInfo) {
-            const modal = document.getElementById('gemma-missing-modal');
-            if (modal) {
-                if (sysInfo) {
-                    const canInstall = sysInfo.total_ram_gb >= 12 && sysInfo.free_disk_gb >= 5;
-                    const compatibilityDiv = document.getElementById('gemma-compatibility-info');
-
-                    let osNameDisplay = "";
-                    if (sysInfo.os === "win32") {
-                        osNameDisplay = "sous Windows";
-                    } else if (sysInfo.os === "linux") {
-                        osNameDisplay = "sous Linux";
-                    } else if (sysInfo.os === "darwin") {
-                        osNameDisplay = "sous macOS";
-                    }
 
                     if (compatibilityDiv) {
                         if (canInstall) {
