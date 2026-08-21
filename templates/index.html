@@ -64,14 +64,6 @@
         </div>
 
         <div class="flex items-center space-x-4">
-            <!-- AI Optional Toggle -->
-            <div class="flex items-center space-x-2 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1">
-                <span class="text-sm font-medium text-slate-600" data-i18n="toggle_ai">Activer l'IA</span>
-                <label class="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" id="ai-toggle-checkbox" onchange="toggleAiOption(this.checked)" class="sr-only peer">
-                    <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
-                </label>
-            </div>
 
             <!-- Language Selector -->
             <div class="flex items-center space-x-2">
@@ -863,53 +855,6 @@
             </div>
 
             <button onclick="closeAboutModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-semibold shadow-sm transition-all w-full" data-i18n="cancel">Fermer</button>
-        </div>
-    </div>
-
-    <!-- MODAL: GEMMA MISSING -->
-    <div id="gemma-missing-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50">
-        <div class="bg-white w-[500px] max-w-lg rounded-xl shadow-xl p-6 border border-slate-200">
-            <div class="text-center mb-4">
-                <span class="text-5xl mb-2 block">🦙</span>
-                <h3 class="text-xl font-bold text-slate-800" data-i18n="gemma_missing_title">Intégration de Gemma — IA d'écriture locale</h3>
-            </div>
-
-            <p class="text-sm text-slate-600 mb-4 leading-relaxed" data-i18n="gemma_missing_intro">
-                Le modèle d'IA local Gemma n'a pas été détecté sur votre système. L'IA locale est une fonctionnalité clé pour démultiplier vos capacités d'écriture avec Écriture :
-            </p>
-
-            <ul class="space-y-3 mb-6 text-sm text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-lg border border-slate-100">
-                <li data-i18n="gemma_benefit_1">✨ <strong>Génération et Enrichissement :</strong> Décrivez, réécrivez dans différents styles ou étendez vos scènes instantanément depuis votre sélection.</li>
-                <li data-i18n="gemma_benefit_2">🔍 <strong>Atelier de Relecture & Correction :</strong> Bénéficiez d'analyses approfondies de style, de prose et de cohérence narrative, 100% en local et de manière totalement confidentielle.</li>
-                <li data-i18n="gemma_benefit_3">💬 <strong>Assistant IA contextuel :</strong> Chattez avec un assistant d'écriture intelligent qui comprend vos personnages et vos notes pour planifier votre roman.</li>
-            </ul>
-
-            <div id="gemma-compatibility-info"></div>
-
-
-            <div id="gemma-install-progress-container" class="hidden mt-4 mb-4">
-                <div class="flex items-center justify-center mb-2">
-                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    <span id="gemma-install-status-text" class="text-sm font-medium text-slate-700">Préparation...</span>
-                </div>
-                <div class="w-full bg-slate-200 rounded-full h-2.5 dark:bg-slate-700">
-                    <div id="gemma-install-progress-bar" class="bg-indigo-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
-                </div>
-            </div>
-
-            <div id="gemma-missing-actions" class="text-center">
-
-                <p class="text-xs text-slate-500 mb-3" class="hidden"></p>
-                <a href="#" class="hidden" target="_blank" class="inline-flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg text-sm font-semibold shadow-md transition-all w-full mb-3 gap-2">
-                    <span>📥</span>
-                    <span data-i18n="gemma_missing_download_btn">Continuer sans IA</span>
-                </a>
-                <button onclick="closeGemmaMissingModal()" class="text-slate-500 hover:text-slate-700 text-xs font-semibold py-1.5 transition-colors" data-i18n="gemma_missing_close">Continuer sans IA</button>
-            </div>
-            </div>
         </div>
     </div>
 
