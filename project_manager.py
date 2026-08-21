@@ -19,7 +19,8 @@ class NovelProject:
                 "daily_goal": 500,
                 "overall_goal": 50000,
                 "overall_written": 0,
-                "daily_written": 0
+                "daily_written": 0,
+                "lang": "en"
             },
             "manuscript": [
                 {
