@@ -69,8 +69,28 @@ class AIClient:
             if not llm:
                 raise Exception("Failed to load Llama engine.")
 
+            # Gemma 2 templates do not support the 'system' role natively in their chat_template.
+            # We must merge any 'system' messages into the first 'user' message, or change their role to 'user'.
+            formatted_messages = []
+            system_content = []
+
+            for msg in messages:
+                if msg.get("role") == "system":
+                    system_content.append(msg.get("content", ""))
+                else:
+                    if msg.get("role") == "user" and system_content:
+                        combined_content = "\n\n".join(system_content) + "\n\n" + msg.get("content", "")
+                        formatted_messages.append({"role": "user", "content": combined_content})
+                        system_content = []
+                    else:
+                        formatted_messages.append(msg)
+
+            # If there are trailing system messages without a user message (unlikely), append as user
+            if system_content:
+                formatted_messages.append({"role": "user", "content": "\n\n".join(system_content)})
+
             response = llm.create_chat_completion(
-                messages=messages,
+                messages=formatted_messages,
                 temperature=temperature,
                 max_tokens=512
             )

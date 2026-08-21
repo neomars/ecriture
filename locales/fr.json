@@ -186,5 +186,13 @@
     "fallback_relecture_coherence": "**Analyse de Cohérence (Simulation hors ligne) :**\n\n1. **Cohérence des actions :** Aucun anachronisme ou contradiction majeure n'a été détecté dans le déroulement de la scène.\n2. **Comportement des personnages :** Les réactions psychologiques des personnages sont plausibles et alignées avec le lore et les traits définis dans leurs fiches.\n3. **Logique spatio-temporelle :** Les déplacements des protagonistes dans le décor restent fluides et logiques.",
     "fallback_chat_plot": "[Assistant IA (Simulation - Hors ligne)]\nPour structurer votre intrigue, je vous suggère de suivre le schéma narratif :\n1. Situation initiale : Présentation du protagoniste et du cadre.\n2. Élément déclencheur : Un bouleversement majeur.\n3. Péripéties : Obstacles et évolution des personnages.\n4. Climax : Le point de tension maximale.\n5. Dénouement : Résolution de l'intrigue.",
     "fallback_chat_character": "[Assistant IA (Simulation - Hors ligne)]\nVoici quelques idées pour approfondir un personnage :\n- Quel est son plus grand secret ?\n- Quelle est sa motivation principale (désir profond vs. besoin inconscient) ?\n- Ajoutez un défaut physique ou une habitude unique pour le rendre mémorable.",
-    "fallback_chat_general": "[Assistant IA (Simulation - Hors ligne)]\nBonjour ! Je suis votre assistant d'écriture Écriture.\nL'IA locale semble être hors ligne.\nVoici une suggestion pour continuer : déterminez l'enjeu principal de votre scène actuelle !"
+    "fallback_chat_general": "[Assistant IA (Simulation - Hors ligne)]\nBonjour ! Je suis votre assistant d'écriture Écriture.\nL'IA locale semble être hors ligne.\nVoici une suggestion pour continuer : déterminez l'enjeu principal de votre scène actuelle !",
+    "gemma_missing_title": "Intégration de Gemma — IA d'écriture locale",
+    "gemma_missing_intro": "Gemma n'a pas été détecté en cours d'exécution sur votre système. L'IA locale est une fonctionnalité clé pour démultiplier vos capacités d'écriture avec Écriture :",
+    "gemma_missing_download_prompt": "Vous pouvez aussi l'installer manuellement :",
+    "gemma_missing_download_btn": "Télécharger Gemma",
+    "gemma_missing_close": "Continuer sans IA",
+    "gemma_benefit_1": "✨ <strong>Génération et Enrichissement :</strong> Décrivez, réécrivez dans différents styles ou étendez vos scènes instantanément depuis votre sélection.",
+    "gemma_benefit_2": "🔍 <strong>Atelier de Relecture & Correction :</strong> Bénéficiez d'analyses approfondies de style, de prose et de cohérence narrative, 100% en local et de manière totalement confidentielle.",
+    "gemma_benefit_3": "💬 <strong>Assistant IA contextuel :</strong> Chattez avec un assistant d'écriture intelligent qui comprend vos personnages et vos notes pour planifier votre roman."
 }
