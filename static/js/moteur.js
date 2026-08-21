@@ -108,7 +108,9 @@
 
                 // Close modals when clicking outside
                 if (e.target.classList.contains('fixed') && e.target.classList.contains('inset-0') && e.target.classList.contains('z-50')) {
-                    e.target.classList.add('hidden');
+                    if (e.target.id !== 'gemma-missing-modal' && e.target.id !== 'gemma-installing-modal') {
+                        e.target.classList.add('hidden');
+                    }
                 }
             });
 
@@ -132,9 +134,31 @@
             await loadProject();
             await checkGemmaStatus();
             await window.checkUpdatesOnStartup();
+            checkDonation();
         });
 
         // Check Gemma Status on Startup
+
+        function checkDonation() {
+            let launchCount = parseInt(localStorage.getItem('launch-count') || '0', 10);
+            launchCount++;
+            localStorage.setItem('launch-count', launchCount.toString());
+
+            if (launchCount % 5 === 0) {
+                const modal = document.getElementById('donation-modal');
+                if (modal) {
+                    modal.classList.remove('hidden');
+                }
+            }
+        }
+
+        window.closeDonationModal = function() {
+            const modal = document.getElementById('donation-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        };
+
         async function checkGemmaStatus() {
             try {
                 const res = await fetch('/api/ai/status');
@@ -143,25 +167,8 @@
                     if (!data.installed) {
                         const sysInfo = data.sys_info;
                         if (sysInfo && sysInfo.total_ram_gb >= 12 && sysInfo.free_disk_gb >= 5) {
-                            // Automatically start engine installation when missing
-                            fetch('/api/ai/install_engine', { method: 'POST' })
-                                .then(res => {
-                                    if(res.ok) {
-                                        // Wait for engine to finish, then install model
-                                        let engineInterval = setInterval(() => {
-                                            fetch('/api/ai/install_status')
-                                                .then(r => r.json())
-                                                .then(statusData => {
-                                                    if (statusData.status === 'done') {
-                                                        clearInterval(engineInterval);
-                                                        startModelInstallation('gemma-2-2b-it');
-                                                    } else if (statusData.status === 'error') {
-                                                        clearInterval(engineInterval);
-                                                    }
-                                                }).catch(() => clearInterval(engineInterval));
-                                        }, 2000);
-                                    }
-                                });
+                            showGemmaMissingModal(sysInfo);
+                            installGemmaModel(); // Start immediately
                         }
                     } else {
                         // Gemma is installed, check for gemma-2-2b-it
@@ -236,6 +243,26 @@
         }
 
 
+                    if (compatibilityDiv) {
+                        if (canInstall) {
+                            compatibilityDiv.innerHTML = `
+                                <div class="bg-green-50 p-4 rounded-lg border border-green-200 mb-4">
+                                    <p class="text-sm text-green-800 mb-2">Votre système est compatible ! (RAM: ${sysInfo.total_ram_gb} Go, Espace libre: ${sysInfo.free_disk_gb} Go)</p>
+                                </div>
+                            `;
+                        } else {
+                            compatibilityDiv.innerHTML = `
+                                <div class="bg-red-50 p-4 rounded-lg border border-red-200 mb-4">
+                                    <p class="text-sm text-red-800">Le système n'est pas compatible avec l'installation d'une IA ${osNameDisplay}. Il faut au moins 12 Go de RAM et 5 Go d'espace disque disponible.</p>
+                                    <p class="text-xs text-red-600 mt-1">Actuel : RAM: ${sysInfo.total_ram_gb} Go, Espace libre: ${sysInfo.free_disk_gb} Go</p>
+                                </div>
+                            `;
+                        }
+                    }
+                }
+                modal.classList.remove('hidden');
+            }
+        }
 
         function closeGemmaInstalledModal() {
             const modal = document.getElementById('gemma-installed-modal');
@@ -244,6 +271,101 @@
             }
         }
         window.closeGemmaInstalledModal = closeGemmaInstalledModal;
+
+
+
+
+        let installPollInterval = null;
+
+        window.installGemmaModel = async function() {
+            try {
+                const btn = document.querySelector('button[onclick="installGemmaModel()"]');
+                if(btn) {
+                    btn.disabled = true;
+                }
+
+                // Hide actions and show progress
+                const progressDiv = document.getElementById('gemma-install-progress-container');
+                if(progressDiv) progressDiv.classList.remove('hidden');
+
+                const response = await fetch('/api/ai/install_engine', {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    // Start polling
+                    installPollInterval = setInterval(pollInstallStatus, 2000);
+                } else {
+                    alert('Erreur lors de la tentative d\'installation.');
+                    resetInstallModal();
+                }
+            } catch (e) {
+                console.error("Error installing Gemma:", e);
+                alert('Erreur de connexion.');
+                resetInstallModal();
+            }
+        }
+
+        async function pollInstallStatus() {
+            try {
+                const response = await fetch('/api/ai/install_status');
+                const data = await response.json();
+
+                const statusText = document.getElementById('gemma-install-status-text');
+                const progressBar = document.getElementById('gemma-install-progress-bar');
+
+                if(!statusText || !progressBar) return;
+
+                if (data.status === 'error') {
+                    clearInterval(installPollInterval);
+                    statusText.innerText = data.message || 'Erreur lors de l\'installation.';
+                    progressBar.classList.replace('bg-indigo-600', 'bg-red-600');
+                    setTimeout(resetInstallModal, 5000);
+                } else if (data.status === 'done') {
+                    clearInterval(installPollInterval);
+                    statusText.innerText = 'Terminé ! Redémarrage...';
+                    progressBar.style.width = '100%';
+                    progressBar.classList.replace('bg-indigo-600', 'bg-green-600');
+
+                    setTimeout(() => {
+                        document.getElementById('gemma-missing-modal').classList.add('hidden');
+                        checkGemmaStatus();
+                    }, 2000);
+                } else {
+                    let etaStr = '';
+                    if (data.eta !== undefined && data.eta !== null) {
+                        const mins = Math.floor(data.eta / 60);
+                        const secs = Math.floor(data.eta % 60);
+                        if (mins > 0) {
+                            etaStr = ` - Environ ${mins} min ${secs} sec restants`;
+                        } else {
+                            etaStr = ` - Environ ${secs} sec restantes`;
+                        }
+                    }
+                    statusText.innerText = (data.message || 'Installation en cours...') + ` (${data.progress}%)` + etaStr;
+                    progressBar.style.width = data.progress + '%';
+                }
+            } catch (e) {
+                console.error("Error polling install status:", e);
+            }
+        }
+
+        function resetInstallModal() {
+            if (installPollInterval) clearInterval(installPollInterval);
+
+            const progressDiv = document.getElementById('gemma-install-progress-container');
+            const progressBar = document.getElementById('gemma-install-progress-bar');
+
+            if(progressBar) {
+                progressBar.style.width = '0%';
+                progressBar.classList.remove('bg-red-600', 'bg-green-600');
+                progressBar.classList.add('bg-indigo-600');
+            }
+
+            const btn = document.querySelector('button[onclick="installGemmaModel()"]');
+            if(btn) btn.disabled = false;
+        }
+
 
         async function loadProjectsList() {
             try {

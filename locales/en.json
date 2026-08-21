@@ -212,5 +212,8 @@
     "error_ai_names": "Error: Failed to generate names.",
     "error_ai_service_connect": "Error: Failed to connect to AI service.",
     "error_empty_text_analysis": "Empty or missing text to analyze.",
-    "ai_analysis_in_progress": "AI analysis in progress... Please wait."
+    "ai_analysis_in_progress": "AI analysis in progress... Please wait.",
+    "donation_title": "Support Ecriture",
+    "donation_text": "If you enjoy using this application and want to support its development, please consider making a donation. It helps keep the project alive!",
+    "donation_btn": "Buy me a coffee"
 }
