@@ -133,7 +133,8 @@
                         temperature: (projectData.settings.ai_temperature !== undefined) ? projectData.settings.ai_temperature : 0.7,
                         model: projectData.settings.ai_model || "llama3",
                         inject_lore_context: injectLore,
-                        scene_id: sceneId
+                        scene_id: sceneId,
+                        lang: activeLang
                     })
                 });
 
@@ -315,7 +316,8 @@
                         temperature: (projectData.settings.ai_temperature !== undefined) ? projectData.settings.ai_temperature : 0.7,
                         model: projectData.settings.ai_model || "llama3",
                         inject_lore_context: injectLore,
-                        scene_id: sceneId
+                        scene_id: sceneId,
+                        lang: activeLang
                     })
                 });
 
@@ -353,7 +355,8 @@
                     body: JSON.stringify({
                         text: text,
                         temperature: 0.1,
-                        model: projectData.settings.ai_model || "llama3"
+                        model: projectData.settings.ai_model || "llama3",
+                        lang: activeLang
                     })
                 });
 
@@ -494,7 +497,8 @@
                         messages: interviewMessages.slice(0, loadingIdx),
                         temperature: 0.8,
                         model: projectData.settings.ai_model || "llama3",
-                        inject_lore_context: false // We already injected it in system prompt
+                        inject_lore_context: false, // We already injected it in system prompt
+                        lang: activeLang
                     })
                 });
 
@@ -590,7 +594,8 @@
                         temperature: (projectData && projectData.settings && projectData.settings.ai_temperature !== undefined) ? projectData.settings.ai_temperature : 0.7,
                         model: (projectData && projectData.settings) ? projectData.settings.ai_model : "llama3",
                         inject_lore_context: injectLore,
-                        scene_id: sceneId
+                        scene_id: sceneId,
+                        lang: activeLang
                     })
                 });
 
@@ -628,7 +633,8 @@
                         text: "", // Text is not needed for names generation
                         temperature: (projectData && projectData.settings && projectData.settings.ai_temperature !== undefined) ? projectData.settings.ai_temperature : 0.7,
                         model: (projectData && projectData.settings) ? projectData.settings.ai_model : "llama3",
-                        inject_lore_context: false
+                        inject_lore_context: false,
+                        lang: activeLang
                     })
                 });
 
