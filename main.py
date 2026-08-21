@@ -386,7 +386,7 @@ def delete_project():
 @app.route('/api/locale/<lang>', methods=['GET'])
 def get_locale(lang):
     """Loads and returns external translation files."""
-    if lang not in ["en", "fr"]:
+    if lang not in ["en", "fr", "es", "ru"]:
         lang = "en"
 
     locale_path = os.path.join("locales", f"{lang}.json")
@@ -1015,15 +1015,15 @@ def _install_gemma_thread(lang="fr"):
     from tqdm.auto import tqdm
 
     def get_str(key):
+        import json
+        import os
         # Extremely basic fallback translation
-        if lang == "en":
-            import json
-            with open("locales/en.json", "r", encoding="utf-8") as f:
-                return json.load(f).get(key, key)
-        else:
-            import json
-            with open("locales/fr.json", "r", encoding="utf-8") as f:
-                return json.load(f).get(key, key)
+        filepath = f"locales/{lang}.json"
+        if not os.path.exists(filepath):
+            filepath = "locales/fr.json"
+
+        with open(filepath, "r", encoding="utf-8") as f:
+            return json.load(f).get(key, key)
 
     class CustomTqdm(tqdm):
         def __init__(self, *args, **kwargs):
