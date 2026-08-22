@@ -10,6 +10,7 @@ on:
   workflow_dispatch:
 
 jobs:
+  # ÉTAPE 1 : Compilation sur les 3 OS en parallèle
   build:
     name: Build sur ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
@@ -25,9 +26,9 @@ jobs:
 
           # Configuration pour macOS
           - os: macos-latest
-            artifact_name: ecriture-macos
+            artifact_name: ecriture-macos.dmg
             pyinstaller_cmd: pyinstaller --noconfirm --onefile --windowed --add-data "static:static" --add-data "templates:templates" --add-data "locales:locales" --add-data "images:images" --add-data "projects:projects" --name ecriture main.py
-            bin_path: dist/ecriture
+            bin_path: dist/ecriture-macos.dmg
 
           # Configuration pour Linux
           - os: ubuntu-latest
@@ -75,18 +76,35 @@ jobs:
       - name: Compilation avec PyInstaller
         run: ${{ matrix.pyinstaller_cmd }}
 
-      # 7. Sauvegarder l'exécutable dans les artefacts GitHub
+      # 7. Étape spécifique macOS : Transformer le .app généré en fichier .dmg
+      - name: Génération du .dmg macOS
+        if: matrix.os == 'macos-latest'
+        run: |
+          hdiutil create -volname "Ecriture" -srcfolder dist/ecriture.app -ov -format UDZO dist/ecriture-macos.dmg
+
+      # 8. Sauvegarder l'exécutable/DMG dans les artefacts GitHub temporaires
       - name: Upload de l'artefact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
           path: ${{ matrix.bin_path }}
 
-      # 8. Publier automatiquement sur la page "Releases"
-      - name: Créer la Release GitHub
-        if: startsWith(github.ref, 'refs/tags/')
+  # ÉTAPE 2 : Regroupement et publication propre sur la Release
+  release:
+    name: Publier la Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Télécharger tous les artefacts
+        uses: actions/download-artifact@v4
+        with:
+          path: binaires
+          merge-multiple: true
+
+      - name: Créer la Release GitHub avec tous les fichiers
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ matrix.bin_path }}
+          files: binaires/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
