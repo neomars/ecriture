@@ -75,8 +75,60 @@
         let timerIntervalId = null;
         let timerIsRunning = false;
 
+        // Scroll Sync Logic
+        function setupScrollSync() {
+            const scrollContainer = document.getElementById('editor-scroll-container');
+            if (!scrollContainer) return;
+
+            let scrollTimeout;
+            scrollContainer.addEventListener('scroll', () => {
+                if (scrollTimeout) clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(() => {
+                    if (activeNodeType !== 'scene' && activeNodeType !== 'chapter') return;
+
+                    const scenes = document.querySelectorAll('.editor-scene-contenteditable');
+                    let visibleScene = null;
+                    const containerRect = scrollContainer.getBoundingClientRect();
+                    const triggerPoint = containerRect.top + (containerRect.height / 3);
+
+                    for (let i = 0; i < scenes.length; i++) {
+                        const rect = scenes[i].getBoundingClientRect();
+                        if (rect.top <= triggerPoint && rect.bottom >= triggerPoint) {
+                            visibleScene = scenes[i];
+                            break;
+                        }
+                    }
+
+                    if (visibleScene) {
+                        const sceneId = visibleScene.getAttribute('data-scene-id');
+                        if (activeNodeId !== sceneId) {
+                            activeNodeId = sceneId;
+                            activeNodeType = 'scene';
+
+                            // Optimized sidebar tree highlight update without full re-render
+                            const prevActive = document.querySelector('.cursor-pointer.bg-indigo-100');
+                            if (prevActive) {
+                                prevActive.classList.remove('bg-indigo-100', 'text-indigo-900', 'font-semibold');
+                                prevActive.classList.add('text-slate-700', 'hover:bg-slate-100');
+                            }
+                            // Find new active item in sidebar tree using onclick attribute
+                            const allNodes = document.querySelectorAll('.cursor-pointer');
+                            for(let node of allNodes) {
+                                if (node.getAttribute('onclick') && node.getAttribute('onclick').includes(`'${sceneId}'`)) {
+                                    node.classList.add('bg-indigo-100', 'text-indigo-900', 'font-semibold');
+                                    node.classList.remove('text-slate-700', 'hover:bg-slate-100');
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }, 100);
+            });
+        }
+
         // Initialize application
         window.addEventListener('DOMContentLoaded', async () => {
+            setupScrollSync();
             // Close resource quick menu if clicked outside
             document.addEventListener('click', (e) => {
                 const dropdown = document.getElementById('asset-menu-dropdown');
@@ -980,7 +1032,10 @@
                 }
             }
             if (firstSceneId) {
-                selectScene(firstSceneId);
+                activeNodeId = firstSceneId;
+                activeNodeType = "scene";
+                renderTree();
+                refreshActiveWorkspace(true);
             } else {
                 selectPlotGrid();
             }
@@ -1344,9 +1399,37 @@ function renderStatisticsDashboard() {
                 triggerAutoSave();
             }
             updateEditorWordsCount();
+
+            // Re-apply pagination if text length changed significantly enough to alter layout
+            const scrollContainer = document.getElementById('editor-scroll-container');
+            if (scrollContainer && scrollContainer.classList.contains('show-page-numbers')) {
+                applyPagination();
+            }
         }
 
-        function refreshActiveWorkspace() {
+        function scrollToTarget(targetSceneId, targetChapterId) {
+            setTimeout(() => {
+                if (targetSceneId) {
+                    const anchor = document.getElementById(`scene-anchor-${targetSceneId}`);
+                    if (anchor) {
+                        anchor.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        anchor.focus();
+                    }
+                } else if (targetChapterId) {
+                    const anchor = document.getElementById(`chapter-anchor-${targetChapterId}`);
+                    if (anchor) {
+                        anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        const firstScene = anchor.querySelector('.editor-scene-contenteditable');
+                        if (firstScene) firstScene.focus();
+                    }
+                } else {
+                    const scrollContainer = document.getElementById('editor-scroll-container');
+                    if (scrollContainer) scrollContainer.scrollTop = 0;
+                }
+            }, 50);
+        }
+
+        function refreshActiveWorkspace(forceRebuild = true) {
             if (activeNodeType === "scene" || activeNodeType === "chapter") {
                 let targetSceneId = null;
                 let targetChapterId = null;
@@ -1361,6 +1444,12 @@ function renderStatisticsDashboard() {
 
                 switchView('editor');
                 const wrapper = document.getElementById('editor-layout-wrapper');
+
+                // If not forcing rebuild and editor already exists, just scroll
+                if (!forceRebuild && document.getElementById('editor-content')) {
+                    scrollToTarget(targetSceneId, targetChapterId);
+                    return;
+                }
 
                 let html = '<div id="editor-content" class="w-full h-full flex flex-col p-4 outline-none focus:ring-0 bg-transparent min-h-[500px]" style="white-space: pre-wrap; word-wrap: break-word; outline: none;">';
 
@@ -1668,14 +1757,14 @@ function renderStatisticsDashboard() {
             activeNodeId = id;
             activeNodeType = "scene";
             renderTree();
-            refreshActiveWorkspace();
+            refreshActiveWorkspace(false);
         }
 
         function selectChapter(id) {
             activeNodeId = id;
             activeNodeType = "chapter";
             renderTree();
-            refreshActiveWorkspace();
+            refreshActiveWorkspace(false);
         }
 
         function selectCharacter(id) {
@@ -3989,9 +4078,61 @@ window.importDocument = async function() {
             }
         };
 
+        function applyPagination() {
+            const existing = document.querySelectorAll('.dynamic-page-number');
+            existing.forEach(e => e.remove());
+
+            const wrapper = document.getElementById('editor-layout-wrapper');
+            const scrollContainer = document.getElementById('editor-scroll-container');
+
+            if (!wrapper || !scrollContainer.classList.contains('show-page-numbers')) return;
+
+            // Approximate height of an A4 page text content in pixels
+            const PAGE_HEIGHT = 1000;
+
+            // Make sure the wrapper is positioned relatively
+            wrapper.style.position = 'relative';
+
+            const totalHeight = wrapper.scrollHeight;
+            const numPages = Math.floor(totalHeight / PAGE_HEIGHT);
+
+            for (let i = 1; i <= numPages; i++) {
+                const pageIndicator = document.createElement('div');
+                pageIndicator.className = 'dynamic-page-number';
+                pageIndicator.style.position = 'absolute';
+                pageIndicator.style.top = `${i * PAGE_HEIGHT}px`;
+                pageIndicator.style.left = '0';
+                pageIndicator.style.width = '100%';
+                pageIndicator.style.borderTop = '1px dashed #e2e8f0';
+                pageIndicator.style.textAlign = 'center';
+                pageIndicator.style.paddingTop = '4px';
+                pageIndicator.style.color = '#94a3b8';
+                pageIndicator.style.fontSize = '0.75rem';
+                pageIndicator.style.fontFamily = 'monospace';
+                pageIndicator.style.pointerEvents = 'none';
+                pageIndicator.style.zIndex = '10';
+                pageIndicator.innerText = `— Page ${i} —`;
+
+                wrapper.appendChild(pageIndicator);
+            }
+        }
+
+        // Attach resize/input events to update pagination
+        window.addEventListener('resize', () => {
+            if (document.getElementById('editor-scroll-container') && document.getElementById('editor-scroll-container').classList.contains('show-page-numbers')) {
+                applyPagination();
+            }
+        });
+
         window.togglePageNumbers = function togglePageNumbers() {
             const editorScroll = document.getElementById('editor-scroll-container');
             if (editorScroll) {
                 editorScroll.classList.toggle('show-page-numbers');
+                if (editorScroll.classList.contains('show-page-numbers')) {
+                    applyPagination();
+                } else {
+                    const existing = document.querySelectorAll('.dynamic-page-number');
+                    existing.forEach(e => e.remove());
+                }
             }
         };

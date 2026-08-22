@@ -54,28 +54,15 @@
             font-style: italic;
         }
 
-        #editor-scroll-container {
-            counter-reset: page-counter;
-        }
 
-        .show-page-numbers .page-break {
-            counter-increment: page-counter;
-        }
 
-        .show-page-numbers .page-break::after {
-            content: "Page " counter(page-counter);
-            position: absolute;
-            bottom: -30px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
     </style>
 </head>
 
 <body class="h-screen overflow-hidden flex flex-col font-sans text-slate-800">
 
     <!-- TOP HEADER -->
-    <header class="bg-white border-b border-slate-200 h-14 flex items-center justify-between px-6 z-50 shrink-0">
+    <header class="bg-white border-b border-slate-200 h-14 flex items-center justify-between px-6 z-[9999] shrink-0">
         <div class="flex items-center space-x-6">
             <!-- App Logo / Icon -->
             <div class="flex items-center space-x-3">
@@ -116,7 +103,7 @@
                     <span data-i18n="export_draft">Exporter</span>
                     <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </button>
-                <div id="export-dropdown-menu" class="hidden absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-lg shadow-lg py-1 z-50">
+                <div id="export-dropdown-menu" class="hidden absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-lg shadow-lg py-1 z-[9999]">
                     <button onclick="exportDraft('txt')" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 flex items-center space-x-2">
                         <span>📄</span>
                         <span data-i18n="export_txt">Texte (.txt)</span>
@@ -193,7 +180,7 @@
     </header>
 
     <!-- MAIN BODY CONTAINER -->
-    <div class="flex flex-1 overflow-hidden h-[calc(100vh-3.5rem)]">
+    <div class="flex flex-1 h-[calc(100vh-3.5rem)]">
 
         <!-- LEFT SIDEBAR: MANUSCRIPT TREE & SEARCH -->
         <aside class="w-64 bg-slate-100 border-r border-slate-200 flex flex-col h-full shrink-0">
@@ -281,12 +268,12 @@
         </aside>
 
         <!-- CENTRAL WORKSPACE (Occupies full height and expands elegantly) -->
-        <main class="flex-1 h-full bg-white flex flex-col overflow-hidden relative">
+        <main class="flex-1 h-full bg-white flex flex-col relative">
 
 
 
             <!-- AI Contextual Tool Result Preview Card -->
-            <div id="ai-preview-card" class="hidden absolute bg-white border border-slate-200 rounded-xl shadow-2xl p-4 w-[450px] z-50 transition-all duration-200">
+            <div id="ai-preview-card" class="hidden absolute bg-white border border-slate-200 rounded-xl shadow-2xl p-4 w-[450px] z-[9999] transition-all duration-200">
                 <div class="flex items-center justify-between border-b border-slate-100 pb-2 mb-3">
                     <span class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center space-x-1">
                         <span>🤖</span>
@@ -322,10 +309,10 @@
             </div>
 
             <!-- EDITOR VIEW -->
-            <div id="editor-view" class="flex-1 flex flex-col overflow-hidden h-full">
+            <div id="editor-view" class="flex-1 flex flex-col h-full">
 
             <!-- Fixed Editor Toolbar -->
-            <div id="editor-toolbar" class="bg-slate-900 w-full flex-shrink-0 text-white shadow-md px-4 py-2 flex items-center space-x-4 text-xs font-semibold z-50 overflow-visible">
+            <div id="editor-toolbar" class="relative bg-slate-900 w-full flex-shrink-0 text-white shadow-md px-4 py-2 flex items-center space-x-4 text-xs font-semibold z-[9999] overflow-visible">
                 <div class="flex items-center space-x-2 border-r border-slate-700 pr-4">
                     <button onclick="applySelectionFormatting('removeFormat')" class="hover:text-indigo-300 font-sans px-1 text-sm" title="Annuler le style / Clear style">🚫</button>
                     <button onclick="applySelectionFormatting('italic')" class="hover:text-indigo-300 font-serif italic px-1 text-sm" title="Italique">I</button>
@@ -344,7 +331,7 @@
                         <span data-i18n="synonyms_btn">Synonymes</span>
                         <span>▾</span>
                     </button>
-                    <div id="synonyms-dropdown-menu" class="absolute hidden left-0 top-full mt-1.5 w-48 bg-slate-800 text-slate-100 rounded shadow-lg py-2 border border-slate-700 z-50 max-h-48 overflow-y-auto px-2 space-y-1">
+                    <div id="synonyms-dropdown-menu" class="absolute hidden left-0 top-full mt-1.5 w-48 bg-slate-800 text-slate-100 rounded shadow-lg py-2 border border-slate-700 z-[9999] max-h-48 overflow-y-auto px-2 space-y-1">
                     </div>
                 </div>
 
@@ -371,7 +358,7 @@
                             <span data-i18n="ai_rewrite">Réécrire</span>
                             <span>▾</span>
                         </button>
-                        <div id="ai-rewrite-dropdown-menu" class="absolute hidden left-0 top-full mt-1.5 w-40 bg-slate-800 text-slate-100 rounded shadow-lg py-1 border border-slate-700 z-50">
+                        <div id="ai-rewrite-dropdown-menu" class="absolute hidden left-0 top-full mt-1.5 w-40 bg-slate-800 text-slate-100 rounded shadow-lg py-1 border border-slate-700 z-[9999]">
                             <button onclick="triggerContextAI('rewrite', 'slang'); event.stopPropagation();" class="w-full text-left px-3 py-1 hover:bg-slate-700 transition-colors" data-i18n="rewrite_slang">Argotique</button>
                             <button onclick="triggerContextAI('rewrite', 'elegant'); event.stopPropagation();" class="w-full text-left px-3 py-1 hover:bg-slate-700 transition-colors" data-i18n="rewrite_elegant">Soutenu / Élégant</button>
                             <button onclick="triggerContextAI('rewrite', 'medieval'); event.stopPropagation();" class="w-full text-left px-3 py-1 hover:bg-slate-700 transition-colors" data-i18n="rewrite_medieval">Médiéval / Fantasy</button>
@@ -386,7 +373,7 @@
                             <span data-i18n="ai_pov">Point de Vue</span>
                             <span>▾</span>
                         </button>
-                        <div id="ai-pov-dropdown-menu" class="absolute hidden left-0 top-full mt-1.5 w-48 bg-slate-800 text-slate-100 rounded shadow-lg py-1 border border-slate-700 z-50">
+                        <div id="ai-pov-dropdown-menu" class="absolute hidden left-0 top-full mt-1.5 w-48 bg-slate-800 text-slate-100 rounded shadow-lg py-1 border border-slate-700 z-[9999]">
                             <button onclick="triggerContextAI('pov', 'first_person'); event.stopPropagation();" class="w-full text-left px-3 py-1 hover:bg-slate-700 transition-colors" data-i18n="pov_first">1ère pers. (Je)</button>
                             <button onclick="triggerContextAI('pov', 'third_limited'); event.stopPropagation();" class="w-full text-left px-3 py-1 hover:bg-slate-700 transition-colors" data-i18n="pov_third">3ème pers. (Il/Elle, Limité)</button>
                             <button onclick="triggerContextAI('pov', 'other_witness'); event.stopPropagation();" class="w-full text-left px-3 py-1 hover:bg-slate-700 transition-colors" data-i18n="pov_omniscient">Omniscient</button>
@@ -446,7 +433,7 @@
 
                 <!-- Sub-view 2: Visual Chronology Timeline -->
                 <div id="plot-grid-timeline-container" class="hidden flex-1 overflow-auto p-8 h-full relative bg-slate-50">
-                    <svg id="plot-timeline-svg-canvas" class="absolute inset-0 pointer-events-none z-50" style="width: 100%; height: 100%; min-width: 100%; min-height: 100%;"></svg>
+                    <svg id="plot-timeline-svg-canvas" class="absolute inset-0 pointer-events-none z-[9999]" style="width: 100%; height: 100%; min-width: 100%; min-height: 100%;"></svg>
                     <div id="plot-timeline-flow" class="flex space-x-12 items-start relative z-20 min-w-max pb-12">
                         <!-- Horizontal scenes nodes and connected plot cards dynamically inserted -->
                     </div>
@@ -668,7 +655,7 @@
     </div>
 
     <!-- MODAL: PROJECT SETTINGS -->
-    <div id="settings-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50">
+    <div id="settings-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-[9999]">
         <div class="bg-white w-[420px] max-h-[85vh] overflow-y-auto rounded-xl shadow-xl p-6 border border-slate-200">
             <h3 class="text-lg font-bold text-slate-800 mb-4" data-i18n="project_settings">Paramètres du projet</h3>
 
@@ -804,7 +791,7 @@
     </div>
 
     <!-- MODAL: NEW NOVEL CREATE -->
-    <div id="new-project-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50">
+    <div id="new-project-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-[9999]">
         <div class="bg-white w-96 rounded-xl shadow-xl p-6 border border-slate-200">
             <h3 class="text-lg font-bold text-slate-800 mb-4" data-i18n="add_novel">Nouveau roman</h3>
 
@@ -823,7 +810,7 @@
     </div>
 
     <!-- MODAL: ADD CHAPTER TYPE SELECTOR -->
-    <div id="chapter-type-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50">
+    <div id="chapter-type-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-[9999]">
         <div class="bg-white w-[640px] max-w-2xl rounded-xl shadow-xl p-6 border border-slate-200 flex flex-col max-h-[85vh]">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
                 <h3 class="text-lg font-bold text-slate-800" data-i18n="add_chapter_title">Ajouter un nouveau chapitre</h3>
@@ -849,7 +836,7 @@
     </div>
 
     <!-- MODAL: ABOUT -->
-    <div id="about-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50">
+    <div id="about-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-[9999]">
         <div class="bg-white w-96 rounded-xl shadow-xl p-6 border border-slate-200 text-center">
             <span class="text-5xl mb-3 block">✒️</span>
             <h3 class="text-lg font-bold text-slate-800 mb-2" data-i18n="about">À propos</h3>
@@ -864,7 +851,7 @@
     </div>
 
     <!-- MODAL: GEMMA MISSING -->
-    <div id="gemma-missing-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50">
+    <div id="gemma-missing-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-[9999]">
         <div class="bg-white w-[500px] max-w-lg rounded-xl shadow-xl p-6 border border-slate-200">
             <div class="text-center mb-4">
                 <span class="text-5xl mb-2 block">🧠</span>
@@ -903,7 +890,7 @@
 
 
     <!-- MODAL: DONATION -->
-    <div id="donation-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50">
+    <div id="donation-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-[9999]">
         <div class="bg-white w-[500px] max-w-lg rounded-xl shadow-xl p-6 border border-slate-200">
             <div class="text-center mb-4">
                 <span class="text-5xl mb-2 block">☕</span>
@@ -921,7 +908,7 @@
     </div>
 
     <!-- MODAL: GEMMA INSTALLED -->
-    <div id="gemma-installed-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50">
+    <div id="gemma-installed-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-[9999]">
         <div class="bg-white w-[400px] max-w-md rounded-xl shadow-xl p-6 border border-slate-200 text-center">
             <span class="text-5xl mb-3 block">🎉</span>
             <h3 class="text-lg font-bold text-slate-800 mb-2">Gemma</h3>
@@ -933,7 +920,7 @@
     </div>
 
     <!-- MODAL: RELECTURE WORKSHOP -->
-    <div id="relecture-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50">
+    <div id="relecture-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-[9999]">
         <div class="bg-white w-[800px] max-w-4xl rounded-xl shadow-xl p-6 border border-slate-200 flex flex-col max-h-[90vh]">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4 shrink-0">
                 <h3 class="text-lg font-bold text-slate-800 flex items-center space-x-2">
@@ -1069,7 +1056,7 @@
     </div>
 
     <!-- MODAL: PLOT CARD EDIT -->
-    <div id="plot-card-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50">
+    <div id="plot-card-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-[9999]">
         <div class="bg-white w-[500px] max-w-full rounded-xl shadow-xl p-6 border border-slate-200 flex flex-col max-h-[90vh]">
             <h3 class="text-lg font-bold text-slate-800 mb-4" data-i18n="edit_plot_card">Modifier la carte d'intrigue</h3>
 
@@ -1117,7 +1104,7 @@
     </div>
 
     <!-- FLOATING ANNOTATION TOOLTIP -->
-    <div id="annotation-tooltip" class="hidden absolute bg-white text-slate-800 rounded-xl shadow-2xl p-4 border border-slate-200 z-50 w-72 flex flex-col space-y-3 transition-all duration-200">
+    <div id="annotation-tooltip" class="hidden absolute bg-white text-slate-800 rounded-xl shadow-2xl p-4 border border-slate-200 z-[9999] w-72 flex flex-col space-y-3 transition-all duration-200">
         <div class="flex items-center justify-between border-b border-slate-100 pb-1.5 shrink-0">
             <span class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center space-x-1" id="annotation-tooltip-title">
                 <span>✍️</span> <span data-i18n="annotation_title">Annotation</span>
@@ -1144,7 +1131,7 @@
     <script src="/static/js/ia.js"></script>
 
     <!-- MODAL: RESTORE & IMPORT -->
-    <div id="restore-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center">
+    <div id="restore-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[9999] flex items-center justify-center">
         <div class="bg-white w-[500px] max-h-[85vh] overflow-y-auto rounded-xl shadow-xl p-6 border border-slate-200">
             <h3 class="text-lg font-bold text-slate-800 mb-2" data-i18n="restore_modal_title">Restauration & Importation</h3>
 
@@ -1181,7 +1168,7 @@
 
 
     <!-- MODAL: GEMMA INSTALLING MODEL -->
-    <div id="gemma-installing-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center">
+    <div id="gemma-installing-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[9999] flex items-center justify-center">
         <div class="bg-white w-[400px] rounded-xl shadow-xl p-6 border border-slate-200 text-center">
             <h3 class="text-lg font-bold text-slate-800 mb-2">Installation du modèle IA</h3>
             <p class="text-sm text-slate-600 mb-4">Téléchargement de <span class="font-semibold text-indigo-600">gemma4:latest</span>. Veuillez patienter...</p>
@@ -1194,7 +1181,7 @@
     </div>
 
     <!-- MODAL: CHARACTER INTERVIEW -->
-    <div id="interview-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50">
+    <div id="interview-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-[9999]">
         <div class="bg-white w-[500px] h-[600px] rounded-xl shadow-xl border border-slate-200 flex flex-col">
             <!-- Header -->
             <div class="flex justify-between items-center p-4 border-b border-slate-100 bg-indigo-50/50 rounded-t-xl shrink-0">
@@ -1227,7 +1214,7 @@
 
 
     <!-- MODAL: BRAINSTORM & CREATIVE UNBLOCKING -->
-    <div id="brainstorm-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50">
+    <div id="brainstorm-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-[9999]">
         <div class="bg-white w-[600px] max-w-2xl rounded-xl shadow-xl p-6 border border-slate-200 flex flex-col max-h-[85vh]">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
                 <h3 class="text-lg font-bold text-slate-800 flex items-center space-x-2">
