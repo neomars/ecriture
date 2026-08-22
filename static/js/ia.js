@@ -2,64 +2,20 @@
         let activeSelection = { start: 0, end: 0, text: "" };
         let lastAiToolCall = { tool: "", style: "", text: "" };
 
-        window.handleTextSelection = function handleTextSelection(e) {
+                window.handleTextSelection = function handleTextSelection(e) {
             const editor = document.getElementById('editor-content');
-            const menu = document.getElementById('ai-selection-menu');
-            if (!editor || !menu) return;
-
-            // If project is locked, do not offer AI tools
-            if (projectData && projectData.settings && projectData.settings.locked) {
-                menu.classList.add('hidden');
-                return;
-            }
+            if (!editor) return;
 
             const selection = window.getSelection();
             if (selection && selection.rangeCount > 0 && !selection.isCollapsed) {
-                const range = selection.getRangeAt(0);
                 const text = selection.toString().trim();
-
                 if (text.length > 0) {
                     activeSelection = { text: selection.toString() };
-
-                    // Get selection bounding rect to position the menu perfectly below it
-                    const rect = range.getBoundingClientRect();
-                    const container = editor.closest('main');
-                    const containerRect = container.getBoundingClientRect();
-
-                    // Calculate positioning relative to the container
-                    const menuLeft = rect.left - containerRect.left;
-                    const menuTop = rect.bottom - containerRect.top + 8; // perfectly placed below selection
-
-                    menu.style.left = `${Math.max(10, Math.min(menuLeft, containerRect.width - 250))}px`;
-                    menu.style.top = `${menuTop}px`;
-                    menu.classList.remove('hidden');
-                } else {
-                    hideSelectionMenu(e);
                 }
-            } else {
-                hideSelectionMenu(e);
-            }
-
-            function hideSelectionMenu(e) {
-                // Wait slightly to verify click target to prevent immediate hide on click
-                setTimeout(() => {
-                    const activeEl = document.activeElement;
-                    if (e && e.target && (e.target.closest('#ai-selection-menu') || e.target.closest('#ai-preview-card'))) {
-                        return;
-                    }
-                    if (activeEl && (activeEl.closest('#ai-selection-menu') || activeEl.closest('#ai-preview-card'))) {
-                        return;
-                    }
-                    menu.classList.add('hidden');
-                    const rewriteMenu = document.getElementById('ai-rewrite-dropdown-menu');
-                    if (rewriteMenu) rewriteMenu.classList.add('hidden');
-                    const povMenu = document.getElementById('ai-pov-dropdown-menu');
-                    if (povMenu) povMenu.classList.add('hidden');
-                    const synonymsMenu = document.getElementById('synonyms-dropdown-menu');
-                    if (synonymsMenu) synonymsMenu.classList.add('hidden');
-                }, 150);
             }
         }
+
+
 
         function closeAiPreview() {
             document.getElementById('ai-preview-card').classList.add('hidden');
@@ -74,12 +30,10 @@
             }
         }
         window.triggerContextAI = async function triggerContextAI(tool, style = "") {
-            const menu = document.getElementById('ai-selection-menu');
-            const rewriteMenu = document.getElementById('ai-rewrite-dropdown-menu');
+                        const rewriteMenu = document.getElementById('ai-rewrite-dropdown-menu');
             const povMenu = document.getElementById('ai-pov-dropdown-menu');
             const card = document.getElementById('ai-preview-card');
-            if (menu) menu.classList.add('hidden');
-            if (rewriteMenu) rewriteMenu.classList.add('hidden');
+                        if (rewriteMenu) rewriteMenu.classList.add('hidden');
             if (povMenu) povMenu.classList.add('hidden');
             if (!card) return;
 
@@ -87,10 +41,10 @@
             lastAiToolCall = { tool, style, text: activeSelection.text };
 
             // Position card near selection menu
-            if (menu) {
-                card.style.left = menu.style.left;
-                card.style.top = menu.style.top;
-            }
+            card.style.left = '50%';
+            card.style.top = '50%';
+            card.style.transform = 'translate(-50%, -50%)';
+
             card.classList.remove('hidden');
 
             // Setup loading state

@@ -417,10 +417,23 @@ def clean_annotations(text):
 
 def add_docx_formatted_paragraph(doc, text):
     """Helper to add paragraphs with basic <i>, <b> and <span style='font-variant: small-caps;'> styling."""
-    paragraphs = text.split('\n')
-    for para in paragraphs:
-        p = doc.add_paragraph()
-        parts = re.split(r'(<b><i>|</i></b>|<b>|</b>|<i>|</i>|<span style="font-variant: small-caps;">|</span>)', para)
+    # Handle page breaks
+    import re
+    # Split text by page break HR tags
+    sections = re.split(r'<hr[^>]*class="page-break"[^>]*>', text)
+
+    for i, section in enumerate(sections):
+        if i > 0:
+            doc.add_page_break()
+
+        paragraphs = section.split('\n')
+        for para in paragraphs:
+            # Skip completely empty paragraphs that might result from page break splitting
+            if not para.strip() and len(paragraphs) == 1:
+                continue
+
+            p = doc.add_paragraph()
+            parts = re.split(r'(<b><i>|</i></b>|<b>|</b>|<i>|</i>|<span style="font-variant: small-caps;">|</span>)', para)
 
         is_bold = False
         is_italic = False
@@ -506,7 +519,7 @@ def export_draft():
 
         elif fmt == "pdf":
             from reportlab.lib.pagesizes import letter
-            from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+            from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak
             from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
             from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
 
