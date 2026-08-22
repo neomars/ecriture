@@ -99,13 +99,6 @@
                 }
 
                 // Hide selection menu if clicked outside selection and selection menu
-                const selectionMenu = document.getElementById('ai-selection-menu');
-                if (selectionMenu && !e.target.closest('#ai-selection-menu') && !e.target.closest('#editor-content')) {
-                    selectionMenu.classList.add('hidden');
-                    if (rewriteMenu) rewriteMenu.classList.add('hidden');
-                    if (synonymsMenu) synonymsMenu.classList.add('hidden');
-                }
-
                 // Close modals when clicking outside
                 if (e.target.classList.contains('fixed') && e.target.classList.contains('inset-0') && e.target.classList.contains('z-50')) {
                     if (e.target.id !== 'gemma-missing-modal' && e.target.id !== 'gemma-installing-modal') {
@@ -1386,8 +1379,9 @@ function renderStatisticsDashboard() {
                          });
                          const compiledHtml = htmlParts.join('<br>');
                          const placeholderText = formatTranslation("editor_placeholder") || "Commencez à rédiger votre chef-d'œuvre ici...";
-                         html = `
+                                                  html = `
                              <div class="w-full h-full flex flex-col p-4">
+                                 <h1 class="text-3xl font-bold text-slate-800 mb-6 text-center">${chapter.title}</h1>
                                  <div id="editor-content"
                                       data-chapter-id="${chapter.id}"
                                       contenteditable="true"
@@ -3966,3 +3960,20 @@ window.importDocument = async function() {
         btn.disabled = false;
     }
 };
+
+        window.insertPageBreak = function insertPageBreak() {
+            const editor = document.getElementById('editor-content');
+            if (editor) {
+                editor.focus();
+                const pageBreakHtml = '<hr class="page-break" style="page-break-after: always; border: 0; border-top: 2px dashed #cbd5e1; margin: 2rem 0; text-align: center; position: relative;" data-content="Saut de page" />';
+                document.execCommand('insertHTML', false, pageBreakHtml + '<br>');
+                onCombinedEditorInput(editor.innerHTML);
+            }
+        };
+
+        window.togglePageNumbers = function togglePageNumbers() {
+            const editorScroll = document.getElementById('editor-scroll-container');
+            if (editorScroll) {
+                editorScroll.classList.toggle('show-page-numbers');
+            }
+        };
