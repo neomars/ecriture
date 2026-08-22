@@ -86,8 +86,7 @@
             onEditorInput('content', editor.innerHTML);
 
             // Hide selection menu
-            const selectionMenu = document.getElementById('ai-selection-menu');
-            if (selectionMenu) selectionMenu.classList.add('hidden');
+
         }
 
         window.toggleSynonymsDropdown = function toggleSynonymsDropdown(event) {
@@ -173,8 +172,7 @@
             onEditorInput('content', editor.innerHTML);
 
             // Close dropdown and menu
-            const selectionMenu = document.getElementById('ai-selection-menu');
-            if (selectionMenu) selectionMenu.classList.add('hidden');
+
 
             const synonymsMenu = document.getElementById('synonyms-dropdown-menu');
             if (synonymsMenu) synonymsMenu.classList.add('hidden');
