@@ -1276,7 +1276,7 @@ function renderStatisticsDashboard() {
 
                     const editor = document.getElementById('editor-content');
                     if (editor) {
-                        onCombinedEditorInput(editor.innerHTML);
+                        onCombinedEditorInput(null, null);
                     }
                 }
             } else if (e.key === '-') {
@@ -1302,7 +1302,7 @@ function renderStatisticsDashboard() {
 
                             const editor = document.getElementById('editor-content');
                             if (editor) {
-                                onCombinedEditorInput(editor.innerHTML);
+                                onCombinedEditorInput(null, null);
                             }
                         }
                     }
@@ -1311,133 +1311,138 @@ function renderStatisticsDashboard() {
         }
 
         // ACTIVE WORKSPACE REFRESH
-        function onCombinedEditorInput(val) {
-            const editor = document.getElementById('editor-content');
-            if (editor) {
-                val = editor.innerHTML;
-            }
+        function onCombinedEditorInput(val, targetElement = null) {
+            if (targetElement && targetElement.classList.contains('editor-scene-contenteditable')) {
+                const sceneId = targetElement.getAttribute('data-scene-id');
+                const chapterId = targetElement.getAttribute('data-chapter-id');
 
-            let chapter = null;
-            if (activeNodeType === "scene") {
-                chapter = findParentChapter(activeNodeId);
+                let chapter = findNodeById(chapterId);
+                if (chapter && chapter.children) {
+                    let scene = chapter.children.find(s => s.id === sceneId);
+                    if (scene) {
+                        let htmlVal = targetElement.innerHTML;
+                        scene.content = htmlVal.replace(/<br\s*\/?>/gi, '\n');
+                        triggerAutoSave();
+                    }
+                }
             } else {
-                chapter = findNodeById(activeNodeId);
+                // Fallback: iterate over all scene elements
+                const sceneEditors = document.querySelectorAll('.editor-scene-contenteditable');
+                sceneEditors.forEach(ta => {
+                    const sceneId = ta.getAttribute('data-scene-id');
+                    const chapterId = ta.getAttribute('data-chapter-id');
+
+                    let chapter = findNodeById(chapterId);
+                    if (chapter && chapter.children) {
+                        let scene = chapter.children.find(s => s.id === sceneId);
+                        if (scene) {
+                            let htmlVal = ta.innerHTML;
+                            scene.content = htmlVal.replace(/<br\s*\/?>/gi, '\n');
+                        }
+                    }
+                });
+                triggerAutoSave();
             }
-            if (!chapter || !chapter.children || chapter.children.length === 0) return;
-
-            // Clean any <span id="scene-anchor-..."> elements before saving to database
-            const temp = document.createElement('div');
-            temp.innerHTML = val;
-            const anchors = temp.querySelectorAll('[id^="scene-anchor-"]');
-            anchors.forEach(a => a.remove());
-            val = temp.innerHTML;
-
-            // Split the edited text into lines
-            const lines = val.split(/<br\s*\/?>/i);
-            const numScenes = chapter.children.length;
-            const linesPerScene = Math.max(1, Math.ceil(lines.length / numScenes));
-
-            chapter.children.forEach((scene, idx) => {
-                const start = idx * linesPerScene;
-                const end = start + linesPerScene;
-                scene.content = lines.slice(start, end).join('\n');
-            });
-
-            // Trigger save and update word counts
-            triggerAutoSave();
             updateEditorWordsCount();
         }
 
         function refreshActiveWorkspace() {
             if (activeNodeType === "scene" || activeNodeType === "chapter") {
-                let chapter = null;
                 let targetSceneId = null;
+                let targetChapterId = null;
 
                 if (activeNodeType === "scene") {
                     targetSceneId = activeNodeId;
-                    chapter = findParentChapter(targetSceneId);
+                    let chap = findParentChapter(targetSceneId);
+                    if (chap) targetChapterId = chap.id;
                 } else {
-                    chapter = findNodeById(activeNodeId);
+                    targetChapterId = activeNodeId;
                 }
 
-                if (chapter) {
-                    switchView('editor');
-                    const wrapper = document.getElementById('editor-layout-wrapper');
+                switchView('editor');
+                const wrapper = document.getElementById('editor-layout-wrapper');
 
-                    chapter.children = chapter.children || [];
-                     let html = '';
-                    if (chapter.children.length === 0) {
-                         html = `
-                            <div class="text-slate-400 italic text-sm text-center py-10">
-                                Aucune scène dans ce chapitre. Créez-en une pour commencer à rédiger !
-                            </div>
+                let html = '<div id="editor-content" class="w-full h-full flex flex-col p-4 outline-none focus:ring-0 bg-transparent min-h-[500px]" style="white-space: pre-wrap; word-wrap: break-word; outline: none;">';
+
+                if (!projectData.manuscript || projectData.manuscript.length === 0) {
+                    html += `
+                        <div class="text-slate-400 italic text-sm text-center py-10">
+                            Aucun chapitre. Créez-en un pour commencer à rédiger !
+                        </div>
+                    `;
+                } else {
+                    const placeholderText = formatTranslation("editor_placeholder") || "Commencez à rédiger votre chef-d'œuvre ici...";
+                    projectData.manuscript.forEach(chap => {
+                        html += `
+                            <div class="chapter-container mb-12" id="chapter-anchor-${chap.id}">
+                                <h1 class="text-3xl font-bold text-slate-800 mb-6 text-center mt-10">${chap.title}</h1>
                         `;
-                    } else {
-                         let htmlParts = [];
-                         chapter.children.forEach(scene => {
-                             htmlParts.push(`<span id="scene-anchor-${scene.id}"></span>` + (scene.content || "").replace(/\n/g, '<br>'));
-                         });
-                         const compiledHtml = htmlParts.join('<br>');
-                         const placeholderText = formatTranslation("editor_placeholder") || "Commencez à rédiger votre chef-d'œuvre ici...";
-                                                  html = `
-                             <div class="w-full h-full flex flex-col p-4">
-                                 <h1 class="text-3xl font-bold text-slate-800 mb-6 text-center">${chapter.title}</h1>
-                                 <div id="editor-content"
-                                      data-chapter-id="${chapter.id}"
-                                      contenteditable="true"
-                                      data-placeholder="${placeholderText}"
-                                      class="w-full font-georgia text-lg leading-relaxed text-slate-800 border-none outline-none focus:ring-0 bg-transparent min-h-[500px]"
-                                      style="white-space: pre-wrap; word-wrap: break-word; outline: none;">${compiledHtml}</div>
-                             </div>
-                         `;
-                    }
-
-                    wrapper.innerHTML = html;
-
-                     // Focus and setup event listeners for contenteditable
-                    setTimeout(() => {
-                         const activeTa = document.getElementById('editor-content');
-                         if (activeTa) {
-                             activeTa.focus();
-
-                             // Add input listener
-                             activeTa.addEventListener('input', function() {
-                                 onCombinedEditorInput(activeTa.innerHTML);
-                             });
-
-                             // Add keydown listener for typography and Enter handling
-                             activeTa.addEventListener('keydown', function(e) {
-                                 if (e.key === 'Enter') {
-                                     e.preventDefault();
-                                     document.execCommand('insertLineBreak');
-                                     onCombinedEditorInput(activeTa.innerHTML);
-                                 } else if (e.key === '"' || e.key === '-') {
-                                     handleContentEditableTypography(e);
-                                 }
-                             });
-
-                             if (targetSceneId) {
-                                 const anchor = document.getElementById(`scene-anchor-${targetSceneId}`);
-                                 if (anchor) {
-                                     anchor.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
-                                     // Focus and place cursor right after the anchor
-                                     const selection = window.getSelection();
-                                     const range = document.createRange();
-                                     range.setStartAfter(anchor);
-                                     range.collapse(true);
-                                     selection.removeAllRanges();
-                                     selection.addRange(range);
-                                 }
-                             }
+                        if (!chap.children || chap.children.length === 0) {
+                            html += `
+                                <div class="text-slate-400 italic text-sm text-center py-4">
+                                    Aucune scène dans ce chapitre.
+                                </div>
+                            `;
                         } else {
-                            const scrollContainer = document.getElementById('editor-scroll-container');
-                            if (scrollContainer) scrollContainer.scrollTop = 0;
+                            chap.children.forEach(scene => {
+                                html += `
+                                    <div id="scene-anchor-${scene.id}" class="editor-scene-contenteditable w-full font-georgia text-lg leading-relaxed text-slate-800 border-none outline-none mb-4" contenteditable="true" data-scene-id="${scene.id}" data-chapter-id="${chap.id}" data-placeholder="${placeholderText}">${(scene.content || "").replace(/\n/g, '<br>')}</div>
+                                `;
+                            });
                         }
-                        updateEditorWordsCount();
-                    }, 50);
-
+                        html += `</div>`;
+                    });
                 }
+
+                html += '</div>';
+                wrapper.innerHTML = html;
+
+                setTimeout(() => {
+                    const sceneEditors = document.querySelectorAll('.editor-scene-contenteditable');
+                    sceneEditors.forEach(ta => {
+                        ta.addEventListener('input', function() {
+                            onCombinedEditorInput(null, ta);
+                        });
+                        ta.addEventListener('keydown', function(e) {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                document.execCommand('insertLineBreak');
+                                onCombinedEditorInput(null, ta);
+                            } else if (e.key === '"' || e.key === '-') {
+                                handleContentEditableTypography(e);
+                            }
+                        });
+                        ta.addEventListener('focus', function() {
+                            // Update activeNodeId to scene when focused
+                            const sceneId = ta.getAttribute('data-scene-id');
+                            if (activeNodeId !== sceneId) {
+                                activeNodeId = sceneId;
+                                activeNodeType = "scene";
+                                renderTree();
+                            }
+                        });
+                    });
+
+                    if (targetSceneId) {
+                        const anchor = document.getElementById(`scene-anchor-${targetSceneId}`);
+                        if (anchor) {
+                            anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            anchor.focus();
+                        }
+                    } else if (targetChapterId) {
+                        const anchor = document.getElementById(`chapter-anchor-${targetChapterId}`);
+                        if (anchor) {
+                            anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            const firstScene = anchor.querySelector('.editor-scene-contenteditable');
+                            if (firstScene) firstScene.focus();
+                        }
+                    } else {
+                        const scrollContainer = document.getElementById('editor-scroll-container');
+                        if (scrollContainer) scrollContainer.scrollTop = 0;
+                    }
+                    updateEditorWordsCount();
+                }, 50);
+
             } else if (activeNodeType === "character") {
                 let char = projectData.characters.find(c => c.id === activeNodeId);
                 if (char) {
@@ -1710,7 +1715,7 @@ function renderStatisticsDashboard() {
         function onEditorInput(field, val) {
             if (activeNodeType === "scene" || activeNodeType === "chapter") {
                 if (field === 'content') {
-                    onCombinedEditorInput(val);
+                    onCombinedEditorInput(val, null);
                 } else if (field === 'title') {
                     const node = findNodeById(activeNodeId);
                     if (node) {
@@ -2999,7 +3004,7 @@ function renderStatisticsDashboard() {
                 // Trigger editor input to save to projectData / database
                 const editor = document.getElementById('editor-content');
                 if (editor) {
-                    onCombinedEditorInput(editor.innerHTML);
+                    onCombinedEditorInput(null, null);
                 }
                 closeAnnotationTooltip();
                 renderTree();
@@ -3017,7 +3022,7 @@ function renderStatisticsDashboard() {
                 // Trigger editor input to save to projectData / database
                 const editor = document.getElementById('editor-content');
                 if (editor) {
-                    onCombinedEditorInput(editor.innerHTML);
+                    onCombinedEditorInput(null, null);
                 }
                 closeAnnotationTooltip();
                 renderTree();
@@ -3962,12 +3967,25 @@ window.importDocument = async function() {
 };
 
         window.insertPageBreak = function insertPageBreak() {
-            const editor = document.getElementById('editor-content');
-            if (editor) {
+            const sel = window.getSelection();
+            if (sel.rangeCount > 0) {
+                const range = sel.getRangeAt(0);
+                const activeTa = range.startContainer.nodeType === 3 ? range.startContainer.parentNode.closest('.editor-scene-contenteditable') : range.startContainer.closest('.editor-scene-contenteditable');
+                if (activeTa) {
+                    const pageBreakHtml = '<hr class="page-break" style="page-break-after: always; border: 0; border-top: 2px dashed #cbd5e1; margin: 2rem 0; text-align: center; position: relative;" data-content="Saut de page" />';
+                    document.execCommand('insertHTML', false, pageBreakHtml + '<br>');
+                    onCombinedEditorInput(null, activeTa);
+                    return;
+                }
+            }
+            // Fallback if not focused
+            const editors = document.querySelectorAll('.editor-scene-contenteditable');
+            if (editors.length > 0) {
+                const editor = editors[editors.length - 1]; // Append to last
                 editor.focus();
                 const pageBreakHtml = '<hr class="page-break" style="page-break-after: always; border: 0; border-top: 2px dashed #cbd5e1; margin: 2rem 0; text-align: center; position: relative;" data-content="Saut de page" />';
                 document.execCommand('insertHTML', false, pageBreakHtml + '<br>');
-                onCombinedEditorInput(editor.innerHTML);
+                onCombinedEditorInput(null, editor);
             }
         };
 

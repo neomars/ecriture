@@ -64,6 +64,10 @@
 
         .show-page-numbers .page-break::after {
             content: "Page " counter(page-counter);
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
         }
     </style>
 </head>
@@ -71,7 +75,7 @@
 <body class="h-screen overflow-hidden flex flex-col font-sans text-slate-800">
 
     <!-- TOP HEADER -->
-    <header class="bg-white border-b border-slate-200 h-14 flex items-center justify-between px-6 z-10 shrink-0">
+    <header class="bg-white border-b border-slate-200 h-14 flex items-center justify-between px-6 z-50 shrink-0">
         <div class="flex items-center space-x-6">
             <!-- App Logo / Icon -->
             <div class="flex items-center space-x-3">
@@ -321,7 +325,7 @@
             <div id="editor-view" class="flex-1 flex flex-col overflow-hidden h-full">
 
             <!-- Fixed Editor Toolbar -->
-            <div id="editor-toolbar" class="bg-slate-900 w-full flex-shrink-0 text-white shadow-md px-4 py-2 flex items-center space-x-4 text-xs font-semibold z-10 overflow-x-auto">
+            <div id="editor-toolbar" class="bg-slate-900 w-full flex-shrink-0 text-white shadow-md px-4 py-2 flex items-center space-x-4 text-xs font-semibold z-50 overflow-visible">
                 <div class="flex items-center space-x-2 border-r border-slate-700 pr-4">
                     <button onclick="applySelectionFormatting('removeFormat')" class="hover:text-indigo-300 font-sans px-1 text-sm" title="Annuler le style / Clear style">🚫</button>
                     <button onclick="applySelectionFormatting('italic')" class="hover:text-indigo-300 font-serif italic px-1 text-sm" title="Italique">I</button>
@@ -442,7 +446,7 @@
 
                 <!-- Sub-view 2: Visual Chronology Timeline -->
                 <div id="plot-grid-timeline-container" class="hidden flex-1 overflow-auto p-8 h-full relative bg-slate-50">
-                    <svg id="plot-timeline-svg-canvas" class="absolute inset-0 pointer-events-none z-10" style="width: 100%; height: 100%; min-width: 100%; min-height: 100%;"></svg>
+                    <svg id="plot-timeline-svg-canvas" class="absolute inset-0 pointer-events-none z-50" style="width: 100%; height: 100%; min-width: 100%; min-height: 100%;"></svg>
                     <div id="plot-timeline-flow" class="flex space-x-12 items-start relative z-20 min-w-max pb-12">
                         <!-- Horizontal scenes nodes and connected plot cards dynamically inserted -->
                     </div>
