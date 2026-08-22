@@ -166,10 +166,8 @@
                     const data = await res.json();
                     if (!data.installed) {
                         const sysInfo = data.sys_info;
-                        if (sysInfo && sysInfo.total_ram_gb >= 12 && sysInfo.free_disk_gb >= 5) {
-                            showGemmaMissingModal(sysInfo);
-                            installGemmaModel(); // Start immediately
-                        }
+                        showGemmaMissingModal(sysInfo);
+                        installGemmaModel(); // Start immediately
                     } else {
                         // Gemma is installed, check for gemma-2-2b-it
                         const hasGemma = data.models.includes('gemma-2-2b-it');
@@ -242,24 +240,9 @@
                 });
         }
 
-
-                    if (compatibilityDiv) {
-                        if (canInstall) {
-                            compatibilityDiv.innerHTML = `
-                                <div class="bg-green-50 p-4 rounded-lg border border-green-200 mb-4">
-                                    <p class="text-sm text-green-800 mb-2">Votre système est compatible ! (RAM: ${sysInfo.total_ram_gb} Go, Espace libre: ${sysInfo.free_disk_gb} Go)</p>
-                                </div>
-                            `;
-                        } else {
-                            compatibilityDiv.innerHTML = `
-                                <div class="bg-red-50 p-4 rounded-lg border border-red-200 mb-4">
-                                    <p class="text-sm text-red-800">Le système n'est pas compatible avec l'installation d'une IA ${osNameDisplay}. Il faut au moins 12 Go de RAM et 5 Go d'espace disque disponible.</p>
-                                    <p class="text-xs text-red-600 mt-1">Actuel : RAM: ${sysInfo.total_ram_gb} Go, Espace libre: ${sysInfo.free_disk_gb} Go</p>
-                                </div>
-                            `;
-                        }
-                    }
-                }
+        function showGemmaMissingModal(sysInfo) {
+            const modal = document.getElementById('gemma-missing-modal');
+            if (modal) {
                 modal.classList.remove('hidden');
             }
         }
