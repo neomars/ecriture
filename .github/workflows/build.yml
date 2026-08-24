@@ -30,11 +30,25 @@ jobs:
             pyinstaller_cmd: pyinstaller --noconfirm --onefile --windowed --add-data "static:static" --add-data "templates:templates" --add-data "locales:locales" --add-data "images:images" --add-data "projects:projects" --name ecriture main.py
             bin_path: dist/ecriture-macos.dmg
 
-          # Configuration pour Linux
+          # Configuration pour Linux corrigée
           - os: ubuntu-latest
             artifact_name: ecriture-linux
-            pyinstaller_cmd: pyinstaller --noconfirm --onefile --add-data "static:static" --add-data "templates:templates" --add-data "locales:locales" --add-data "images:images" --add-data "projects:projects" --name ecriture main.py
-            bin_path: dist/ecriture
+            pyinstaller_cmd: >
+              pyinstaller --noconfirm --onefile --windowed 
+              --add-data "static:static" 
+              --add-data "templates:templates" 
+              --add-data "locales:locales" 
+              --add-data "images:images" 
+              --add-data "projects:projects" 
+              --collect-all transformers 
+              --collect-all huggingface_hub 
+              --collect-all tokenizers 
+              --collect-all torch 
+              --hidden-import=filelock 
+              --hidden-import=fsspec 
+              --hidden-import=certifi 
+              --name ecriture-linux main.py
+            bin_path: dist/ecriture-linux
 
     steps:
       # 1. Récupérer le code source du dépôt
