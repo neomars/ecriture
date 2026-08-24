@@ -1079,9 +1079,9 @@ def _install_gemma_thread(lang="fr"):
         import os
         import time
 
+        from util import get_model_dir
         url = "https://neomars.freeboxos.fr:3535/share/SXyfQB1empSwlfSU/gemma-2-2b-it-Q8_0.gguf"
-        model_dir = os.path.join(os.path.expanduser("~"), ".cache", "ecriture")
-        os.makedirs(model_dir, exist_ok=True)
+        model_dir = get_model_dir()
         model_path = os.path.join(model_dir, "gemma-2-2b-it-Q8_0.gguf")
 
         # Set up a context to bypass potential ssl errors if required, but default to normal.
