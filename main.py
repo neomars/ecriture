@@ -1079,9 +1079,9 @@ def _install_gemma_thread(lang="fr"):
         import os
         import time
 
-        url = "https://neomars.freeboxos.fr:3535/share/SXyfQB1empSwlfSU/gemma-2-2b-it-Q8_0.gguf"
-        model_dir = os.path.join(os.path.expanduser("~"), ".cache", "ecriture")
-        os.makedirs(model_dir, exist_ok=True)
+        from util import get_model_dir
+        url = "https://huggingface.co/bartowski/gemma-2-2b-it-GGUF/resolve/main/gemma-2-2b-it-Q8_0.gguf"
+        model_dir = get_model_dir()
         model_path = os.path.join(model_dir, "gemma-2-2b-it-Q8_0.gguf")
 
         # Set up a context to bypass potential ssl errors if required, but default to normal.
@@ -1092,7 +1092,11 @@ def _install_gemma_thread(lang="fr"):
 
         req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
         with urllib.request.urlopen(req, context=ctx) as response, open(model_path, 'wb') as out_file:
-            total_size = int(response.info().get('Content-Length').strip())
+            if response.getcode() != 200:
+                raise Exception(f"Failed to download model. HTTP Status: {response.getcode()}")
+
+            total_size_str = response.info().get('Content-Length')
+            total_size = int(total_size_str.strip()) if total_size_str else 0
 
             t = CustomTqdm(total=total_size, unit='iB', unit_scale=True)
             t.start_t = time.time()

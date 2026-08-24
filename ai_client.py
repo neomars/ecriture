@@ -15,7 +15,8 @@ class AIClient:
                     cls._instance = super(AIClient, cls).__new__(cls)
                     cls._instance._llm = None
                     cls._instance.model_filename = "gemma-2-2b-it-Q8_0.gguf"
-                    cls._instance.model_dir = os.path.join(os.path.expanduser("~"), ".cache", "ecriture")
+                    from util import get_model_dir
+                    cls._instance.model_dir = get_model_dir()
                     cls._instance.model_path = os.path.join(cls._instance.model_dir, cls._instance.model_filename)
         return cls._instance
 
