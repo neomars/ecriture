@@ -34,13 +34,13 @@ jobs:
           - os: ubuntu-latest
             artifact_name: ecriture-linux
             pyinstaller_cmd: >
-              pyinstaller --noconfirm --onedir 
-              --collect-all llama_cpp
+              pyinstaller --noconfirm --onefile 
               --add-data "static:static" 
               --add-data "templates:templates" 
               --add-data "locales:locales" 
               --add-data "images:images" 
               --add-data "projects:projects" 
+              --collect-all llama_cpp 
               --collect-all transformers 
               --collect-all huggingface_hub 
               --collect-all tokenizers 
