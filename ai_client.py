@@ -3,6 +3,14 @@ import json
 import threading
 import json
 import os
+import sys
+
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
 
 class AIClient:
     _instance = None
@@ -130,7 +138,7 @@ class AIClient:
         import json
         import os
 
-        locale_path = os.path.join(os.path.dirname(__file__), "locales", f"{lang}.json")
+        locale_path = resource_path(os.path.join("locales", f"{lang}.json"))
         try:
             with open(locale_path, "r", encoding="utf-8") as f:
                 translations = json.load(f)
@@ -152,7 +160,7 @@ class AIClient:
         # Determine effective lang if it wasn't passed accurately
         effective_lang = "fr" if is_french else "en"
         if effective_lang != lang:
-            locale_path = os.path.join(os.path.dirname(__file__), "locales", f"{effective_lang}.json")
+            locale_path = resource_path(os.path.join("locales", f"{effective_lang}.json"))
             try:
                 with open(locale_path, "r", encoding="utf-8") as f:
                     translations = json.load(f)
