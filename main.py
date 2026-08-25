@@ -1087,10 +1087,11 @@ def _install_gemma_thread(lang="fr"):
         import urllib.error
         import os
         import time
-
         from util import get_model_dir
+
         url = "https://huggingface.co/bartowski/gemma-2-2b-it-GGUF/resolve/main/gemma-2-2b-it-Q8_0.gguf"
         model_dir = get_model_dir()
+        temp_model_path = os.path.join(model_dir, "gemma-2-2b-it-Q8_0.gguf.part")
         model_path = os.path.join(model_dir, "gemma-2-2b-it-Q8_0.gguf")
 
         # Set up a context to bypass potential ssl errors if required, but default to normal.
@@ -1100,7 +1101,7 @@ def _install_gemma_thread(lang="fr"):
         ctx.verify_mode = ssl.CERT_NONE
 
         req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, context=ctx) as response, open(model_path, 'wb') as out_file:
+        with urllib.request.urlopen(req, context=ctx) as response, open(temp_model_path, 'wb') as out_file:
             if response.getcode() != 200:
                 raise Exception(f"Failed to download model. HTTP Status: {response.getcode()}")
 
@@ -1119,6 +1120,9 @@ def _install_gemma_thread(lang="fr"):
                 t.update(len(chunk))
 
             t.close()
+
+        # Atomic rename after full download
+        os.replace(temp_model_path, model_path)
 
         INSTALL_STATE["status"] = "done"
         INSTALL_STATE["message"] = get_str("gemma_install_success")
