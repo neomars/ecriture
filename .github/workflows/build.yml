@@ -34,7 +34,8 @@ jobs:
           - os: ubuntu-latest
             artifact_name: ecriture-linux
             pyinstaller_cmd: >
-              pyinstaller --noconfirm --onefile  
+              pyinstaller --noconfirm --onedir 
+              --collect-all llama_cpp
               --add-data "static:static" 
               --add-data "templates:templates" 
               --add-data "locales:locales" 
