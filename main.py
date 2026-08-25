@@ -18,6 +18,15 @@ import urllib.request
 from flask import Flask, jsonify, request, send_file, render_template
 from project_manager import NovelProject
 from ai_client import AIClient
+import sys
+
+def resource_path(relative_path):
+    """Obtient le chemin absolu du fichier, compatible dev et PyInstaller"""
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
 
 def get_synonyms(word, lang="fr"):
     """Lookup synonyms from the WOLF synonyms table in lexique.db, utilizing lemma fallback."""
@@ -65,7 +74,7 @@ def get_synonyms(word, lang="fr"):
         print("Error querying synonyms from lexique.db:", e)
         return []
 
-app = Flask(__name__, template_folder='templates')
+app = Flask(__name__, template_folder=resource_path('templates'), static_folder=resource_path('static'))
 ai_client = AIClient()
 
 PROJECTS_DIR = "projects"
@@ -389,7 +398,7 @@ def get_locale(lang):
     if lang not in ["en", "fr", "es", "ru"]:
         lang = "en"
 
-    locale_path = os.path.join("locales", f"{lang}.json")
+    locale_path = resource_path(os.path.join("locales", f"{lang}.json"))
     try:
         with open(locale_path, 'r', encoding='utf-8') as f:
             translations = json.load(f)
@@ -1039,9 +1048,9 @@ def _install_gemma_thread(lang="fr"):
         import json
         import os
         # Extremely basic fallback translation
-        filepath = f"locales/{lang}.json"
+        filepath = resource_path(f"locales/{lang}.json")
         if not os.path.exists(filepath):
-            filepath = "locales/fr.json"
+            filepath = resource_path("locales/fr.json")
 
         with open(filepath, "r", encoding="utf-8") as f:
             return json.load(f).get(key, key)
