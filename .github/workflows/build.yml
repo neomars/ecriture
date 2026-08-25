@@ -34,7 +34,7 @@ jobs:
           - os: ubuntu-latest
             artifact_name: ecriture-linux
             pyinstaller_cmd: >
-              pyinstaller --noconfirm --onefile --windowed 
+              pyinstaller --noconfirm --onefile  
               --add-data "static:static" 
               --add-data "templates:templates" 
               --add-data "locales:locales" 
