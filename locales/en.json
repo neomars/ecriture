@@ -168,8 +168,8 @@
     "brainstorm_names_style_placeholder": "E.g., Dwarven tavern names, Elven first names, Futuristic cities...",
     "brainstorm_names_btn": "Generate 10 Names",
     "ai_pov": "Point of View",
-    "pov_first": "First person (I)",
-    "pov_third": "Third person (He/She)",
+    "pov_first": "1st person (I)",
+    "pov_third": "3rd person (He/She, Limited)",
     "pov_witness": "External witness",
     "error_empty_scene": "The current scene is empty. Add text to generate complications.",
     "gemma_simulation_title": "[AI Assistant (Gemma Simulation - Offline)]",
@@ -225,5 +225,13 @@
     "toolbar_dialogue": "Dialogue",
     "toolbar_annotate": "Annotate",
     "toolbar_page_break": "Page break",
-    "toolbar_page_numbers": "Page numbers"
+    "toolbar_page_numbers": "Page numbers",
+    "ai_writing": "AI is writing your text...",
+    "rewrite_slang": "Slang",
+    "rewrite_elegant": "Elegant / Formal",
+    "rewrite_medieval": "Medieval / Fantasy",
+    "rewrite_poetic": "Poetic",
+    "rewrite_brutal": "Brutal / Dry",
+    "rewrite_cynical": "Cynical",
+    "pov_omniscient": "Omniscient"
 }

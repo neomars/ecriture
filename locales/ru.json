@@ -168,8 +168,8 @@
     "brainstorm_names_style_placeholder": "Например, Имена гномьих таверн, Эльфийские имена, Футуристические города...",
     "brainstorm_names_btn": "Сгенерировать 10 Имен",
     "ai_pov": "Точка Зрения",
-    "pov_first": "Первое лицо (Я)",
-    "pov_third": "Третье лицо (Он/Она)",
+    "pov_first": "1-е лицо (Я)",
+    "pov_third": "3-е лицо (Он/Она, Ограниченный)",
     "pov_witness": "Внешний свидетель",
     "error_empty_scene": "Текущая сцена пуста. Добавьте текст для генерации осложнений.",
     "gemma_simulation_title": "[ИИ Ассистент (Симуляция Gemma - Офлайн)]",
@@ -225,5 +225,13 @@
     "toolbar_dialogue": "Диалог",
     "toolbar_annotate": "Аннотировать",
     "toolbar_page_break": "Разрыв страницы",
-    "toolbar_page_numbers": "Номера страниц"
+    "toolbar_page_numbers": "Номера страниц",
+    "ai_writing": "ИИ пишет ваш текст...",
+    "rewrite_slang": "Сленг",
+    "rewrite_elegant": "Элегантный / Формальный",
+    "rewrite_medieval": "Средневековье / Фэнтези",
+    "rewrite_poetic": "Поэтичный",
+    "rewrite_brutal": "Жесткий / Сухой",
+    "rewrite_cynical": "Циничный",
+    "pov_omniscient": "Всеведущий"
 }

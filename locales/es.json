@@ -168,8 +168,8 @@
     "brainstorm_names_style_placeholder": "Ej., Nombres de tabernas enanas, Nombres élficos, Ciudades futuristas...",
     "brainstorm_names_btn": "Generar 10 Nombres",
     "ai_pov": "Punto de Vista",
-    "pov_first": "Primera persona (Yo)",
-    "pov_third": "Tercera persona (Él/Ella)",
+    "pov_first": "1ra pers. (Yo)",
+    "pov_third": "3ra pers. (Él/Ella, Limitado)",
     "pov_witness": "Testigo externo",
     "error_empty_scene": "La escena actual está vacía. Añade texto para generar complicaciones.",
     "gemma_simulation_title": "[Asistente IA (Simulación Gemma - Fuera de línea)]",
@@ -225,5 +225,13 @@
     "toolbar_dialogue": "Diálogo",
     "toolbar_annotate": "Anotar",
     "toolbar_page_break": "Salto de página",
-    "toolbar_page_numbers": "Números de página"
+    "toolbar_page_numbers": "Números de página",
+    "ai_writing": "La IA está escribiendo su texto...",
+    "rewrite_slang": "Argot / Jerga",
+    "rewrite_elegant": "Elegante / Formal",
+    "rewrite_medieval": "Medieval / Fantasía",
+    "rewrite_poetic": "Poético",
+    "rewrite_brutal": "Brutal / Seco",
+    "rewrite_cynical": "Cínico",
+    "pov_omniscient": "Omnisciente"
 }
