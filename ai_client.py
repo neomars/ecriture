@@ -43,7 +43,7 @@ class AIClient:
                 from llama_cpp import Llama
                 self._llm = Llama(
                     model_path=self.model_path,
-                    n_ctx=2048,
+                    n_ctx=8192,
                     n_threads=4,
                     n_gpu_layers=-1,
                     verbose=False
