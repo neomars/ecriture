@@ -647,6 +647,13 @@
                 }
             });
 
+            document.querySelectorAll('[data-i18n-title]').forEach(el => {
+                const key = el.getAttribute('data-i18n-title');
+                if (translations[key]) {
+                    el.setAttribute('title', translations[key]);
+                }
+            });
+
             if (typeof updateChatWelcomeMessage === "function") {
                 updateChatWelcomeMessage();
             }
