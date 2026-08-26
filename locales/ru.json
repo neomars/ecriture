@@ -216,5 +216,14 @@
     "donation_title": "Поддержать Ecriture",
     "donation_text": "Если вам нравится использовать это приложение и вы хотите поддержать его разработку, пожалуйста, подумайте о пожертвовании. Это помогает поддерживать проект!",
     "donation_btn": "Купи мне кофе",
-    "disable_ads": "Отключить рекламу поддержки"
+    "disable_ads": "Отключить рекламу поддержки",
+    "toolbar_clear_style": "Очистить стиль",
+    "toolbar_italic": "Курсив",
+    "toolbar_bold": "Жирный",
+    "toolbar_bold_italic": "Жирный + Курсив",
+    "toolbar_smallcaps": "Капитель",
+    "toolbar_dialogue": "Диалог",
+    "toolbar_annotate": "Аннотировать",
+    "toolbar_page_break": "Разрыв страницы",
+    "toolbar_page_numbers": "Номера страниц"
 }

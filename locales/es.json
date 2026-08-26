@@ -216,5 +216,14 @@
     "donation_title": "Apoyar Ecriture",
     "donation_text": "Si disfrutas usando esta aplicación y quieres apoyar su desarrollo, considera hacer una donación. ¡Ayuda a mantener el proyecto vivo!",
     "donation_btn": "Cómprame un café",
-    "disable_ads": "Desactivar anuncios de apoyo"
+    "disable_ads": "Desactivar anuncios de apoyo",
+    "toolbar_clear_style": "Borrar estilo",
+    "toolbar_italic": "Cursiva",
+    "toolbar_bold": "Negrita",
+    "toolbar_bold_italic": "Negrita + Cursiva",
+    "toolbar_smallcaps": "Versalitas",
+    "toolbar_dialogue": "Diálogo",
+    "toolbar_annotate": "Anotar",
+    "toolbar_page_break": "Salto de página",
+    "toolbar_page_numbers": "Números de página"
 }
