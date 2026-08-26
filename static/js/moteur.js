@@ -152,10 +152,8 @@
 
                 // Hide selection menu if clicked outside selection and selection menu
                 // Close modals when clicking outside
-                if (e.target.classList.contains('fixed') && e.target.classList.contains('inset-0') && e.target.classList.contains('z-50')) {
-                    if (e.target.id !== 'gemma-missing-modal' && e.target.id !== 'gemma-installing-modal') {
-                        e.target.classList.add('hidden');
-                    }
+                if (e.target.classList.contains('fixed') && e.target.classList.contains('inset-0') && (e.target.classList.contains('z-50') || e.target.classList.contains('z-[9999]'))) {
+                    e.target.classList.add('hidden');
                 }
             });
 
@@ -4138,3 +4136,11 @@ window.importDocument = async function() {
                 }
             }
         };
+
+function closeGemmaMissingModal() {
+    document.getElementById('gemma-missing-modal').classList.add('hidden');
+}
+
+function closeGemmaInstallingModal() {
+    document.getElementById('gemma-installing-modal').classList.add('hidden');
+}
