@@ -189,7 +189,7 @@
             launchCount++;
             localStorage.setItem('launch-count', launchCount.toString());
 
-            if (launchCount % 5 === 0) {
+            if (launchCount % 5 === 0 && (!projectData || !projectData.settings || !projectData.settings.disable_ads)) {
                 const modal = document.getElementById('donation-modal');
                 if (modal) {
                     modal.classList.remove('hidden');
@@ -2792,6 +2792,7 @@ function renderStatisticsDashboard() {
             document.getElementById('settings-title-input').value = projectData.settings.title;
             document.getElementById('settings-goal-input').value = projectData.settings.overall_goal;
             document.getElementById('settings-lock-input').checked = !!projectData.settings.locked;
+            document.getElementById('settings-disable-ads-input').checked = !!projectData.settings.disable_ads;
 
             // Set Layout/Typography values
             if (!projectData.settings.editor_layout) {
@@ -2842,6 +2843,7 @@ function renderStatisticsDashboard() {
             projectData.settings.title = newTitle || oldTitle;
             projectData.settings.overall_goal = parseInt(document.getElementById('settings-goal-input').value) || 50000;
             projectData.settings.locked = document.getElementById('settings-lock-input').checked;
+            projectData.settings.disable_ads = document.getElementById('settings-disable-ads-input').checked;
 
             // Read Layout/Typography values
             if (!projectData.settings.editor_layout) {

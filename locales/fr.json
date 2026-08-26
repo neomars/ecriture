@@ -215,5 +215,6 @@
     "ai_analysis_in_progress": "Analyse en cours par l'IA... Veuillez patienter.",
     "donation_title": "Soutenir Écriture",
     "donation_text": "Si vous appréciez cette application et souhaitez soutenir son développement, pensez à faire un don. Cela aide à maintenir le projet en vie !",
-    "donation_btn": "Offrez-moi un café"
+    "donation_btn": "Offrez-moi un café",
+    "disable_ads": "Désactiver les annonces de soutien"
 }
