@@ -314,15 +314,15 @@
             <!-- Fixed Editor Toolbar -->
             <div id="editor-toolbar" class="relative bg-slate-900 w-full flex-shrink-0 text-white shadow-md px-4 py-2 flex items-center space-x-4 text-xs font-semibold z-[9999] overflow-visible">
                 <div class="flex items-center space-x-2 border-r border-slate-700 pr-4">
-                    <button onclick="applySelectionFormatting('removeFormat')" class="hover:text-indigo-300 font-sans px-1 text-sm" title="Annuler le style / Clear style">🚫</button>
-                    <button onclick="applySelectionFormatting('italic')" class="hover:text-indigo-300 font-serif italic px-1 text-sm" title="Italique">I</button>
-                    <button onclick="applySelectionFormatting('bold')" class="hover:text-indigo-300 font-serif font-bold px-1 text-sm" title="Gras">B</button>
-                    <button onclick="applySelectionFormatting('bold_italic')" class="hover:text-indigo-300 font-serif font-bold italic px-1 text-sm" title="Gras + Italique">B+I</button>
-                    <button onclick="applySelectionFormatting('smallcaps')" class="hover:text-indigo-300 font-serif px-1 text-xs tracking-wide" style="font-variant: small-caps;" title="Petites capitales">sc</button>
-                    <button onclick="applySelectionFormatting('dialogue')" class="hover:text-indigo-300 font-serif px-1 text-sm" title="Dialogue">💬</button>
-                    <button onclick="applySelectionFormatting('annotation')" class="hover:text-indigo-300 font-serif px-1 text-sm" title="Annoter">✍️</button>
-                    <button onclick="insertPageBreak()" class="hover:text-indigo-300 font-sans px-1 text-sm" title="Saut de page">📄</button>
-                    <button onclick="togglePageNumbers()" class="hover:text-indigo-300 font-sans px-1 text-sm" title="Numéros de page">🔢</button>
+                    <button onclick="applySelectionFormatting('removeFormat')" class="hover:text-indigo-300 font-sans px-1 text-sm" title="Annuler le style / Clear style" data-i18n-title="toolbar_clear_style">🚫</button>
+                    <button onclick="applySelectionFormatting('italic')" class="hover:text-indigo-300 font-serif italic px-1 text-sm" title="Italique" data-i18n-title="toolbar_italic">I</button>
+                    <button onclick="applySelectionFormatting('bold')" class="hover:text-indigo-300 font-serif font-bold px-1 text-sm" title="Gras" data-i18n-title="toolbar_bold">B</button>
+                    <button onclick="applySelectionFormatting('bold_italic')" class="hover:text-indigo-300 font-serif font-bold italic px-1 text-sm" title="Gras + Italique" data-i18n-title="toolbar_bold_italic">B+I</button>
+                    <button onclick="applySelectionFormatting('smallcaps')" class="hover:text-indigo-300 font-serif px-1 text-xs tracking-wide" style="font-variant: small-caps;" title="Petites capitales" data-i18n-title="toolbar_smallcaps">sc</button>
+                    <button onclick="applySelectionFormatting('dialogue')" class="hover:text-indigo-300 font-serif px-1 text-sm" title="Dialogue" data-i18n-title="toolbar_dialogue">💬</button>
+                    <button onclick="applySelectionFormatting('annotation')" class="hover:text-indigo-300 font-serif px-1 text-sm" title="Annoter" data-i18n-title="toolbar_annotate">✍️</button>
+                    <button onclick="insertPageBreak()" class="hover:text-indigo-300 font-sans px-1 text-sm" title="Saut de page" data-i18n-title="toolbar_page_break">📄</button>
+                    <button onclick="togglePageNumbers()" class="hover:text-indigo-300 font-sans px-1 text-sm" title="Numéros de page" data-i18n-title="toolbar_page_numbers">🔢</button>
                 </div>
 
                 <div class="relative border-r border-slate-700 pr-4" id="synonyms-dropdown-wrapper">
