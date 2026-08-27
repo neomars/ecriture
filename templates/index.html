@@ -908,10 +908,19 @@
             <p class="text-sm text-slate-600 mb-6 text-center leading-relaxed" data-i18n="donation_text">
                 If you enjoy using this application and want to support its development, please consider making a donation.
             </p>
-            <div class="flex justify-center space-x-4">
-                <a href="https://ko-fi.com/neomars" target="_blank" class="inline-flex items-center justify-center bg-yellow-500 hover:bg-yellow-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold shadow-md transition-all gap-2" onclick="closeDonationModal()">
-                    <span data-i18n="donation_btn">Buy me a coffee</span>
-                </a>
+            <div class="flex flex-col items-center justify-center space-y-4">
+                <div class="flex space-x-4">
+                    <a href="https://ko-fi.com/neomars" target="_blank" class="inline-flex items-center justify-center bg-yellow-500 hover:bg-yellow-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold shadow-md transition-all gap-2" onclick="closeDonationModal()">
+                        <span data-i18n="donation_btn">Buy me a coffee</span>
+                    </a>
+                    <button onclick="closeDonationModal()" class="inline-flex items-center justify-center bg-slate-200 hover:bg-slate-300 text-slate-700 px-5 py-2.5 rounded-lg text-sm font-semibold shadow-sm transition-all gap-2">
+                        <span data-i18n="btn_close">Close</span>
+                    </button>
+                </div>
+                <div class="flex items-center justify-center mt-4">
+                    <input type="checkbox" id="modal-disable-ads-input" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer mr-2" onchange="if(this.checked) disableAdsFromModal();">
+                    <label for="modal-disable-ads-input" class="text-xs font-bold uppercase tracking-wider text-slate-600 cursor-pointer" data-i18n="disable_ads">Disable Ads</label>
+                </div>
             </div>
         </div>
     </div>
