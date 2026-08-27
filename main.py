@@ -1584,4 +1584,4 @@ if __name__ == "__main__":
         threading.Timer(1.5, open_browser).start()
 
     # Start the local development web server on port 5000
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=False)
