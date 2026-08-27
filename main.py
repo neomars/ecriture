@@ -1580,7 +1580,7 @@ if __name__ == "__main__":
         webbrowser.open("http://127.0.0.1:5000")
 
     # Only launch browser once when in debug reloader
-    if not app.debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+    if not app.debug or os.environ.get("WERKZEUG_RUN_MAIN") != "true":
         threading.Timer(1.5, open_browser).start()
 
     # Start the local development web server on port 5000
