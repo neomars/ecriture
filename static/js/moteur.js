@@ -177,23 +177,42 @@
             await loadProject();
             await checkGemmaStatus();
             await window.checkUpdatesOnStartup();
-            checkDonation();
+            initDonationTimer();
         });
 
         // Check Gemma Status on Startup
 
-        function checkDonation() {
-            let launchCount = parseInt(localStorage.getItem('launch-count') || '0', 10);
-            launchCount++;
-            localStorage.setItem('launch-count', launchCount.toString());
+        // Check Donation on an interval
+        let usageTimeInterval = null;
+        function initDonationTimer() {
+            // Track total usage time in milliseconds across sessions
+            // If total usage time exceeds 5 hours (18000000 ms), show modal
+            usageTimeInterval = setInterval(() => {
+                if (projectData && projectData.settings && projectData.settings.disable_ads) return;
 
-            if (launchCount % 5 === 0 && (!projectData || !projectData.settings || !projectData.settings.disable_ads)) {
-                const modal = document.getElementById('donation-modal');
-                if (modal) {
-                    modal.classList.remove('hidden');
+                let usageTime = parseInt(localStorage.getItem('usage-time-ms') || '0', 10);
+                usageTime += 60000; // add 1 minute
+
+                if (usageTime >= 5 * 60 * 60 * 1000) {
+                    const modal = document.getElementById('donation-modal');
+                    if (modal && modal.classList.contains('hidden')) {
+                        modal.classList.remove('hidden');
+                        // Reset timer after showing
+                        usageTime = 0;
+                    }
                 }
-            }
+                localStorage.setItem('usage-time-ms', usageTime.toString());
+            }, 60000); // Check every minute
         }
+
+        // Expose function to disable ads from donation modal
+        window.disableAdsFromModal = function() {
+            if (projectData && projectData.settings) {
+                projectData.settings.disable_ads = true;
+                persistProject();
+            }
+            window.closeDonationModal();
+        };
 
         window.closeDonationModal = function() {
             const modal = document.getElementById('donation-modal');
