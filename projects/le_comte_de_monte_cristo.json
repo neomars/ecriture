@@ -1,0 +1,150 @@
+{
+    "settings": {
+        "title": "Le Comte de Monte-Cristo",
+        "daily_goal": 500,
+        "overall_goal": 50000,
+        "overall_written": 70,
+        "daily_written": 0,
+        "lang": "fr"
+    },
+    "manuscript": [
+        {
+            "id": "chap_1",
+            "type": "chapter",
+            "title": "Chapitre 1 : Marseille - L'arrivée",
+            "summary": "Le navire Le Pharaon arrive à Marseille. Edmond Dantès, le second, annonce la mort du capitaine Leclère.",
+            "children": [
+                {
+                    "id": "scene_1_1",
+                    "type": "scene",
+                    "title": "Le retour du Pharaon",
+                    "content": "Le 24 février 1815, la vigie de Notre-Dame de la Garde signala le trois-mâts le Pharaon, venant de Smyrne, Trieste et Naples.\n\nComme d'habitude, un pilote côtier partit immédiatement du port, rasa le château d'If, et alla aborder le navire entre le cap de Morgiou et l'île de Riou."
+                }
+            ]
+        },
+        {
+            "id": "chap_2",
+            "type": "chapter",
+            "title": "Chapitre 2 : Le père et le fils",
+            "summary": "Edmond Dantès rend visite à son vieux père et découvre qu'il a vécu dans la misère pour rembourser une dette à Caderousse.",
+            "children": [
+                {
+                    "id": "scene_2_1",
+                    "type": "scene",
+                    "title": "Les retrouvailles",
+                    "content": "Dantès laissa Morrel, et, pour courir plus vite, alla par la rue de la Loge... Il arriva à la maison paternelle."
+                }
+            ]
+        }
+    ],
+    "plot": {
+        "plotlines": [
+            {
+                "id": "pl_1",
+                "title": "Scènes"
+            },
+            {
+                "id": "pl_2",
+                "title": "Vengeance"
+            },
+            {
+                "id": "pl_3",
+                "title": "Amour"
+            },
+            {
+                "id": "pl_4",
+                "title": "Trahison"
+            }
+        ],
+        "cards": [
+            {
+                "id": "card_1",
+                "plotline_id": "pl_1",
+                "scene_id": "scene_1_1",
+                "title": "Arrivée",
+                "content": "Le Pharaon arrive au port de Marseille."
+            },
+            {
+                "id": "card_2",
+                "plotline_id": "pl_4",
+                "scene_id": "scene_1_1",
+                "title": "La jalousie de Danglars",
+                "content": "Danglars observe Dantès avec jalousie et haine."
+            }
+        ]
+    },
+    "characters": [
+        {
+            "id": "char_1",
+            "name": "Edmond Dantès",
+            "role": "Protagoniste",
+            "description": "Jeune marin prometteur de dix-neuf ans, droit, honnête et naïf. Il devient le Comte de Monte-Cristo."
+        },
+        {
+            "id": "char_2",
+            "name": "Mercédès Herrera",
+            "role": "Intérêt amoureux",
+            "description": "La belle Catalane, fiancée d'Edmond Dantès. Elle finira par épouser Fernand Mondego."
+        },
+        {
+            "id": "char_3",
+            "name": "Danglars",
+            "role": "Antagoniste",
+            "description": "Comptable sur Le Pharaon, jaloux du succès de Dantès. Il rédige la lettre de dénonciation."
+        },
+        {
+            "id": "char_4",
+            "name": "Fernand Mondego",
+            "role": "Antagoniste",
+            "description": "Cousin de Mercédès, secrètement amoureux d'elle. Il participe au complot contre Dantès."
+        },
+        {
+            "id": "char_5",
+            "name": "Gérard de Villefort",
+            "role": "Antagoniste",
+            "description": "Substitut du procureur du roi à Marseille. Il condamne Dantès pour protéger son père, un bonapartiste."
+        },
+        {
+            "id": "char_6",
+            "name": "Abbé Faria",
+            "role": "Mentor",
+            "description": "Prêtre savant emprisonné au château d'If. Il instruit Dantès et lui révèle l'emplacement de son trésor."
+        }
+    ],
+    "story_notes": [
+        {
+            "id": "note_1",
+            "title": "Château d'If",
+            "type": "Lieu",
+            "content": "Forteresse située sur l'îlot d'If au large de Marseille, utilisée comme prison politique."
+        },
+        {
+            "id": "note_2",
+            "title": "L'île de Monte-Cristo",
+            "type": "Lieu",
+            "content": "Île de la mer Tyrrhénienne où l'Abbé Faria a caché son immense trésor."
+        }
+    ],
+    "key_events": [
+        {
+            "id": "evt_1",
+            "title": "L'arrestation",
+            "description": "Dantès est arrêté le jour de ses fiançailles avec Mercédès.",
+            "chapter_id": "chap_2",
+            "characters": [
+                "char_1",
+                "char_2"
+            ]
+        },
+        {
+            "id": "evt_2",
+            "title": "La rencontre avec l'Abbé Faria",
+            "description": "Dantès rencontre l'Abbé Faria au château d'If.",
+            "chapter_id": "chap_2",
+            "characters": [
+                "char_1",
+                "char_6"
+            ]
+        }
+    ]
+}

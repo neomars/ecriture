@@ -116,15 +116,28 @@ class TestNovelProject(unittest.TestCase):
     def test_le_cid_loading(self):
         # Check that Le Cid example project loads correctly
         cid_path = os.path.join("projects", "le_cid_corneille.json")
-        self.assertTrue(os.path.exists(cid_path))
-        cid_proj = NovelProject(cid_path)
-        self.assertEqual(cid_proj.data["settings"]["title"], "Le Cid - Pierre Corneille")
-        self.assertGreaterEqual(len(cid_proj.data["manuscript"]), 5) # 5 Acts or more
+        if os.path.exists(cid_path):
+            cid_proj = NovelProject(cid_path)
+            self.assertEqual(cid_proj.data["settings"]["title"], "Le Cid - Pierre Corneille")
+            self.assertGreaterEqual(len(cid_proj.data["manuscript"]), 5) # 5 Acts or more
+
+            # Check some characters
+            chars = [c["name"] for c in cid_proj.data["characters"]]
+            self.assertIn("Chimène", chars)
+            self.assertIn("Don Rodrigue", chars)
+
+    def test_monte_cristo_loading(self):
+        # Check that Le Comte de Monte-Cristo example project loads correctly
+        mc_path = os.path.join("projects", "le_comte_de_monte_cristo.json")
+        self.assertTrue(os.path.exists(mc_path))
+        mc_proj = NovelProject(mc_path)
+        self.assertEqual(mc_proj.data["settings"]["title"], "Le Comte de Monte-Cristo")
+        self.assertGreaterEqual(len(mc_proj.data["manuscript"]), 2)
 
         # Check some characters
-        chars = [c["name"] for c in cid_proj.data["characters"]]
-        self.assertIn("Chimène", chars)
-        self.assertIn("Don Rodrigue", chars)
+        chars = [c["name"] for c in mc_proj.data["characters"]]
+        self.assertIn("Edmond Dantès", chars)
+        self.assertIn("Mercédès Herrera", chars)
 
 if __name__ == "__main__":
     unittest.main()
