@@ -20,6 +20,7 @@ jobs:
             artifact_name: ecriture-windows.exe
             pyinstaller_cmd: >
               pyinstaller --noconfirm --onefile --windowed
+              --icon=ico-ecriture.ico
               --add-data "static;static" 
               --add-data "templates;templates" 
               --add-data "locales;locales" 
