@@ -18,12 +18,40 @@ jobs:
           # Configuration pour Windows
           - os: windows-latest
             artifact_name: ecriture-windows.exe
-            pyinstaller_cmd: pyinstaller --noconfirm --onefile --windowed --add-data "static;static" --add-data "templates;templates" --add-data "locales;locales" --add-data "images;images" --name ecriture main.py
+            pyinstaller_cmd: >
+              pyinstaller --noconfirm --onefile --windowed 
+              --add-data "static;static" 
+              --add-data "templates;templates" 
+              --add-data "locales;locales" 
+              --add-data "images;images" 
+              --collect-all llama_cpp 
+              --collect-all transformers 
+              --collect-all huggingface_hub 
+              --collect-all tokenizers 
+              --collect-all torch 
+              --hidden-import=filelock 
+              --hidden-import=fsspec 
+              --hidden-import=certifi 
+              --name ecriture main.py
             bin_path: dist/ecriture.exe
           # Configuration pour macOS
           - os: macos-latest
             artifact_name: ecriture-macos.dmg
-            pyinstaller_cmd: pyinstaller --noconfirm --onefile --windowed --add-data "static:static" --add-data "templates:templates" --add-data "locales:locales" --add-data "images:images" --name ecriture main.py
+            pyinstaller_cmd: >
+              pyinstaller --noconfirm --onefile --windowed 
+              --add-data "static:static" 
+              --add-data "templates:templates" 
+              --add-data "locales:locales" 
+              --add-data "images:images" 
+              --collect-all llama_cpp 
+              --collect-all transformers 
+              --collect-all huggingface_hub 
+              --collect-all tokenizers 
+              --collect-all torch 
+              --hidden-import=filelock 
+              --hidden-import=fsspec 
+              --hidden-import=certifi 
+              --name ecriture main.py
             bin_path: dist/ecriture-macos.dmg
           # Configuration pour Linux corrigée
           - os: ubuntu-latest
