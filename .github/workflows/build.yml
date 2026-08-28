@@ -19,7 +19,7 @@ jobs:
           - os: windows-latest
             artifact_name: ecriture-windows.exe
             pyinstaller_cmd: >
-              pyinstaller --noconfirm --onefile
+              pyinstaller --noconfirm --onefile --windowed
               --add-data "static;static" 
               --add-data "templates;templates" 
               --add-data "locales;locales" 
@@ -57,7 +57,7 @@ jobs:
           - os: ubuntu-latest
             artifact_name: ecriture-linux
             pyinstaller_cmd: >
-              pyinstaller --noconfirm --onefile 
+              pyinstaller --noconfirm --onefile --windowed
               --add-data "static:static" 
               --add-data "templates:templates" 
               --add-data "locales:locales" 
