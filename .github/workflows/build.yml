@@ -38,7 +38,7 @@ jobs:
           - os: macos-latest
             artifact_name: ecriture-macos.dmg
             pyinstaller_cmd: >
-              pyinstaller --noconfirm --onefile  
+              pyinstaller --noconfirm --onefile --windowed 
               --add-data "static:static" 
               --add-data "templates:templates" 
               --add-data "locales:locales" 
