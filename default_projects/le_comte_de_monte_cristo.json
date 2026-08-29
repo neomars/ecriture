@@ -1722,6 +1722,97 @@
                 "plotline_id": "pl_4",
                 "scene_id": "scene_1_1",
                 "title": "La jalousie de Danglars"
+            },
+            {
+                "content": "Edmond retrouve son père et découvre la dette remboursée par Caderousse.",
+                "id": "card_3",
+                "plotline_id": "pl_1",
+                "scene_id": "scene_2_1",
+                "title": "Le père et le fils"
+            },
+            {
+                "content": "Edmond et Mercédès célèbrent leurs retrouvailles sous les yeux de Fernand.",
+                "id": "card_4",
+                "plotline_id": "pl_3",
+                "scene_id": "scene_3_1",
+                "title": "Retrouvailles amoureuses"
+            },
+            {
+                "content": "Fernand, fou de jalousie, assiste au retour d'Edmond auprès de Mercédès.",
+                "id": "card_5",
+                "plotline_id": "pl_4",
+                "scene_id": "scene_3_1",
+                "title": "La jalousie de Fernand"
+            },
+            {
+                "content": "Danglars rédige la lettre de dénonciation avec la complicité de Fernand, pendant que Caderousse s'enivre.",
+                "id": "card_6",
+                "plotline_id": "pl_4",
+                "scene_id": "scene_4_1",
+                "title": "Le Complot"
+            },
+            {
+                "content": "Pendant le repas des fiançailles, Edmond est arrêté brutalement devant tous ses proches.",
+                "id": "card_7",
+                "plotline_id": "pl_1",
+                "scene_id": "scene_5_1",
+                "title": "L'arrestation d'Edmond"
+            },
+            {
+                "content": "Villefort, ambitieux substitut du procureur, reçoit la lettre dénonçant Edmond lors de ses propres fiançailles.",
+                "id": "card_8",
+                "plotline_id": "pl_1",
+                "scene_id": "scene_6_1",
+                "title": "L'interruption chez Villefort"
+            },
+            {
+                "content": "Villefort choisit de sacrifier Edmond pour protéger son père, un bonapartiste.",
+                "id": "card_9",
+                "plotline_id": "pl_4",
+                "scene_id": "scene_6_1",
+                "title": "La décision de Villefort"
+            },
+            {
+                "content": "Le baron Danglars, en fuite, tombe aux mains des bandits de Luigi Vampa dans la campagne romaine.",
+                "id": "card_10",
+                "plotline_id": "pl_2",
+                "scene_id": "scene_114_1",
+                "title": "Danglars capturé"
+            },
+            {
+                "content": "Pour chaque repas, Danglars doit payer une somme astronomique, épuisant ainsi sa fortune.",
+                "id": "card_11",
+                "plotline_id": "pl_2",
+                "scene_id": "scene_115_1",
+                "title": "La faim et l'extorsion"
+            },
+            {
+                "content": "Poussé à bout, Danglars se repent. Edmond Dantès, révélant son identité, lui pardonne et lui laisse la vie sauve.",
+                "id": "card_12",
+                "plotline_id": "pl_2",
+                "scene_id": "scene_116_1",
+                "title": "Le Pardon"
+            },
+            {
+                "content": "Maximilien Morrel et Valentine sont réunis par l'intervention du Comte.",
+                "id": "card_13",
+                "plotline_id": "pl_3",
+                "scene_id": "scene_117_1",
+                "title": "Les amoureux réunis"
+            },
+            {
+                "content": "Le Comte fait ses adieux et part avec Haydée, laissant le message ultime : 'Attendre et espérer'.",
+                "id": "card_14",
+                "plotline_id": "pl_1",
+                "scene_id": "scene_117_1",
+                "title": "Le départ de Monte-Cristo"
+            },
+            {
+                "content": "Haydée avoue son amour absolu au Comte, lui redonnant goût à la vie.",
+                "id": "card_15",
+                "plotline_id": "pl_3",
+                "scene_id": "scene_117_1",
+                "title": "L'amour de Haydée"
             }
         ],
         "plotlines": [
