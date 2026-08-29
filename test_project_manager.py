@@ -129,7 +129,7 @@ class TestNovelProject(unittest.TestCase):
 
     def test_monte_cristo_loading(self):
         # Check that Le Comte de Monte-Cristo example project loads correctly
-        mc_path = os.path.join("projects", "le_comte_de_monte_cristo.json")
+        mc_path = os.path.join("default_projects", "le_comte_de_monte_cristo.json")
         self.assertTrue(os.path.exists(mc_path))
         mc_proj = NovelProject(mc_path)
         self.assertEqual(mc_proj.data["settings"]["title"], "Le Comte de Monte-Cristo")

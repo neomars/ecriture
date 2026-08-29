@@ -81,8 +81,20 @@ PROJECTS_DIR = "projects"
 ACTIVE_CONFIG_FILE = "active_project.txt"
 
 # Ensure projects directory exists
+import shutil
+
+def init_default_projects():
+    default_dir = resource_path("default_projects")
+    if os.path.exists(default_dir):
+        for f in os.listdir(default_dir):
+            if f.endswith(".json"):
+                dest = os.path.join(PROJECTS_DIR, f)
+                if not os.path.exists(dest):
+                    shutil.copy(os.path.join(default_dir, f), dest)
+
 if not os.path.exists(PROJECTS_DIR):
     os.makedirs(PROJECTS_DIR)
+init_default_projects()
 
 def get_active_project_filename():
     """Gets the currently active project filename from config or defaults."""
