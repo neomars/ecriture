@@ -24,7 +24,7 @@ jobs:
               --add-data "static;static" 
               --add-data "templates;templates" 
               --add-data "locales;locales" 
-              --add-data "images;images" 
+              --add-data "images;images" --add-data "default_projects;default_projects"
               --collect-all llama_cpp 
               --collect-all transformers 
               --collect-all huggingface_hub 
@@ -43,7 +43,7 @@ jobs:
               --add-data "static:static" 
               --add-data "templates:templates" 
               --add-data "locales:locales" 
-              --add-data "images:images" 
+              --add-data "images:images" --add-data "default_projects:default_projects"
               --collect-all llama_cpp 
               --collect-all transformers 
               --collect-all huggingface_hub 
@@ -62,7 +62,7 @@ jobs:
               --add-data "static:static" 
               --add-data "templates:templates" 
               --add-data "locales:locales" 
-              --add-data "images:images" 
+              --add-data "images:images" --add-data "default_projects:default_projects"
               --collect-all llama_cpp 
               --collect-all transformers 
               --collect-all huggingface_hub 
