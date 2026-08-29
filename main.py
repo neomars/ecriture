@@ -100,6 +100,11 @@ def get_active_project_filename():
     # Fallback: scan projects directory or create a default one
     files = [f for f in os.listdir(PROJECTS_DIR) if f.endswith(".json")]
     if files:
+        # Prioritize le_comte_de_monte_cristo.json if it exists
+        if "le_comte_de_monte_cristo.json" in files:
+            set_active_project_filename("le_comte_de_monte_cristo.json")
+            return "le_comte_de_monte_cristo.json"
+
         # Save first as active
         set_active_project_filename(files[0])
         return files[0]
