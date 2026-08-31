@@ -1,11 +1,14 @@
 name: Compilation Multi-Plateformes
+
 permissions:
   contents: write
+
 on:
   push:
     tags:
       - 'v*'
   workflow_dispatch:
+
 jobs:
   # ÉTAPE 1 : Compilation sur les 3 OS en parallèle
   build:
@@ -17,7 +20,8 @@ jobs:
         include:
           # Configuration pour Windows
           - os: windows-latest
-            artifact_name: ecriture-windows.exe
+            # On stocke temporairement l'exe et le msix dans le même artefact zip pour Windows
+            artifact_name: ecriture-windows
             pyinstaller_cmd: >
               pyinstaller --noconfirm --onefile --windowed
               --icon=ico-ecriture.ico
@@ -34,10 +38,12 @@ jobs:
               --hidden-import=fsspec 
               --hidden-import=certifi 
               --name ecriture main.py
-            bin_path: dist/ecriture.exe
+            # On demande d'uploader tout le dossier dist pour Windows
+            bin_path: dist/
+            
           # Configuration pour macOS
           - os: macos-latest
-            artifact_name: ecriture-macos.dmg
+            artifact_name: ecriture-macos
             pyinstaller_cmd: >
               pyinstaller --noconfirm --onefile --windowed 
               --add-data "static:static" 
@@ -54,6 +60,7 @@ jobs:
               --hidden-import=certifi 
               --name ecriture main.py
             bin_path: dist/ecriture-macos.dmg
+            
           # Configuration pour Linux corrigée
           - os: ubuntu-latest
             artifact_name: ecriture-linux
@@ -73,20 +80,24 @@ jobs:
               --hidden-import=certifi 
               --name ecriture-linux main.py
             bin_path: dist/ecriture-linux
+
     steps:
       # 1. Récupérer le code source du dépôt
       - name: Checkout du code
         uses: actions/checkout@v4
+
       # 2. Installer Python
       - name: Configuration de Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+
       # 3. Installer Node.js
       - name: Configuration de Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+
       # 4. Compiler les assets JavaScript
       - name: Build du Frontend JS
         shell: bash
@@ -95,6 +106,7 @@ jobs:
             npm ci
             npm run build --if-present
           fi
+
       # 5. Installer les dépendances Python & PyInstaller
       - name: Installation des dépendances Python
         shell: bash
@@ -104,20 +116,38 @@ jobs:
           if [ -f "requirements.txt" ]; then
             pip install -r requirements.txt
           fi
+
       # 6. Exécuter la commande de compilation spécifique à l'OS
       - name: Compilation avec PyInstaller
         run: ${{ matrix.pyinstaller_cmd }}
-      # 7. Étape spécifique macOS : Transformer le .app généré en fichier .dmg
+
+      # 7a. Étape spécifique macOS : Transformer le .app généré en fichier .dmg
       - name: Génération du .dmg macOS
         if: matrix.os == 'macos-latest'
         run: |
           hdiutil create -volname "Ecriture" -srcfolder dist/ecriture.app -ov -format UDZO dist/ecriture-macos.dmg
-      # 8. Sauvegarder l'exécutable/DMG dans les artefacts GitHub temporaires
+
+      # 7b. Étape spécifique Windows : Création du package MSIX
+      - name: Génération du MSIX Windows
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          # 1. Copier l'exécutable généré dans le dossier préparé du MSIX
+          Copy-Item -Path "dist\ecriture.exe" -Destination "Ecriture_MSIX\"
+          
+          # 2. Localiser l'outil makeappx.exe dans le SDK Windows du runner
+          $makeappx = (Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin\*\x64\makeappx.exe" | Sort-Object -Descending | Select-Object -First 1).FullName
+          
+          # 3. Packager le dossier en un fichier .msix et le placer dans le dossier dist
+          & $makeappx pack /d "Ecriture_MSIX" /p "dist\Ecriture.msix"
+
+      # 8. Sauvegarder l'exécutable/DMG/MSIX dans les artefacts GitHub temporaires
       - name: Upload de l'artefact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
           path: ${{ matrix.bin_path }}
+
   # ÉTAPE 2 : Regroupement et publication propre sur la Release
   release:
     name: Publier la Release
@@ -130,6 +160,7 @@ jobs:
         with:
           path: binaires
           merge-multiple: true
+
       - name: Créer la Release GitHub avec tous les fichiers
         uses: softprops/action-gh-release@v2
         with:
