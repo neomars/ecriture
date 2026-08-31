@@ -16,6 +16,41 @@ class AIClient:
     _instance = None
     _lock = threading.Lock()
 
+    @staticmethod
+    def _get_saved_path_file():
+        # Store the path file in standard app cache or local path
+        if "XDG_CACHE_HOME" in os.environ:
+            base = os.path.join(os.environ["XDG_CACHE_HOME"], "ecriture")
+        else:
+            base = os.path.join(os.path.expanduser("~"), ".cache", "ecriture")
+        try:
+            os.makedirs(base, exist_ok=True)
+            return os.path.join(base, "ai_model_path.txt")
+        except Exception:
+            return os.path.join(os.path.abspath("."), "ai_model_path.txt")
+
+    @classmethod
+    def _load_saved_model_dir(cls):
+        path_file = cls._get_saved_path_file()
+        if os.path.exists(path_file):
+            try:
+                with open(path_file, "r", encoding="utf-8") as f:
+                    saved_dir = f.read().strip()
+                    if saved_dir and os.path.isdir(saved_dir):
+                        return saved_dir
+            except Exception:
+                pass
+        return None
+
+    def save_model_dir(self, directory):
+        self.model_dir = directory
+        self.model_path = os.path.join(self.model_dir, self.model_filename)
+        try:
+            with open(self._get_saved_path_file(), "w", encoding="utf-8") as f:
+                f.write(directory)
+        except Exception as e:
+            print(f"Failed to save AI model directory to file: {e}")
+
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
             with cls._lock:
@@ -23,8 +58,14 @@ class AIClient:
                     cls._instance = super(AIClient, cls).__new__(cls)
                     cls._instance._llm = None
                     cls._instance.model_filename = "gemma-2-2b-it-Q8_0.gguf"
-                    from util import get_model_dir
-                    cls._instance.model_dir = get_model_dir()
+
+                    saved_dir = cls._load_saved_model_dir()
+                    if saved_dir:
+                        cls._instance.model_dir = saved_dir
+                    else:
+                        from util import get_model_dir
+                        cls._instance.model_dir = get_model_dir()
+
                     cls._instance.model_path = os.path.join(cls._instance.model_dir, cls._instance.model_filename)
         return cls._instance
 
