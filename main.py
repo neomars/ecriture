@@ -1141,6 +1141,9 @@ def _install_gemma_thread(lang="fr"):
         # Atomic rename after full download
         os.replace(temp_model_path, model_path)
 
+        # Save the confirmed model directory for subsequent launches
+        ai_client.save_model_dir(model_dir)
+
         INSTALL_STATE["status"] = "done"
         INSTALL_STATE["message"] = get_str("gemma_install_success")
         INSTALL_STATE["progress"] = 100
