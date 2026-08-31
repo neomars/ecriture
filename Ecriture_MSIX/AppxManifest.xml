@@ -8,7 +8,7 @@
   <Identity Name="Écriture" Publisher="CN=70a120b6-0ca3-4d7e-86b7-d5c01e68dedd" Version="1.0.0.0" ProcessorArchitecture="x64" />
   
   <Properties>
-    <DisplayName>Écriture</DisplayName>
+    <DisplayName>Neomars.Ecriture</DisplayName>
     <PublisherDisplayName>Neomars</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
