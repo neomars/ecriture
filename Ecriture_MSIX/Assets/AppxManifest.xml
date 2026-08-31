@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+         xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+         xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+         IgnorableNamespaces="uap rescap">
+         
+  <!-- REMPLACEZ Name ET Publisher PAR VOS VALEURS PARTNER CENTER -->
+  <Identity Name="Écriture" Publisher="CN=70a120b6-0ca3-4d7e-86b7-d5c01e68dedd" Version="1.0.0.0" ProcessorArchitecture="x64" />
+  
+  <Properties>
+    <DisplayName>Écriture</DisplayName>
+    <PublisherDisplayName>Neomars</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+  </Properties>
+  
+  <Resources>
+    <Resource Language="fr-FR" />
+  </Resources>
+  
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.22621.0" />
+  </Dependencies>
+  
+  <!-- runFullTrust est OBLIGATOIRE pour un .exe classique -->
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
+  
+  <Applications>
+    <Application Id="EcritureApp" Executable="ecriture.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements DisplayName="Écriture" Description="Votre assistant littéraire personnel, 100% privé et local." BackgroundColor="transparent" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png">
+      </uap:VisualElements>
+    </Application>
+  </Applications>
+</Package>
