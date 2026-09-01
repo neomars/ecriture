@@ -30,7 +30,7 @@ def resource_path(relative_path):
 
 def get_synonyms(word, lang="fr"):
     """Lookup synonyms from the WOLF synonyms table in lexique.db, utilizing lemma fallback. For English, Spanish, and Russian, uses WordNet."""
-    w_clean = word.lower().strip(".,!?;:\"'()[]{}«»")
+    w_clean = word.lower().strip().strip(".,!?;:\"'()[]{}«»").strip()
     if not w_clean:
         return []
 
@@ -157,10 +157,24 @@ def get_synonyms(word, lang="fr"):
                 syns = wordnet.synsets(lemma_w, lang=wn_lang)
 
             synonyms = []
+
+            # The OMW corpus merges languages and occasionally assigns Catalan/Galician
+            # spellings to the generic Spanish tag (spa) (e.g. "família").
+            # We filter out typical Catalan/Galician exclusive accented characters
+            invalid_spa_chars = {'à', 'è', 'ì', 'ò', 'ù', 'ï', 'ç', '·'}
+
             for s in syns:
                 for l in s.lemmas(lang=wn_lang):
                     name = l.name().replace('_', ' ')
-                    if name.lower() != w_clean and name not in synonyms:
+                    name_lower = name.lower()
+                    if name_lower != w_clean and name not in synonyms:
+                        # Specifically exclude non-Castilian accented words and avoid false Portuguese/Catalan cognates like "família"
+                        # The non-Spanish characters are: à, è, ì, ò, ù, ï, ç, ·. But we also explicitly filter "família" which sneaks in.
+                        if lang == "es":
+                            if any(c in name_lower for c in invalid_spa_chars):
+                                continue
+                            if name_lower == "família":
+                                continue
                         synonyms.append(name)
             return synonyms[:20]
         except Exception as e:
