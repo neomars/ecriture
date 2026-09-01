@@ -88,7 +88,7 @@
                         model: projectData.settings.ai_model || "llama3",
                         inject_lore_context: injectLore,
                         scene_id: sceneId,
-                        lang: activeLang
+                        lang: window.activeLang
                     })
                 });
 
@@ -189,7 +189,7 @@
                         text: text,
                         temperature: (projectData.settings.ai_temperature !== undefined) ? projectData.settings.ai_temperature : 0.7,
                         model: projectData.settings.ai_model || "llama3",
-                        lang: activeLang,
+                        lang: window.activeLang,
                         lore_context: loreContext
                     })
                 });
@@ -271,7 +271,7 @@
                         model: projectData.settings.ai_model || "llama3",
                         inject_lore_context: injectLore,
                         scene_id: sceneId,
-                        lang: activeLang
+                        lang: window.activeLang
                     })
                 });
 
@@ -310,7 +310,7 @@
                         text: text,
                         temperature: 0.1,
                         model: projectData.settings.ai_model || "llama3",
-                        lang: activeLang
+                        lang: window.activeLang
                     })
                 });
 
@@ -393,7 +393,7 @@
 
             interviewMessages.push({ role: "system", content: sysPrompt });
 
-            const firstMsg = activeLang === 'fr' ?
+            const firstMsg = window.activeLang === 'fr' ?
                 `*Vous vous asseyez en face de ${char.name}.* Bonjour, pouvons-nous discuter ?` :
                 `*You sit across from ${char.name}.* Hello, can we talk?`;
 
@@ -452,7 +452,7 @@
                         temperature: 0.8,
                         model: projectData.settings.ai_model || "llama3",
                         inject_lore_context: false, // We already injected it in system prompt
-                        lang: activeLang
+                        lang: window.activeLang
                     })
                 });
 
@@ -460,7 +460,7 @@
                     const data = await res.json();
                     interviewMessages[loadingIdx].content = data.message;
                 } else {
-                    interviewMessages[loadingIdx].content = activeLang === 'fr' ? "Le personnage ne répond pas." : "Character doesn't reply.";
+                    interviewMessages[loadingIdx].content = window.activeLang === 'fr' ? "Le personnage ne répond pas." : "Character doesn't reply.";
                 }
             } catch (e) {
                 interviewMessages[loadingIdx].content = "Error.";
@@ -549,7 +549,7 @@
                         model: (projectData && projectData.settings) ? projectData.settings.ai_model : "llama3",
                         inject_lore_context: injectLore,
                         scene_id: sceneId,
-                        lang: activeLang
+                        lang: window.activeLang
                     })
                 });
 
@@ -588,7 +588,7 @@
                         temperature: (projectData && projectData.settings && projectData.settings.ai_temperature !== undefined) ? projectData.settings.ai_temperature : 0.7,
                         model: (projectData && projectData.settings) ? projectData.settings.ai_model : "llama3",
                         inject_lore_context: false,
-                        lang: activeLang
+                        lang: window.activeLang
                     })
                 });
 

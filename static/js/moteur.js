@@ -53,7 +53,7 @@
         // Core application data state
         let projectData = null;
         let translations = {};
-        let activeLang = "fr";
+        window.activeLang = "fr";
 
         let activeNodeId = null;     // ID of current active workspace item (scene/chap/char/note)
         let activeNodeType = null;   // "scene", "chapter", "character", "note", or "plot_grid"
@@ -604,7 +604,7 @@
 
                 // Read language preference, fallback to localStorage, then English
                 let storedLang = localStorage.getItem('app-lang');
-                activeLang = storedLang || projectData.settings.lang || "en";
+                window.activeLang = storedLang || projectData.settings.lang || "en";
                 projectData.settings.lang = activeLang;
                 document.getElementById('lang-select').value = activeLang;
 
@@ -643,7 +643,7 @@
             try {
                 const res = await fetch(`/api/locale/${lang}`);
                 translations = await res.json();
-                activeLang = lang;
+                window.activeLang = lang;
                 translateDOM();
             } catch (err) {
                 console.error("Could not load locale:", err);
@@ -2488,8 +2488,8 @@ function renderStatisticsDashboard() {
                 const item = CHAPTER_TYPES[key];
                 if (item.category !== category) return;
 
-                const title = activeLang === 'fr' ? item.title_fr : item.title_en;
-                const desc = activeLang === 'fr' ? item.desc_fr : item.desc_en;
+                const title = window.activeLang === 'fr' ? item.title_fr : item.title_en;
+                const desc = window.activeLang === 'fr' ? item.desc_fr : item.desc_en;
 
                 const card = document.createElement('div');
                 card.className = "flex items-start space-x-3 p-3 bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 rounded-lg cursor-pointer transition-all";
@@ -2510,7 +2510,7 @@ function renderStatisticsDashboard() {
             const item = CHAPTER_TYPES[subType];
             if (!item) return;
 
-            const isFr = (activeLang === 'fr');
+            const isFr = (window.activeLang === 'fr');
 
             // Generate customized Title
             let defaultTitle = isFr ? item.default_title_fr : item.default_title_en;
@@ -2792,7 +2792,7 @@ function renderStatisticsDashboard() {
                 console.error("Failed to fetch Gemma models:", err);
             }
 
-            const offlineText = activeLang === 'fr' ? " (Simulé / Hors ligne)" : " (Simulated / Offline)";
+            const offlineText = window.activeLang === 'fr' ? " (Simulé / Hors ligne)" : " (Simulated / Offline)";
             const standardModels = [
                 { value: "llama3", label: "Llama 3" },
                 { value: "llama3.1", label: "Llama 3.1" },
@@ -3171,7 +3171,7 @@ function renderStatisticsDashboard() {
 
         function openRelectureModal() {
             if (!activeNodeId || activeNodeType !== "scene") {
-                alert(activeLang === 'fr' ? "Veuillez sélectionner une scène du manuscrit pour ouvrir l'Atelier de Relecture." : "Please select a manuscript scene to open the Proofreading Workshop.");
+                alert(window.activeLang === 'fr' ? "Veuillez sélectionner une scène du manuscrit pour ouvrir l'Atelier de Relecture." : "Please select a manuscript scene to open the Proofreading Workshop.");
                 return;
             }
 
@@ -3527,7 +3527,7 @@ function renderStatisticsDashboard() {
                 // 1. Scene header node (positioned at the top)
                 let sceneHeaderHtml = `
                     <div class="px-4 py-2.5 bg-teal-600 text-white rounded-xl shadow-md text-xs font-bold text-center w-52 border border-teal-500/20 relative">
-                        <div class="uppercase tracking-wider opacity-75">${activeLang === 'fr' ? 'Scène' : 'Scene'} ${index + 1}</div>
+                        <div class="uppercase tracking-wider opacity-75">${window.activeLang === 'fr' ? 'Scène' : 'Scene'} ${index + 1}</div>
                         <div class="truncate text-sm font-georgia mt-0.5" title="${scene.title}">${scene.title}</div>
                         <div class="absolute -bottom-3 left-1/2 transform -translate-x-1/2 bg-teal-600 text-white border-2 border-slate-100 rounded-full w-6 h-6 flex items-center justify-center text-[10px] font-bold shadow-xs">↓</div>
                     </div>
@@ -3541,7 +3541,7 @@ function renderStatisticsDashboard() {
                 if (cardsInScene.length === 0) {
                     cardsStackHtml += `
                         <div class="bg-white border border-dashed border-slate-200 text-slate-400 rounded-xl p-4 text-center text-xs italic">
-                            ${activeLang === 'fr' ? 'Aucune carte.' : 'No cards.'}
+                            ${window.activeLang === 'fr' ? 'Aucune carte.' : 'No cards.'}
                         </div>
                     `;
                 } else {
@@ -3814,7 +3814,7 @@ function renderStatisticsDashboard() {
 
             // Populate CURRENT links
             if (currentEditingCard.links.length === 0) {
-                container.innerHTML = `<span class="text-slate-400 italic text-[11px]">${activeLang === 'fr' ? 'Aucune connexion active.' : 'No active connections.'}</span>`;
+                container.innerHTML = `<span class="text-slate-400 italic text-[11px]">${window.activeLang === 'fr' ? 'Aucune connexion active.' : 'No active connections.'}</span>`;
                 return;
             }
 
@@ -3934,7 +3934,7 @@ function renderStatisticsDashboard() {
         }
 
         async function quitApplication() {
-            if (confirm(activeLang === 'fr' ? "Voulez-vous quitter l'application ?" : "Do you want to quit the application?")) {
+            if (confirm(window.activeLang === 'fr' ? "Voulez-vous quitter l'application ?" : "Do you want to quit the application?")) {
                 try {
                     await fetch('/api/quit', { method: 'POST' });
                 } catch(e) {}

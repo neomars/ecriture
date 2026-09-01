@@ -63,7 +63,7 @@
                     if (selectedText.length > 0) {
                         const span = document.createElement('span');
                         span.className = 'annotation-highlight border-b-2 border-dashed border-indigo-500 cursor-help relative inline';
-                        const defaultText = activeLang === 'fr' ? "Saisissez votre note d'annotation ici..." : "Enter your annotation note here...";
+                        const defaultText = window.activeLang === 'fr' ? "Saisissez votre note d'annotation ici..." : "Enter your annotation note here...";
                         span.setAttribute('data-annotation', defaultText);
                         span.setAttribute('data-annotation-id', 'anno-' + Date.now() + '-' + Math.floor(Math.random() * 1000));
 
@@ -114,17 +114,17 @@
 
             const selectedText = activeSelection.text.trim();
             if (!selectedText) {
-                menu.innerHTML = `<div class="text-[10px] text-slate-400 p-2 italic">${activeLang === 'fr' ? 'Sélectionner un mot' : 'Select a word'}</div>`;
+                menu.innerHTML = `<div class="text-[10px] text-slate-400 p-2 italic">${window.activeLang === 'fr' ? 'Sélectionner un mot' : 'Select a word'}</div>`;
                 return;
             }
 
-            menu.innerHTML = `<div class="text-[10px] text-slate-400 p-2 italic">${activeLang === 'fr' ? 'Recherche...' : 'Searching...'}</div>`;
+            menu.innerHTML = `<div class="text-[10px] text-slate-400 p-2 italic">${window.activeLang === 'fr' ? 'Recherche...' : 'Searching...'}</div>`;
 
             try {
                 const res = await fetch('/api/synonyms', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ word: selectedText, lang: activeLang })
+                    body: JSON.stringify({ word: selectedText, lang: window.activeLang })
                 });
 
                 if (res.ok) {
@@ -132,7 +132,7 @@
                     const synonyms = data.synonyms || [];
 
                     if (synonyms.length === 0) {
-                        menu.innerHTML = `<div class="text-[10px] text-slate-400 p-2 italic">${activeLang === 'fr' ? 'Aucun synonyme' : 'No synonyms found'}</div>`;
+                        menu.innerHTML = `<div class="text-[10px] text-slate-400 p-2 italic">${window.activeLang === 'fr' ? 'Aucun synonyme' : 'No synonyms found'}</div>`;
                     } else {
                         menu.innerHTML = synonyms.map(syn => `
                             <button onclick="applySynonymReplacement('${escapeHtml(syn)}')" class="w-full text-left px-2.5 py-1.5 hover:bg-slate-700 text-slate-100 hover:text-white bg-transparent text-xs font-semibold rounded-md transition-colors block truncate">
@@ -141,11 +141,11 @@
                         `).join('');
                     }
                 } else {
-                    menu.innerHTML = `<div class="text-[10px] text-red-400 p-2 italic">${activeLang === 'fr' ? 'Erreur de chargement' : 'Loading error'}</div>`;
+                    menu.innerHTML = `<div class="text-[10px] text-red-400 p-2 italic">${window.activeLang === 'fr' ? 'Erreur de chargement' : 'Loading error'}</div>`;
                 }
             } catch (err) {
                 console.error("Synonyms load error:", err);
-                menu.innerHTML = `<div class="text-[10px] text-red-400 p-2 italic">${activeLang === 'fr' ? 'Erreur connexion' : 'Network error'}</div>`;
+                menu.innerHTML = `<div class="text-[10px] text-red-400 p-2 italic">${window.activeLang === 'fr' ? 'Erreur connexion' : 'Network error'}</div>`;
             }
         }
 
@@ -258,7 +258,7 @@
                 const response = await fetch('/api/synonyms', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ word: word, lang: activeLang })
+                    body: JSON.stringify({ word: word, lang: window.activeLang })
                 });
                 const data = await response.json();
 
@@ -397,11 +397,11 @@
                 const feedbackEl = document.getElementById('relecture-ai-feedback');
                 if (feedbackEl) {
                     if (cat === "style") {
-                        feedbackEl.innerText = activeLang === 'fr' ? "Pour lancer l'analyse intelligente de style et prose, cliquez sur le bouton ci-dessus." : "To run the style and prose smart analysis, click the button above.";
+                        feedbackEl.innerText = window.activeLang === 'fr' ? "Pour lancer l'analyse intelligente de style et prose, cliquez sur le bouton ci-dessus." : "To run the style and prose smart analysis, click the button above.";
                     } else if (cat === "coherence") {
-                        feedbackEl.innerText = activeLang === 'fr' ? "Pour lancer l'analyse intelligente de cohérence narrative, cliquez sur le bouton ci-dessus." : "To run the narrative coherence smart analysis, click the button above.";
+                        feedbackEl.innerText = window.activeLang === 'fr' ? "Pour lancer l'analyse intelligente de cohérence narrative, cliquez sur le bouton ci-dessus." : "To run the narrative coherence smart analysis, click the button above.";
                     } else if (cat === "worldbuilding") {
-                        feedbackEl.innerText = activeLang === 'fr' ? "Pour lancer l'analyse intelligente de worldbuilding (anachronismes et incohérences de lore), cliquez sur le bouton ci-dessus." : "To run the smart worldbuilding analysis (anachronisms and lore inconsistencies), click the button above.";
+                        feedbackEl.innerText = window.activeLang === 'fr' ? "Pour lancer l'analyse intelligente de worldbuilding (anachronismes et incohérences de lore), cliquez sur le bouton ci-dessus." : "To run the smart worldbuilding analysis (anachronisms and lore inconsistencies), click the button above.";
                     }
                 }
             }
@@ -409,7 +409,7 @@
 
         function autoCorrectTypography() {
             const correctText = (txt) => {
-                if (activeLang === 'fr') {
+                if (window.activeLang === 'fr') {
                     txt = txt.replace(/([^ \u00A0])([?!:;])/g, '$1 $2');
                     txt = txt.replace(/"([^"]+)"/g, '« $1 »');
                     txt = txt.replace(/\.\.\./g, '…');
@@ -473,7 +473,7 @@
             document.getElementById('relecture-stat-paragraphs').innerText = paraCount;
             document.getElementById('relecture-stat-dialogue').innerText = dialogue + "%";
 
-            const reps = getSceneRepetitions(text, activeLang);
+            const reps = getSceneRepetitions(text, window.activeLang);
             const repsListContainer = document.getElementById('relecture-repetitions-list');
             if (repsListContainer) {
                 repsListContainer.innerHTML = "";

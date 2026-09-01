@@ -30,7 +30,7 @@ def resource_path(relative_path):
 
 def get_synonyms(word, lang="fr"):
     """Lookup synonyms from the WOLF synonyms table in lexique.db, utilizing lemma fallback. For English, Spanish, and Russian, uses WordNet."""
-    w_clean = word.lower().strip(".,!?;:\"'()[]{}«»")
+    w_clean = word.lower().strip().strip(".,!?;:\"'()[]{}«»").strip()
     if not w_clean:
         return []
 
@@ -52,6 +52,14 @@ def get_synonyms(word, lang="fr"):
                     nltk.data.find('corpora/omw-1.4')
                 except LookupError:
                     nltk.download('omw-1.4', quiet=True)
+
+                try:
+                    import spacy
+                    if not spacy.util.is_package("es_core_news_sm"):
+                        import spacy.cli
+                        spacy.cli.download("es_core_news_sm")
+                except Exception as e:
+                    print(f"Error checking/downloading spacy model for Spanish: {e}")
             elif lang == "ru":
                 try:
                     nltk.data.find('corpora/extended_omw')
@@ -130,12 +138,43 @@ def get_synonyms(word, lang="fr"):
                                 return res[:20]
                 return []
 
+            lemma_w = w_clean
+            if lang == "es":
+                try:
+                    import spacy
+                    # Cache the model globally to avoid loading it on every call
+                    if "nlp_es" not in globals():
+                        globals()["nlp_es"] = spacy.load("es_core_news_sm")
+                    nlp = globals()["nlp_es"]
+                    doc = nlp(w_clean)
+                    if len(doc) > 0:
+                        lemma_w = doc[0].lemma_
+                except Exception as e:
+                    print(f"Error lemmatizing Spanish word: {e}")
+
             syns = wordnet.synsets(w_clean, lang=wn_lang)
+            if not syns and lemma_w != w_clean:
+                syns = wordnet.synsets(lemma_w, lang=wn_lang)
+
             synonyms = []
+
+            # The OMW corpus merges languages and occasionally assigns Catalan/Galician
+            # spellings to the generic Spanish tag (spa) (e.g. "família").
+            # We filter out typical Catalan/Galician exclusive accented characters
+            invalid_spa_chars = {'à', 'è', 'ì', 'ò', 'ù', 'ï', 'ç', '·'}
+
             for s in syns:
                 for l in s.lemmas(lang=wn_lang):
                     name = l.name().replace('_', ' ')
-                    if name.lower() != w_clean and name not in synonyms:
+                    name_lower = name.lower()
+                    if name_lower != w_clean and name not in synonyms:
+                        # Specifically exclude non-Castilian accented words and avoid false Portuguese/Catalan cognates like "família"
+                        # The non-Spanish characters are: à, è, ì, ò, ù, ï, ç, ·. But we also explicitly filter "família" which sneaks in.
+                        if lang == "es":
+                            if any(c in name_lower for c in invalid_spa_chars):
+                                continue
+                            if name_lower == "família":
+                                continue
                         synonyms.append(name)
             return synonyms[:20]
         except Exception as e:
