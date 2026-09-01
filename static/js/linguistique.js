@@ -149,7 +149,7 @@
             }
         }
 
-        function applySynonymReplacement(synonym) {
+        window.applySynonymReplacement = function applySynonymReplacement(synonym) {
             const editor = document.getElementById('editor-content');
             if (!editor) return;
 
