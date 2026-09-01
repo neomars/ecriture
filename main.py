@@ -64,19 +64,71 @@ def get_synonyms(word, lang="fr"):
             wn_lang = lang_map.get(lang)
 
             if lang == "ru":
-                try:
-                    wordnet.synsets('собака', lang='rus')
-                except:
-                    # Russian requires loading the extended OMW custom lemmas
-                    omw_rus_path = None
-                    for path in nltk.data.path:
-                        try_path = os.path.join(path, "corpora", "extended_omw", "wikt", "wn-wikt-rus.tab")
-                        if os.path.exists(try_path):
-                            omw_rus_path = try_path
-                            break
-                    if omw_rus_path:
-                        with open(omw_rus_path, 'r', encoding='utf-8') as f:
-                            wordnet.custom_lemmas(f, lang='rus')
+                # Russian requires loading the extended OMW custom lemmas.
+                # Due to path resolution bugs in NLTK's OMW reader when combining omw-1.4 and omw-2.0,
+                # we parse the tab-delimited file manually.
+                import zipfile
+                path_to_zip = None
+                path_to_dir = None
+
+                for p in nltk.data.path:
+                    zip_path = os.path.join(p, 'corpora', 'extended_omw.zip')
+                    dir_path = os.path.join(p, 'corpora', 'extended_omw', 'wikt', 'wn-wikt-rus.tab')
+                    if os.path.exists(dir_path):
+                        path_to_dir = dir_path
+                        break
+                    if os.path.exists(zip_path):
+                        path_to_zip = zip_path
+                        break
+
+                if not path_to_dir and not path_to_zip:
+                    return []
+
+                synsets_for_word = set()
+                synonyms = []
+
+                def process_file(f):
+                    lines = f.readlines()
+                    for line in lines:
+                        try:
+                            line_str = line.decode('utf-8') if isinstance(line, bytes) else line
+                        except:
+                            continue
+                        if not line_str.strip() or line_str.startswith('#'):
+                            continue
+                        parts = line_str.strip().split('\t')
+                        if len(parts) >= 3 and parts[2].lower() == w_clean:
+                            synsets_for_word.add(parts[0])
+
+                    if not synsets_for_word:
+                        return []
+
+                    for line in lines:
+                        try:
+                            line_str = line.decode('utf-8') if isinstance(line, bytes) else line
+                        except:
+                            continue
+                        if not line_str.strip() or line_str.startswith('#'):
+                            continue
+                        parts = line_str.strip().split('\t')
+                        if len(parts) >= 3 and parts[0] in synsets_for_word:
+                            syn_word = parts[2].replace('_', ' ')
+                            if syn_word.lower() != w_clean and syn_word not in synonyms:
+                                synonyms.append(syn_word)
+                    return synonyms
+
+                if path_to_dir:
+                    with open(path_to_dir, 'r', encoding='utf-8') as f:
+                        res = process_file(f)
+                        if res is not None:
+                            return res[:20]
+                elif path_to_zip:
+                    with zipfile.ZipFile(path_to_zip, 'r') as z:
+                        with z.open('extended_omw/wikt/wn-wikt-rus.tab') as f:
+                            res = process_file(f)
+                            if res is not None:
+                                return res[:20]
+                return []
 
             syns = wordnet.synsets(w_clean, lang=wn_lang)
             synonyms = []
