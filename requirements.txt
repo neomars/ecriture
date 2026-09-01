@@ -27,3 +27,4 @@ llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/wh
 huggingface-hub
 tqdm
 nltk
+spacy

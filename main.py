@@ -52,6 +52,14 @@ def get_synonyms(word, lang="fr"):
                     nltk.data.find('corpora/omw-1.4')
                 except LookupError:
                     nltk.download('omw-1.4', quiet=True)
+
+                try:
+                    import spacy
+                    if not spacy.util.is_package("es_core_news_sm"):
+                        import spacy.cli
+                        spacy.cli.download("es_core_news_sm")
+                except Exception as e:
+                    print(f"Error checking/downloading spacy model for Spanish: {e}")
             elif lang == "ru":
                 try:
                     nltk.data.find('corpora/extended_omw')
@@ -130,7 +138,24 @@ def get_synonyms(word, lang="fr"):
                                 return res[:20]
                 return []
 
+            lemma_w = w_clean
+            if lang == "es":
+                try:
+                    import spacy
+                    # Cache the model globally to avoid loading it on every call
+                    if "nlp_es" not in globals():
+                        globals()["nlp_es"] = spacy.load("es_core_news_sm")
+                    nlp = globals()["nlp_es"]
+                    doc = nlp(w_clean)
+                    if len(doc) > 0:
+                        lemma_w = doc[0].lemma_
+                except Exception as e:
+                    print(f"Error lemmatizing Spanish word: {e}")
+
             syns = wordnet.synsets(w_clean, lang=wn_lang)
+            if not syns and lemma_w != w_clean:
+                syns = wordnet.synsets(lemma_w, lang=wn_lang)
+
             synonyms = []
             for s in syns:
                 for l in s.lemmas(lang=wn_lang):
