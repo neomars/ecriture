@@ -29,16 +29,37 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 def get_synonyms(word, lang="fr"):
-    """Lookup synonyms from the WOLF synonyms table in lexique.db, utilizing lemma fallback."""
+    """Lookup synonyms from the WOLF synonyms table in lexique.db, utilizing lemma fallback. For English, uses WordNet."""
+    w_clean = word.lower().strip(".,!?;:\"'()[]{}«»")
+    if not w_clean:
+        return []
+
+    if lang == "en":
+        try:
+            import nltk
+            try:
+                nltk.data.find('corpora/wordnet')
+            except LookupError:
+                nltk.download('wordnet', quiet=True)
+            from nltk.corpus import wordnet
+
+            syns = wordnet.synsets(w_clean)
+            synonyms = []
+            for s in syns:
+                for l in s.lemmas():
+                    name = l.name().replace('_', ' ')
+                    if name.lower() != w_clean and name not in synonyms:
+                        synonyms.append(name)
+            return synonyms[:20]
+        except Exception as e:
+            print("Error querying synonyms from wordnet:", e)
+            return []
+
     if lang != "fr":
         return []
 
     db_path = "lexique.db"
     if not os.path.exists(db_path):
-        return []
-
-    w_clean = word.lower().strip(".,!?;:\"'()[]{}«»")
-    if not w_clean:
         return []
 
     import sqlite3
