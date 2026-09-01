@@ -29,6 +29,7 @@ jobs:
               --add-data "templates;templates" 
               --add-data "locales;locales" 
               --add-data "images;images" --add-data "default_projects;default_projects"
+              --add-data "nltk_data;nltk_data"
               --collect-all llama_cpp 
               --collect-all transformers 
               --collect-all huggingface_hub 
@@ -50,6 +51,7 @@ jobs:
               --add-data "templates:templates" 
               --add-data "locales:locales" 
               --add-data "images:images" --add-data "default_projects:default_projects"
+              --add-data "nltk_data:nltk_data"
               --collect-all llama_cpp 
               --collect-all transformers 
               --collect-all huggingface_hub 
@@ -70,6 +72,7 @@ jobs:
               --add-data "templates:templates" 
               --add-data "locales:locales" 
               --add-data "images:images" --add-data "default_projects:default_projects"
+              --add-data "nltk_data:nltk_data"
               --collect-all llama_cpp 
               --collect-all transformers 
               --collect-all huggingface_hub 

@@ -29,16 +29,72 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 def get_synonyms(word, lang="fr"):
-    """Lookup synonyms from the WOLF synonyms table in lexique.db, utilizing lemma fallback."""
+    """Lookup synonyms from the WOLF synonyms table in lexique.db, utilizing lemma fallback. For English, Spanish, and Russian, uses WordNet."""
+    w_clean = word.lower().strip(".,!?;:\"'()[]{}«»")
+    if not w_clean:
+        return []
+
+    if lang in ["en", "es", "ru"]:
+        try:
+            import nltk
+            # Ensure custom nltk_data is in the search path for bundled PyInstaller builds
+            bundled_nltk = resource_path("nltk_data")
+            if bundled_nltk not in nltk.data.path:
+                nltk.data.path.insert(0, bundled_nltk)
+
+            try:
+                nltk.data.find('corpora/wordnet')
+            except LookupError:
+                nltk.download('wordnet', quiet=True)
+
+            if lang == "es":
+                try:
+                    nltk.data.find('corpora/omw-1.4')
+                except LookupError:
+                    nltk.download('omw-1.4', quiet=True)
+            elif lang == "ru":
+                try:
+                    nltk.data.find('corpora/extended_omw')
+                except LookupError:
+                    nltk.download('extended_omw', quiet=True)
+
+            from nltk.corpus import wordnet
+
+            lang_map = {"en": "eng", "es": "spa", "ru": "rus"}
+            wn_lang = lang_map.get(lang)
+
+            if lang == "ru":
+                try:
+                    wordnet.synsets('собака', lang='rus')
+                except:
+                    # Russian requires loading the extended OMW custom lemmas
+                    omw_rus_path = None
+                    for path in nltk.data.path:
+                        try_path = os.path.join(path, "corpora", "extended_omw", "wikt", "wn-wikt-rus.tab")
+                        if os.path.exists(try_path):
+                            omw_rus_path = try_path
+                            break
+                    if omw_rus_path:
+                        with open(omw_rus_path, 'r', encoding='utf-8') as f:
+                            wordnet.custom_lemmas(f, lang='rus')
+
+            syns = wordnet.synsets(w_clean, lang=wn_lang)
+            synonyms = []
+            for s in syns:
+                for l in s.lemmas(lang=wn_lang):
+                    name = l.name().replace('_', ' ')
+                    if name.lower() != w_clean and name not in synonyms:
+                        synonyms.append(name)
+            return synonyms[:20]
+        except Exception as e:
+            print(f"Error querying synonyms from wordnet for {lang}:", e)
+            return []
+
     if lang != "fr":
         return []
 
     db_path = "lexique.db"
     if not os.path.exists(db_path):
-        return []
-
-    w_clean = word.lower().strip(".,!?;:\"'()[]{}«»")
-    if not w_clean:
         return []
 
     import sqlite3
