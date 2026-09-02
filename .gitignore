@@ -9,3 +9,4 @@ novel_export_temp.*
 projects/*
 !projects/.gitkeep
 nltk_data/
+node_modules/
