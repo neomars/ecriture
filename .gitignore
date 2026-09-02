@@ -10,4 +10,3 @@ projects/*
 !projects/.gitkeep
 nltk_data/
 node_modules/
-rapport_tests.txt
