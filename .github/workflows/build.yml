@@ -120,6 +120,12 @@ jobs:
             pip install -r requirements.txt
           fi
 
+      # 5.5. Télécharger les données NLTK
+      - name: Download NLTK data
+        shell: bash
+        run: |
+          python -m nltk.downloader -d nltk_data wordnet omw-1.4 extended_omw
+
       # 6. Exécuter la commande de compilation spécifique à l'OS
       - name: Compilation avec PyInstaller
         run: ${{ matrix.pyinstaller_cmd }}
