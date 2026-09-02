@@ -3600,6 +3600,26 @@ function renderStatisticsDashboard() {
                 timelineContainer.addEventListener('scroll', () => {
                     drawTimelineConnections();
                 });
+                timelineContainer.addEventListener('wheel', (e) => {
+                    if (e.deltaY !== 0 && e.deltaX === 0) {
+                        // Check if vertical scrolling is needed (i.e. is there vertical overflow?)
+                        const isAtTop = timelineContainer.scrollTop === 0 && e.deltaY < 0;
+                        const isAtBottom = timelineContainer.scrollTop + timelineContainer.clientHeight >= timelineContainer.scrollHeight && e.deltaY > 0;
+
+                        // If no vertical overflow, or we are at the top/bottom boundary, map to horizontal scroll
+                        if (timelineContainer.scrollHeight <= timelineContainer.clientHeight || isAtTop || isAtBottom) {
+                            // Only map if we are not at horizontal bounds, to prevent scroll trap of the whole page
+                            // Account for fractional scrollLeft by rounding and using a small epsilon
+                            const isAtLeft = timelineContainer.scrollLeft === 0 && e.deltaY < 0;
+                            const isAtRight = Math.ceil(timelineContainer.scrollLeft + timelineContainer.clientWidth) >= timelineContainer.scrollWidth && e.deltaY > 0;
+
+                            if (!isAtLeft && !isAtRight) {
+                                e.preventDefault();
+                                timelineContainer.scrollLeft += e.deltaY;
+                            }
+                        }
+                    }
+                }, { passive: false });
                 window.addEventListener('resize', () => {
                     if (activeNodeType === "plot_grid" && activePlotSubView === "timeline") {
                         drawTimelineConnections();
