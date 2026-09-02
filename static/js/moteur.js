@@ -3273,7 +3273,11 @@ function renderStatisticsDashboard() {
             const scenes = [];
             projectData.manuscript.forEach(chap => {
                 chap.children.forEach(scene => {
-                    scenes.push(scene);
+                    scenes.push({
+                        ...scene,
+                        chapterTitle: chap.title,
+                        chapterId: chap.id
+                    });
                 });
             });
             return scenes;
@@ -3286,9 +3290,10 @@ function renderStatisticsDashboard() {
             const headersRow = document.getElementById('plot-grid-headers');
             headersRow.innerHTML = `
                 <th class="p-4 border border-slate-200/80 text-left bg-slate-100 font-bold text-slate-500 text-xs w-48" data-i18n="plot_lanes_scenes">Intrigues / Scènes</th>
-                ${scenes.map(scene => `
+                ${scenes.map((scene, index) => `
                     <th class="p-4 border border-slate-200/80 text-center bg-teal-50 text-teal-950 font-bold text-xs min-w-[180px] max-w-[200px]">
-                        <div class="truncate" title="${scene.title}">${scene.title}</div>
+                        <div class="text-[10px] text-teal-700/70 uppercase tracking-wide truncate mb-1" title="${scene.chapterTitle || ''}">${scene.chapterTitle || ''}</div>
+                        <div class="truncate" title="${scene.title}">${window.activeLang === 'fr' ? 'Scène' : 'Scene'} ${index + 1}: ${scene.title}</div>
                     </th>
                 `).join('')}
             `;
@@ -3482,6 +3487,28 @@ function renderStatisticsDashboard() {
                 timelineContainer.classList.add('hidden');
 
                 renderPlotGrid();
+
+                if (gridContainer && !gridContainer.dataset.hasScrollListener) {
+                    gridContainer.dataset.hasScrollListener = "true";
+                    gridContainer.addEventListener('wheel', (e) => {
+                        if (e.deltaY !== 0 && e.deltaX === 0) {
+                            // Check if vertical scrolling is needed
+                            const isAtTop = gridContainer.scrollTop === 0 && e.deltaY < 0;
+                            const isAtBottom = gridContainer.scrollTop + gridContainer.clientHeight >= gridContainer.scrollHeight && e.deltaY > 0;
+
+                            // Map to horizontal scroll if no vertical overflow, or at bounds
+                            if (gridContainer.scrollHeight <= gridContainer.clientHeight || isAtTop || isAtBottom) {
+                                const isAtLeft = gridContainer.scrollLeft === 0 && e.deltaY < 0;
+                                const isAtRight = Math.ceil(gridContainer.scrollLeft + gridContainer.clientWidth) >= gridContainer.scrollWidth && e.deltaY > 0;
+
+                                if (!isAtLeft && !isAtRight) {
+                                    e.preventDefault();
+                                    gridContainer.scrollLeft += e.deltaY;
+                                }
+                            }
+                        }
+                    }, { passive: false });
+                }
             } else {
                 timelineTab.classList.add('bg-white', 'text-slate-800', 'shadow-xs');
                 timelineTab.classList.remove('text-slate-600');
@@ -3527,7 +3554,8 @@ function renderStatisticsDashboard() {
                 // 1. Scene header node (positioned at the top)
                 let sceneHeaderHtml = `
                     <div class="px-4 py-2.5 bg-teal-600 text-white rounded-xl shadow-md text-xs font-bold text-center w-52 border border-teal-500/20 relative">
-                        <div class="uppercase tracking-wider opacity-75">${window.activeLang === 'fr' ? 'Scène' : 'Scene'} ${index + 1}</div>
+                        <div class="text-[9px] uppercase tracking-wider text-teal-100/80 truncate mb-1" title="${scene.chapterTitle || ''}">${scene.chapterTitle || ''}</div>
+                        <div class="uppercase tracking-wider opacity-90">${window.activeLang === 'fr' ? 'Scène' : 'Scene'} ${index + 1}</div>
                         <div class="truncate text-sm font-georgia mt-0.5" title="${scene.title}">${scene.title}</div>
                         <div class="absolute -bottom-3 left-1/2 transform -translate-x-1/2 bg-teal-600 text-white border-2 border-slate-100 rounded-full w-6 h-6 flex items-center justify-center text-[10px] font-bold shadow-xs">↓</div>
                     </div>
