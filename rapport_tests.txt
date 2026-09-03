@@ -1,0 +1,33 @@
+=== Rapport de Test ===
+Version : 1.0.0
+Date : 2026-09-02
+Heure : 14:47:40
+Statut : Succès
+------------------------------
+[SUCCÈS] test_app.py::TestEcritureWebApp::test_ai_chat_api
+[SUCCÈS] test_app.py::TestEcritureWebApp::test_ai_custom_params
+[SUCCÈS] test_app.py::TestEcritureWebApp::test_ai_models_endpoint
+[SUCCÈS] test_app.py::TestEcritureWebApp::test_ai_status_endpoint
+[SUCCÈS] test_app.py::TestEcritureWebApp::test_ai_tools_api
+[SUCCÈS] test_app.py::TestEcritureWebApp::test_backups_endpoints
+[SUCCÈS] test_app.py::TestEcritureWebApp::test_create_project_api
+[SUCCÈS] test_app.py::TestEcritureWebApp::test_delete_project_api
+[SUCCÈS] test_app.py::TestEcritureWebApp::test_export_api
+[SUCCÈS] test_app.py::TestEcritureWebApp::test_export_formats
+[SUCCÈS] test_app.py::TestEcritureWebApp::test_get_active_project_api
+[SUCCÈS] test_app.py::TestEcritureWebApp::test_get_locale_api
+[SUCCÈS] test_app.py::TestEcritureWebApp::test_get_project_api
+[SUCCÈS] test_app.py::TestEcritureWebApp::test_home_page
+[SUCCÈS] test_app.py::TestEcritureWebApp::test_list_projects_api
+[SUCCÈS] test_app.py::TestEcritureWebApp::test_save_project_api
+[SUCCÈS] test_project_manager.py::TestNovelProject::test_add_chapter
+[SUCCÈS] test_project_manager.py::TestNovelProject::test_add_scene
+[SUCCÈS] test_project_manager.py::TestNovelProject::test_custom_plot_card_fields
+[SUCCÈS] test_project_manager.py::TestNovelProject::test_default_data
+[SUCCÈS] test_project_manager.py::TestNovelProject::test_delete_node
+[SUCCÈS] test_project_manager.py::TestNovelProject::test_find_node
+[SUCCÈS] test_project_manager.py::TestNovelProject::test_monte_cristo_loading
+[SUCCÈS] test_project_manager.py::TestNovelProject::test_recalculate_word_counts
+[SUCCÈS] test_project_manager.py::TestNovelProject::test_save_and_load
+[IGNORÉ] test_project_manager.py::TestNovelProject::test_le_cid_loading
+==============================
