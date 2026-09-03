@@ -20,7 +20,7 @@ jobs:
         include:
           # Configuration pour Windows
           - os: windows-latest
-            # On stocke temporairement l'exe et le msix dans le même artefact zip pour Windows
+            # On stocke temporairement l'exe, le msix et l'installeur dans le même artefact zip pour Windows
             artifact_name: ecriture-windows
             pyinstaller_cmd: >
               pyinstaller --noconfirm --onefile --windowed
@@ -63,7 +63,7 @@ jobs:
               --name ecriture main.py
             bin_path: dist/ecriture-macos.dmg
             
-          # Configuration pour Linux corrigée
+          # Configuration pour Linux
           - os: ubuntu-latest
             artifact_name: ecriture-linux
             pyinstaller_cmd: >
@@ -136,7 +136,7 @@ jobs:
         run: |
           hdiutil create -volname "Ecriture" -srcfolder dist/ecriture.app -ov -format UDZO dist/ecriture-macos.dmg
 
-      # 7b. Étape spécifique Windows : Création du package MSIX
+      # 7b. Étape spécifique Windows : Création du package MSIX (Pour le Windows Store)
       - name: Génération du MSIX Windows
         if: matrix.os == 'windows-latest'
         shell: pwsh
@@ -150,7 +150,24 @@ jobs:
           # 3. Packager le dossier en un fichier .msix et le placer dans le dossier dist
           & $makeappx pack /d "Ecriture_MSIX" /p "dist\Ecriture.msix"
 
-      # 8. Sauvegarder l'exécutable/DMG/MSIX dans les artefacts GitHub temporaires
+      # 7c. Étape spécifique Windows : Génération de l'installeur (Pour le site web)
+      - name: Génération de l'installeur Windows Inno Setup
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          # 1. Extraction de la version du Tag GitHub
+          $tag_name = "${{ github.ref }}"
+          if ($tag_name -match "^refs/tags/v?(.*)$") {
+              $clean_version = $matches[1]
+          } else {
+              $clean_version = "1.0.0" 
+          }
+          Write-Host "Version détectée pour Inno Setup : $clean_version"
+
+          # 2. Compilation avec Inno Setup en injectant la variable
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "/DAppVersion=$clean_version" ecriture.iss
+
+      # 8. Sauvegarder l'exécutable/DMG/MSIX/Installer dans les artefacts GitHub temporaires
       - name: Upload de l'artefact
         uses: actions/upload-artifact@v4
         with:
