@@ -9,8 +9,8 @@ AppPublisherURL=https://github.com/neomars/ecriture
 AppSupportURL=https://github.com/neomars/ecriture/issues
 AppUpdatesURL=https://github.com/neomars/ecriture/releases
 
-; Chemin d'installation par défaut (Program Files/Ecriture)
-DefaultDirName={autopf}\Ecriture
+; MODIFICATION : Installation dans le profil utilisateur (AppData) sans nécessiter de droits admin
+DefaultDirName={localappdata}\Programs\Ecriture
 
 ; Nom du menu Démarrer
 DefaultGroupName=Écriture
@@ -23,13 +23,11 @@ OutputDir=dist
 Compression=lzma2/ultra64
 SolidCompression=yes
 
-; Droits d'administrateur nécessaires pour l'installation
-PrivilegesRequired=admin
+; MODIFICATION : Indique que l'installation ne nécessite que les droits minimums
+PrivilegesRequired=lowest
 
 ; Icône de l'installeur (optionnel, utilisez la même que votre app)
 SetupIconFile=ico-ecriture.ico
-
-; --- AJOUTER TOUTE CETTE PARTIE ---
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
