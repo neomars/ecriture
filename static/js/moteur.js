@@ -153,6 +153,10 @@
                 // Hide selection menu if clicked outside selection and selection menu
                 // Close modals when clicking outside
                 if (e.target.classList.contains('fixed') && e.target.classList.contains('inset-0') && (e.target.classList.contains('z-50') || e.target.classList.contains('z-[9999]'))) {
+                    if (e.target.id === 'chapter-type-modal' && e.target.hasAttribute('data-uncancelable')) {
+                        // Do not close it
+                        return;
+                    }
                     e.target.classList.add('hidden');
                 }
             });
@@ -462,17 +466,17 @@
         }
 
         // OPEN / CLOSE NEW PROJECT MODAL
-        function openNewProjectModal() {
+        window.openNewProjectModal = function openNewProjectModal() {
             document.getElementById('new-project-title-input').value = "";
             document.getElementById('new-project-modal').classList.remove('hidden');
         }
 
-        function closeNewProjectModal() {
+        window.closeNewProjectModal = function closeNewProjectModal() {
             document.getElementById('new-project-modal').classList.add('hidden');
         }
 
         // CREATE NEW NOVEL PROJECT
-        async function createNewProject() {
+        window.createNewProject = async function createNewProject() {
             const title = document.getElementById('new-project-title-input').value.trim();
             if (!title) {
                 alert("Please enter a title.");
@@ -497,6 +501,18 @@
                     activeNodeType = null;
                     await loadProjectsList();
                     await loadProject();
+
+                    // The user wants to directly be in the menu to create a chapter
+                    // without the possibility of canceling it.
+                    openChapterTypeModal();
+
+                    // To prevent cancellation, we can hide the close/cancel buttons in the chapter-type-modal
+                    const chapterTypeModal = document.getElementById('chapter-type-modal');
+                    if (chapterTypeModal) {
+                         chapterTypeModal.setAttribute('data-uncancelable', 'true');
+                         const closeBtns = chapterTypeModal.querySelectorAll('button[onclick="closeChapterTypeModal()"]');
+                         closeBtns.forEach(btn => btn.style.display = 'none');
+                    }
                 }
             } catch (err) {
                 console.error("Failed to create new project:", err);
@@ -2457,12 +2473,19 @@ function renderStatisticsDashboard() {
 
         let activeChapterCategory = "liminaires";
 
-        function openChapterTypeModal() {
-            document.getElementById('chapter-type-modal').classList.remove('hidden');
+        window.openChapterTypeModal = function openChapterTypeModal() {
+            const modal = document.getElementById('chapter-type-modal');
+            modal.classList.remove('hidden');
+
+            // Make sure the close buttons are visible again in case they were hidden by createNewProject
+            modal.removeAttribute('data-uncancelable');
+            const closeBtns = modal.querySelectorAll('button[onclick="closeChapterTypeModal()"]');
+            closeBtns.forEach(btn => btn.style.display = '');
+
             selectChapterCategory('liminaires');
         }
 
-        function closeChapterTypeModal() {
+        window.closeChapterTypeModal = function closeChapterTypeModal() {
             document.getElementById('chapter-type-modal').classList.add('hidden');
         }
 
@@ -2506,7 +2529,7 @@ function renderStatisticsDashboard() {
             });
         }
 
-        function createSpecialChapter(subType) {
+        window.createSpecialChapter = function createSpecialChapter(subType) {
             const item = CHAPTER_TYPES[subType];
             if (!item) return;
 
