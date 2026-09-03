@@ -485,8 +485,10 @@ def create_project():
     if not title:
         return jsonify({"error": "Title cannot be empty"}), 400
 
-    # Generate safe filename
-    safe_title = "".join([c for c in title if c.isalnum() or c in " _-"]).rstrip()
+    # Generate safe filename, explicitly replacing spaces and invalid characters for Windows
+    import string
+    valid_chars = f"-_.() {string.ascii_letters}{string.digits}"
+    safe_title = ''.join(c for c in title if c in valid_chars)
     safe_title = safe_title.replace(" ", "_").lower()
     if not safe_title:
         safe_title = "unnamed_project"
@@ -503,14 +505,24 @@ def create_project():
 
     # Initialize clean project state
     new_proj = NovelProject(filepath)
-    new_proj.data = new_proj.get_default_data()
-    new_proj.data["settings"]["title"] = title
-    new_proj.data["settings"]["overall_written"] = 0
-    new_proj.data["settings"]["daily_written"] = 0
-    new_proj.data["manuscript"] = []
-    new_proj.data["plot"]["cards"] = []
-    new_proj.data["characters"] = []
-    new_proj.data["story_notes"] = []
+    new_proj.data = {
+        "settings": {
+            "title": title,
+            "daily_goal": 500,
+            "overall_goal": 50000,
+            "overall_written": 0,
+            "daily_written": 0,
+            "lang": "en"
+        },
+        "manuscript": [],
+        "plot": {
+            "plotlines": [],
+            "cards": []
+        },
+        "characters": [],
+        "story_notes": [],
+        "key_events": []
+    }
     new_proj.save()
 
     set_active_project_filename(filename)
