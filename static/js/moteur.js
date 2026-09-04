@@ -447,6 +447,7 @@
                 if (projectData) {
                     await persistProject();
                     projectData = null;
+                    if (autoSaveTimer) clearTimeout(autoSaveTimer);
                 }
 
                 const res = await fetch('/api/projects/active', {
@@ -489,6 +490,7 @@
                 if (projectData) {
                     await persistProject();
                     projectData = null;
+                    if (autoSaveTimer) clearTimeout(autoSaveTimer);
                 }
 
                 const res = await fetch('/api/projects/create', {
@@ -707,6 +709,7 @@
 
         // SAVE STATE BACK TO JSON FILE
         async function persistProject() {
+            if (!projectData) return; // Prevent ghost saves if project is being unloaded
             try {
                 const res = await fetch('/api/project', {
                     method: 'POST',
@@ -2972,6 +2975,7 @@ function renderStatisticsDashboard() {
 
             try {
                 projectData = null; // Prevent auto-save from overriding the newly switched project
+                if (autoSaveTimer) clearTimeout(autoSaveTimer);
 
                 const res = await fetch('/api/projects/delete', {
                     method: 'POST',
