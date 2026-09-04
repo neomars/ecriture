@@ -2543,7 +2543,7 @@ function renderStatisticsDashboard() {
             });
         }
 
-        window.createSpecialChapter = function createSpecialChapter(subType) {
+        window.createSpecialChapter = async function createSpecialChapter(subType) {
             const item = CHAPTER_TYPES[subType];
             if (!item) return;
 
@@ -2580,8 +2580,15 @@ function renderStatisticsDashboard() {
 
             renderTree();
             selectScene(newScene.id);
-            persistProject();
+            await persistProject();
+            const chapterTypeModal = document.getElementById('chapter-type-modal');
+            const shouldReload = chapterTypeModal && chapterTypeModal.getAttribute('data-uncancelable') === 'true';
+
             closeChapterTypeModal();
+
+            if (shouldReload) {
+                window.location.reload();
+            }
         }
 
         function addNewChapter() {
