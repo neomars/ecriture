@@ -539,6 +539,9 @@ def delete_project():
     if not filename:
         return jsonify({"error": "No filename specified"}), 400
 
+    if filename in ["le_comte_de_monte_cristo.json", "le_cid_corneille.json"]:
+        return jsonify({"error": "Cannot delete default example projects"}), 403
+
     filepath = os.path.join(PROJECTS_DIR, filename)
     if not os.path.exists(filepath):
         return jsonify({"error": "Project file not found"}), 404

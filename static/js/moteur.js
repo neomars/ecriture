@@ -418,7 +418,7 @@
 
         async function loadProjectsList() {
             try {
-                const res = await fetch('/api/projects');
+                const res = await fetch(`/api/projects?t=${Date.now()}`);
                 const projects = await res.json();
 
                 const select = document.getElementById('project-select');
@@ -432,7 +432,7 @@
                 });
 
                 // Get active project filename
-                const activeRes = await fetch('/api/projects/active');
+                const activeRes = await fetch(`/api/projects/active?t=${Date.now()}`);
                 const activeData = await activeRes.json();
                 select.value = activeData.active_filename;
             } catch (err) {
@@ -446,6 +446,7 @@
                 // Save current project state first
                 if (projectData) {
                     await persistProject();
+                    projectData = null;
                 }
 
                 const res = await fetch('/api/projects/active', {
@@ -487,6 +488,7 @@
                 // Save current first
                 if (projectData) {
                     await persistProject();
+                    projectData = null;
                 }
 
                 const res = await fetch('/api/projects/create', {
@@ -610,7 +612,7 @@
         // LOAD ACTIVE PROJECT FROM BACKEND JSON
         async function loadProject() {
             try {
-                const res = await fetch('/api/project');
+                const res = await fetch(`/api/project?t=${Date.now()}`);
                 projectData = await res.json();
 
                 // Normalize all characters to ensure backward compatibility
@@ -2957,13 +2959,20 @@ function renderStatisticsDashboard() {
 
         // DELETE CURRENT NOVEL
         async function deleteCurrentProject() {
-            const confirmMsg = translations["confirm_delete_novel"] || "Are you sure you want to permanently delete this novel?";
-            if (!confirm(confirmMsg)) return;
-
             const select = document.getElementById('project-select');
             const filename = select.value;
 
+            if (filename === "le_comte_de_monte_cristo.json" || filename === "le_cid_corneille.json") {
+                alert(translations["error_delete_default"] || "Default example projects cannot be deleted.");
+                return;
+            }
+
+            const confirmMsg = translations["confirm_delete_novel"] || "Are you sure you want to permanently delete this novel?";
+            if (!confirm(confirmMsg)) return;
+
             try {
+                projectData = null; // Prevent auto-save from overriding the newly switched project
+
                 const res = await fetch('/api/projects/delete', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
