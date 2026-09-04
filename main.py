@@ -1284,18 +1284,19 @@ def _install_gemma_thread(lang="fr"):
             total_size_str = response.info().get('Content-Length')
             total_size = int(total_size_str.strip()) if total_size_str else 0
 
-            t = CustomTqdm(total=total_size, unit='iB', unit_scale=True)
-            t.start_t = time.time()
+            with open(os.devnull, 'w') as devnull:
+                t = CustomTqdm(total=total_size, unit='iB', unit_scale=True, file=devnull)
+                t.start_t = time.time()
 
-            chunk_size = 1024 * 1024 # 1MB chunks
-            while True:
-                chunk = response.read(chunk_size)
-                if not chunk:
-                    break
-                out_file.write(chunk)
-                t.update(len(chunk))
+                chunk_size = 1024 * 1024 # 1MB chunks
+                while True:
+                    chunk = response.read(chunk_size)
+                    if not chunk:
+                        break
+                    out_file.write(chunk)
+                    t.update(len(chunk))
 
-            t.close()
+                t.close()
 
         # Atomic rename after full download
         os.replace(temp_model_path, model_path)
@@ -1520,8 +1521,15 @@ def local_backup_create():
 def quit_app():
     """Shuts down the backend web server gracefully."""
     import os
-    import signal
-    os.kill(os.getpid(), signal.SIGINT)
+    import threading
+    import time
+
+    # Run the exit in a separate thread so the response can be returned
+    def force_exit():
+        time.sleep(0.5)
+        os._exit(0)
+
+    threading.Thread(target=force_exit).start()
     return jsonify({"status": "shutdown"})
 
 
