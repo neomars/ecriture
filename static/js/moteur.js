@@ -54,6 +54,7 @@
         let projectData = null;
         let translations = {};
         window.activeLang = "fr";
+        let isSavingDisabled = false;
 
         let activeNodeId = null;     // ID of current active workspace item (scene/chap/char/note)
         let activeNodeType = null;   // "scene", "chapter", "character", "note", or "plot_grid"
@@ -707,14 +708,21 @@
             return val;
         }
 
+        let saveAbortController = null;
+
         // SAVE STATE BACK TO JSON FILE
         async function persistProject() {
-            if (!projectData) return; // Prevent ghost saves if project is being unloaded
+            if (!projectData || isSavingDisabled) return; // Prevent ghost saves if project is being unloaded
             try {
+                if (saveAbortController) {
+                    saveAbortController.abort();
+                }
+                saveAbortController = new AbortController();
                 const res = await fetch('/api/project', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(projectData)
+                    body: JSON.stringify(projectData),
+                    signal: saveAbortController.signal
                 });
                 const result = await res.json();
                 projectData = result.data;
@@ -785,6 +793,7 @@
 
         // DEBOUNCED AUTOMATED SAVING
         function triggerAutoSave() {
+            if (isSavingDisabled) return;
             if (autoSaveTimer) clearTimeout(autoSaveTimer);
             autoSaveTimer = setTimeout(() => {
                 persistProject();
@@ -2974,6 +2983,10 @@ function renderStatisticsDashboard() {
             if (!confirm(confirmMsg)) return;
 
             try {
+                isSavingDisabled = true;
+                if (saveAbortController) {
+                    saveAbortController.abort();
+                }
                 projectData = null; // Prevent auto-save from overriding the newly switched project
                 if (autoSaveTimer) clearTimeout(autoSaveTimer);
 
@@ -2994,6 +3007,8 @@ function renderStatisticsDashboard() {
                 }
             } catch (err) {
                 console.error("Error deleting project:", err);
+            } finally {
+                isSavingDisabled = false;
             }
         }
 

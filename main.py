@@ -224,8 +224,11 @@ def get_synonyms(word, lang="fr"):
 app = Flask(__name__, template_folder=resource_path('templates'), static_folder=resource_path('static'))
 ai_client = AIClient()
 
+import threading
+
 PROJECTS_DIR = "projects"
 ACTIVE_CONFIG_FILE = "active_project.txt"
+project_lock = threading.Lock()
 
 # Ensure projects directory exists
 import shutil
@@ -419,8 +422,9 @@ def index():
 def get_project():
     """Returns the currently active project state."""
     global project
-    project.recalculate_word_counts()
-    return jsonify(project.data)
+    with project_lock:
+        project.recalculate_word_counts()
+        return jsonify(project.data)
 
 @app.route('/api/project', methods=['POST'])
 def save_project():
@@ -430,9 +434,10 @@ def save_project():
     if not client_data:
         return jsonify({"error": "No data provided"}), 400
 
-    project.data = client_data
-    project.save()
-    return jsonify({"status": "success", "data": project.data})
+    with project_lock:
+        project.data = client_data
+        project.save()
+        return jsonify({"status": "success", "data": project.data})
 
 @app.route('/api/projects', methods=['GET'])
 def list_projects():
@@ -466,12 +471,14 @@ def change_active_project():
 
     filename = payload["filename"]
     filepath = os.path.join(PROJECTS_DIR, filename)
-    if not os.path.exists(filepath):
-        return jsonify({"error": "Project file not found"}), 404
 
-    set_active_project_filename(filename)
-    project = NovelProject(filepath)
-    return jsonify({"status": "success", "active_filename": filename, "data": project.data})
+    with project_lock:
+        if not os.path.exists(filepath):
+            return jsonify({"error": "Project file not found"}), 404
+
+        set_active_project_filename(filename)
+        project = NovelProject(filepath)
+        return jsonify({"status": "success", "active_filename": filename, "data": project.data})
 
 @app.route('/api/projects/create', methods=['POST'])
 def create_project():
@@ -523,10 +530,11 @@ def create_project():
         "story_notes": [],
         "key_events": []
     }
-    new_proj.save()
 
-    set_active_project_filename(filename)
-    project = new_proj
+    with project_lock:
+        new_proj.save()
+        set_active_project_filename(filename)
+        project = new_proj
 
     return jsonify({"status": "success", "filename": filename, "data": project.data})
 
@@ -543,33 +551,35 @@ def delete_project():
         return jsonify({"error": "Cannot delete default example projects"}), 403
 
     filepath = os.path.join(PROJECTS_DIR, filename)
-    if not os.path.exists(filepath):
-        return jsonify({"error": "Project file not found"}), 404
 
-    try:
-        os.remove(filepath)
-    except Exception as e:
-        return jsonify({"error": f"Failed to delete file: {str(e)}"}), 500
+    with project_lock:
+        active_before_delete = get_active_project_filename()
+        if not os.path.exists(filepath):
+            return jsonify({"error": "Project file not found"}), 404
 
-    # If we deleted the active project, find a new active project or create one
-    active_fn = get_active_project_filename()
-    if active_fn == filename or not os.path.exists(os.path.join(PROJECTS_DIR, active_fn)):
-        if os.path.exists(ACTIVE_CONFIG_FILE):
-            os.remove(ACTIVE_CONFIG_FILE)
-        new_active = get_active_project_filename()
-        project = NovelProject(os.path.join(PROJECTS_DIR, new_active))
+        try:
+            os.remove(filepath)
+        except Exception as e:
+            return jsonify({"error": f"Failed to delete file: {str(e)}"}), 500
+
+        # If we deleted the active project, find a new active project or create one
+        if active_before_delete == filename or not os.path.exists(os.path.join(PROJECTS_DIR, active_before_delete)):
+            if os.path.exists(ACTIVE_CONFIG_FILE):
+                os.remove(ACTIVE_CONFIG_FILE)
+            new_active = get_active_project_filename()
+            project = NovelProject(os.path.join(PROJECTS_DIR, new_active))
+            return jsonify({
+                "status": "success",
+                "switched": True,
+                "active_filename": new_active,
+                "data": project.data
+            })
+
         return jsonify({
             "status": "success",
-            "switched": True,
-            "active_filename": new_active,
-            "data": project.data
+            "switched": False,
+            "active_filename": active_before_delete
         })
-
-    return jsonify({
-        "status": "success",
-        "switched": False,
-        "active_filename": active_fn
-    })
 
 @app.route('/api/locale/<lang>', methods=['GET'])
 def get_locale(lang):
