@@ -708,14 +708,21 @@
             return val;
         }
 
+        let saveAbortController = null;
+
         // SAVE STATE BACK TO JSON FILE
         async function persistProject() {
             if (!projectData || isSavingDisabled) return; // Prevent ghost saves if project is being unloaded
             try {
+                if (saveAbortController) {
+                    saveAbortController.abort();
+                }
+                saveAbortController = new AbortController();
                 const res = await fetch('/api/project', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(projectData)
+                    body: JSON.stringify(projectData),
+                    signal: saveAbortController.signal
                 });
                 const result = await res.json();
                 projectData = result.data;
@@ -2977,6 +2984,9 @@ function renderStatisticsDashboard() {
 
             try {
                 isSavingDisabled = true;
+                if (saveAbortController) {
+                    saveAbortController.abort();
+                }
                 projectData = null; // Prevent auto-save from overriding the newly switched project
                 if (autoSaveTimer) clearTimeout(autoSaveTimer);
 
