@@ -553,6 +553,7 @@ def delete_project():
     filepath = os.path.join(PROJECTS_DIR, filename)
 
     with project_lock:
+        active_before_delete = get_active_project_filename()
         if not os.path.exists(filepath):
             return jsonify({"error": "Project file not found"}), 404
 
@@ -562,8 +563,7 @@ def delete_project():
             return jsonify({"error": f"Failed to delete file: {str(e)}"}), 500
 
         # If we deleted the active project, find a new active project or create one
-        active_fn = get_active_project_filename()
-        if active_fn == filename or not os.path.exists(os.path.join(PROJECTS_DIR, active_fn)):
+        if active_before_delete == filename or not os.path.exists(os.path.join(PROJECTS_DIR, active_before_delete)):
             if os.path.exists(ACTIVE_CONFIG_FILE):
                 os.remove(ACTIVE_CONFIG_FILE)
             new_active = get_active_project_filename()
@@ -578,7 +578,7 @@ def delete_project():
         return jsonify({
             "status": "success",
             "switched": False,
-            "active_filename": active_fn
+            "active_filename": active_before_delete
         })
 
 @app.route('/api/locale/<lang>', methods=['GET'])
