@@ -54,6 +54,7 @@
         let projectData = null;
         let translations = {};
         window.activeLang = "fr";
+        let isSavingDisabled = false;
 
         let activeNodeId = null;     // ID of current active workspace item (scene/chap/char/note)
         let activeNodeType = null;   // "scene", "chapter", "character", "note", or "plot_grid"
@@ -709,7 +710,7 @@
 
         // SAVE STATE BACK TO JSON FILE
         async function persistProject() {
-            if (!projectData) return; // Prevent ghost saves if project is being unloaded
+            if (!projectData || isSavingDisabled) return; // Prevent ghost saves if project is being unloaded
             try {
                 const res = await fetch('/api/project', {
                     method: 'POST',
@@ -785,6 +786,7 @@
 
         // DEBOUNCED AUTOMATED SAVING
         function triggerAutoSave() {
+            if (isSavingDisabled) return;
             if (autoSaveTimer) clearTimeout(autoSaveTimer);
             autoSaveTimer = setTimeout(() => {
                 persistProject();
@@ -2974,6 +2976,7 @@ function renderStatisticsDashboard() {
             if (!confirm(confirmMsg)) return;
 
             try {
+                isSavingDisabled = true;
                 projectData = null; // Prevent auto-save from overriding the newly switched project
                 if (autoSaveTimer) clearTimeout(autoSaveTimer);
 
@@ -2994,6 +2997,8 @@ function renderStatisticsDashboard() {
                 }
             } catch (err) {
                 console.error("Error deleting project:", err);
+            } finally {
+                isSavingDisabled = false;
             }
         }
 
