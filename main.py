@@ -1772,16 +1772,23 @@ def api_extract_characters():
 
 
 if __name__ == "__main__":
-    import webbrowser
     import threading
     import os
+    import webview
 
-    def open_browser():
-        webbrowser.open("http://127.0.0.1:5000")
+    def start_server():
+        # Start the local development web server on port 5000
+        app.run(host="0.0.0.0", port=5000, debug=False)
 
-    # Only launch browser once when in debug reloader
-    if not app.debug or os.environ.get("WERKZEUG_RUN_MAIN") != "true":
-        threading.Timer(1.5, open_browser).start()
+    # Démarrer le serveur web dans un thread séparé
+    server_thread = threading.Thread(target=start_server, daemon=True)
+    server_thread.start()
 
-    # Start the local development web server on port 5000
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    # Créer la fenêtre pywebview
+    window = webview.create_window("Écriture", "http://127.0.0.1:5000", width=1200, height=800)
+
+    # Démarrer pywebview (bloquant, doit être dans le thread principal)
+    webview.start()
+
+    # Quitter proprement une fois la fenêtre fermée
+    os._exit(0)
