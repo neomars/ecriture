@@ -5,7 +5,7 @@
          IgnorableNamespaces="uap rescap">
          
   <!-- REMPLACEZ Name ET Publisher PAR VOS VALEURS PARTNER CENTER -->
-  <Identity Name="Neomars.Ecriture" Publisher="CN=70a120b6-0ca3-4d7e-86b7-d5c01e68dedd" Version="1.0.0.0" ProcessorArchitecture="x64" />
+  <Identity Name="Neomars.criture" Publisher="CN=0FC6A3C9-43AE-44DF-A66E-A018C2BBEDB7" Version="1.0.0.0" ProcessorArchitecture="x64" />
   
   <Properties>
     <DisplayName>Écriture</DisplayName>

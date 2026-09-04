@@ -1,4 +1,5 @@
 [Setup]
+AppId={{0FC6A3C9-43AE-44DF-A66E-A018C2BBEDB7}
 ; Identifiants de l'application
 AppName=Écriture
 ; Récupère la version passée en ligne de commande (avec "1.0.0" comme valeur par défaut de sécurité)
