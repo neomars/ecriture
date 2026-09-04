@@ -28,3 +28,4 @@ huggingface-hub
 tqdm
 nltk
 spacy
+pywebview
