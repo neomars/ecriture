@@ -174,4 +174,3 @@ Statut : Succès
 [SUCCÈS] test_project_manager.py::TestNovelProject::test_recalculate_word_counts
 [SUCCÈS] test_project_manager.py::TestNovelProject::test_save_and_load
 [IGNORÉ] test_project_manager.py::TestNovelProject::test_le_cid_loading
-==============================
