@@ -184,7 +184,7 @@ def get_synonyms(word, lang="fr"):
     if lang != "fr":
         return []
 
-    db_path = "lexique.db"
+    db_path = resource_path("lexique.db")
     if not os.path.exists(db_path):
         return []
 

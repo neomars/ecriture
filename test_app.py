@@ -258,5 +258,26 @@ class TestEcritureWebApp(unittest.TestCase):
             self.assertEqual(data_create["status"], "success")
             self.assertTrue(os.path.exists(data_create["full_path"]))
 
+    def test_synonyms_api(self):
+        """Test getting synonyms for a word."""
+        # Test French (from DB)
+        response = self.client.post("/api/synonyms",
+                                    data=json.dumps({"word": "bonjour", "lang": "fr"}),
+                                    content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data)
+        self.assertIn("synonyms", data)
+        self.assertIn("salut", data["synonyms"])
+
+        # Test English (from WordNet)
+        response = self.client.post("/api/synonyms",
+                                    data=json.dumps({"word": "hello", "lang": "en"}),
+                                    content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data)
+        self.assertIn("synonyms", data)
+        self.assertIn("hi", data["synonyms"])
+
+
 if __name__ == '__main__':
     unittest.main()
