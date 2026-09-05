@@ -1,3 +1,35 @@
+
+window.showConfirm = function(message) {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('custom-confirm-modal');
+        const msgEl = document.getElementById('custom-confirm-message');
+        const btnCancel = document.getElementById('custom-confirm-cancel');
+        const btnOk = document.getElementById('custom-confirm-ok');
+
+        msgEl.textContent = message;
+        modal.classList.remove('hidden');
+
+        const cleanup = () => {
+            modal.classList.add('hidden');
+            btnCancel.removeEventListener('click', onCancel);
+            btnOk.removeEventListener('click', onOk);
+        };
+
+        const onCancel = () => {
+            cleanup();
+            resolve(false);
+        };
+
+        const onOk = () => {
+            cleanup();
+            resolve(true);
+        };
+
+        btnCancel.addEventListener('click', onCancel);
+        btnOk.addEventListener('click', onOk);
+    });
+};
+
         // Textarea caret position locator utility
         const properties = [
             'direction', 'boxSizing', 'width', 'height', 'overflowX', 'overflowY',
@@ -2684,9 +2716,9 @@ function renderStatisticsDashboard() {
 
 
         // DELETING & RENAMING NODES
-        function deleteItem(id, type) {
+        async function deleteItem(id, type) {
             const confirmMsg = translations["confirm_delete"] || "Are you sure you want to delete this item?";
-            if (!confirm(confirmMsg)) return;
+            if (!(await showConfirm(confirmMsg))) return;
 
             if (type === "chapter" || type === "scene") {
                 deleteManuscriptNode(id, projectData.manuscript);
@@ -2987,7 +3019,7 @@ function renderStatisticsDashboard() {
             }
 
             const confirmMsg = translations["confirm_delete_novel"] || "Are you sure you want to permanently delete this novel?";
-            if (!confirm(confirmMsg)) return;
+            if (!(await showConfirm(confirmMsg))) return;
 
             try {
                 isSavingDisabled = true;
@@ -4023,7 +4055,7 @@ function renderStatisticsDashboard() {
         }
 
         async function quitApplication() {
-            if (confirm(window.activeLang === 'fr' ? "Voulez-vous quitter l'application ?" : "Do you want to quit the application?")) {
+            if (await showConfirm(window.activeLang === 'fr' ? "Voulez-vous quitter l'application ?" : "Do you want to quit the application?")) {
                 try {
                     await fetch('/api/quit', { method: 'POST' });
                 } catch(e) {}
@@ -4109,7 +4141,7 @@ window.loadBackupsList = async function() {
 };
 
 window.restoreBackup = async function(filename, path = "") {
-    if (!confirm("Êtes-vous sûr de vouloir restaurer cette sauvegarde ? Cela écrasera toutes vos données actuelles.")) return;
+    if (!(await showConfirm("Êtes-vous sûr de vouloir restaurer cette sauvegarde ? Cela écrasera toutes vos données actuelles."))) return;
 
     try {
         const payload = { filename: filename };
@@ -4139,7 +4171,7 @@ window.importDocument = async function() {
         return;
     }
 
-    if (!confirm("Êtes-vous sûr de vouloir importer ce document ? Cela écrasera entièrement votre manuscrit actuel !")) return;
+    if (!(await showConfirm("Êtes-vous sûr de vouloir importer ce document ? Cela écrasera entièrement votre manuscrit actuel !"))) return;
 
     const file = input.files[0];
     const formData = new FormData();

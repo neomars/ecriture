@@ -1788,7 +1788,7 @@ if __name__ == "__main__":
     window = webview.create_window("Écriture", "http://127.0.0.1:5000", width=1200, height=800, text_select=True)
 
     # Démarrer pywebview (bloquant, doit être dans le thread principal)
-    webview.start(debug=True)
+    webview.start(debug=False)
 
     # Quitter proprement une fois la fenêtre fermée
     os._exit(0)
