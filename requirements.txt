@@ -29,3 +29,6 @@ tqdm
 nltk
 spacy
 pywebview
+PyQt6
+PyQt6-WebEngine
+qtpy
