@@ -1537,86 +1537,148 @@ function renderStatisticsDashboard() {
                     return;
                 }
 
-                let html = '<div id="editor-content" class="w-full h-full flex flex-col p-4 outline-none focus:ring-0 bg-transparent min-h-[500px]" style="white-space: pre-wrap; word-wrap: break-word; outline: none;">';
+                const editorContentDiv = document.createElement('div');
+                editorContentDiv.id = 'editor-content';
+                editorContentDiv.className = 'w-full h-full flex flex-col p-4 outline-none focus:ring-0 bg-transparent min-h-[500px]';
+                editorContentDiv.style.whiteSpace = 'pre-wrap';
+                editorContentDiv.style.wordWrap = 'break-word';
+                editorContentDiv.style.outline = 'none';
+
+                wrapper.innerHTML = '';
+                wrapper.appendChild(editorContentDiv);
 
                 if (!projectData.manuscript || projectData.manuscript.length === 0) {
-                    html += `
+                    editorContentDiv.innerHTML = `
                         <div class="text-slate-400 italic text-sm text-center py-10">
                             Aucun chapitre. Créez-en un pour commencer à rédiger !
                         </div>
                     `;
-                } else {
-                    const placeholderText = formatTranslation("editor_placeholder") || "Commencez à rédiger votre chef-d'œuvre ici...";
-                    projectData.manuscript.forEach(chap => {
-                        html += `
-                            <div class="chapter-container mb-12" id="chapter-anchor-${chap.id}">
-                                <h1 class="text-3xl font-bold text-slate-800 mb-6 text-center mt-10">${chap.title}</h1>
-                        `;
-                        if (!chap.children || chap.children.length === 0) {
-                            html += `
-                                <div class="text-slate-400 italic text-sm text-center py-4">
-                                    Aucune scène dans ce chapitre.
-                                </div>
-                            `;
-                        } else {
-                            chap.children.forEach(scene => {
-                                html += `
-                                    <div id="scene-anchor-${scene.id}" class="editor-scene-contenteditable w-full font-georgia text-lg leading-relaxed text-slate-800 border-none outline-none mb-4" contenteditable="true" data-scene-id="${scene.id}" data-chapter-id="${chap.id}" data-placeholder="${placeholderText}">${(scene.content || "").replace(/\n/g, '<br>')}</div>
-                                `;
-                            });
-                        }
-                        html += `</div>`;
-                    });
+                    return;
                 }
 
-                html += '</div>';
-                wrapper.innerHTML = html;
+                const placeholderText = formatTranslation("editor_placeholder") || "Commencez à rédiger votre chef-d'œuvre ici...";
 
-                setTimeout(() => {
-                    const sceneEditors = document.querySelectorAll('.editor-scene-contenteditable');
-                    sceneEditors.forEach(ta => {
-                        ta.addEventListener('input', function() {
-                            onCombinedEditorInput(null, ta);
-                        });
-                        ta.addEventListener('keydown', function(e) {
-                            if (e.key === 'Enter') {
-                                e.preventDefault();
-                                document.execCommand('insertLineBreak');
-                                onCombinedEditorInput(null, ta);
-                            } else if (e.key === '"' || e.key === '-') {
-                                handleContentEditableTypography(e);
-                            }
-                        });
-                        ta.addEventListener('focus', function() {
-                            // Update activeNodeId to scene when focused
-                            const sceneId = ta.getAttribute('data-scene-id');
-                            if (activeNodeId !== sceneId) {
-                                activeNodeId = sceneId;
-                                activeNodeType = "scene";
-                                renderTree();
-                            }
-                        });
+                function setupSceneEditor(ta) {
+                    ta.addEventListener('input', function() {
+                        onCombinedEditorInput(null, ta);
                     });
-
-                    if (targetSceneId) {
-                        const anchor = document.getElementById(`scene-anchor-${targetSceneId}`);
-                        if (anchor) {
-                            anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                            anchor.focus();
+                    ta.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            document.execCommand('insertLineBreak');
+                            onCombinedEditorInput(null, ta);
+                        } else if (e.key === '"' || e.key === '-') {
+                            handleContentEditableTypography(e);
                         }
-                    } else if (targetChapterId) {
-                        const anchor = document.getElementById(`chapter-anchor-${targetChapterId}`);
-                        if (anchor) {
-                            anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                            const firstScene = anchor.querySelector('.editor-scene-contenteditable');
-                            if (firstScene) firstScene.focus();
+                    });
+                    ta.addEventListener('focus', function() {
+                        const sceneId = ta.getAttribute('data-scene-id');
+                        if (activeNodeId !== sceneId) {
+                            activeNodeId = sceneId;
+                            activeNodeType = "scene";
+                            renderTree();
                         }
-                    } else {
-                        const scrollContainer = document.getElementById('editor-scroll-container');
-                        if (scrollContainer) scrollContainer.scrollTop = 0;
+                    });
+                    // AI tools selection listening (defined in linguistique.js)
+                    if (typeof handleEditorSelection === 'function') {
+                        ta.addEventListener('mouseup', handleEditorSelection);
+                        ta.addEventListener('keyup', handleEditorSelection);
                     }
-                    updateEditorWordsCount();
-                }, 50);
+                }
+
+                let currentChapterIndex = 0;
+
+                function renderNextChunk() {
+                    if (currentChapterIndex >= projectData.manuscript.length) {
+                        // Finalize UI update
+                        if (targetSceneId) {
+                            const anchor = document.getElementById(`scene-anchor-${targetSceneId}`);
+                            if (anchor) {
+                                anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                anchor.focus();
+                            }
+                        } else if (targetChapterId) {
+                            const anchor = document.getElementById(`chapter-anchor-${targetChapterId}`);
+                            if (anchor) {
+                                anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                const firstScene = anchor.querySelector('.editor-scene-contenteditable');
+                                if (firstScene) firstScene.focus();
+                            }
+                        } else {
+                            const scrollContainer = document.getElementById('editor-scroll-container');
+                            if (scrollContainer) scrollContainer.scrollTop = 0;
+                        }
+                        updateEditorWordsCount();
+                        return;
+                    }
+
+                    const CHUNK_SIZE = 5; // render 5 chapters at a time
+                    const endChunk = Math.min(currentChapterIndex + CHUNK_SIZE, projectData.manuscript.length);
+
+                    for (let i = currentChapterIndex; i < endChunk; i++) {
+                        const chap = projectData.manuscript[i];
+                        const chapDiv = document.createElement('div');
+                        chapDiv.className = 'chapter-container mb-12';
+                        chapDiv.id = `chapter-anchor-${chap.id}`;
+
+                        let chapHtml = `<h1 class="text-3xl font-bold text-slate-800 mb-6 text-center mt-10">${chap.title}</h1>`;
+                        chapDiv.innerHTML = chapHtml;
+
+                        if (!chap.children || chap.children.length === 0) {
+                            const emptyDiv = document.createElement('div');
+                            emptyDiv.className = 'text-slate-400 italic text-sm text-center py-4';
+                            emptyDiv.innerText = 'Aucune scène dans ce chapitre.';
+                            chapDiv.appendChild(emptyDiv);
+                        } else {
+                            chap.children.forEach(scene => {
+                                const sceneDiv = document.createElement('div');
+                                sceneDiv.id = `scene-anchor-${scene.id}`;
+                                sceneDiv.className = 'editor-scene-contenteditable w-full font-georgia text-lg leading-relaxed text-slate-800 border-none outline-none mb-4';
+                                sceneDiv.contentEditable = 'true';
+                                sceneDiv.setAttribute('data-scene-id', scene.id);
+                                sceneDiv.setAttribute('data-chapter-id', chap.id);
+                                sceneDiv.setAttribute('data-placeholder', placeholderText);
+                                sceneDiv.innerHTML = (scene.content || "").replace(/\n/g, '<br>');
+
+                                setupSceneEditor(sceneDiv);
+                                chapDiv.appendChild(sceneDiv);
+                            });
+                        }
+
+                        editorContentDiv.appendChild(chapDiv);
+                    }
+
+                    currentChapterIndex = endChunk;
+
+                    if (currentChapterIndex < projectData.manuscript.length) {
+                        requestAnimationFrame(renderNextChunk);
+                    } else {
+                        // Finalize UI update
+
+
+
+                        if (targetSceneId) {
+                            const anchor = document.getElementById(`scene-anchor-${targetSceneId}`);
+                            if (anchor) {
+                                anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                anchor.focus();
+                            }
+                        } else if (targetChapterId) {
+                            const anchor = document.getElementById(`chapter-anchor-${targetChapterId}`);
+                            if (anchor) {
+                                anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                const firstScene = anchor.querySelector('.editor-scene-contenteditable');
+                                if (firstScene) firstScene.focus();
+                            }
+                        } else {
+                            const scrollContainer = document.getElementById('editor-scroll-container');
+                            if (scrollContainer) scrollContainer.scrollTop = 0;
+                        }
+                        updateEditorWordsCount();
+                    }
+                }
+
+                requestAnimationFrame(renderNextChunk);
 
             } else if (activeNodeType === "character") {
                 let char = projectData.characters.find(c => c.id === activeNodeId);
