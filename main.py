@@ -16,6 +16,9 @@ from packaging import version
 import json
 import urllib.request
 from flask import Flask, jsonify, request, send_file, render_template
+from dotenv import load_dotenv
+
+load_dotenv()
 from project_manager import NovelProject
 from ai_client import AIClient
 import sys
