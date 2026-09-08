@@ -498,21 +498,3 @@ Statut : Succès
 [SUCCÈS] test_app.py::TestEcritureWebApp::test_list_projects_api
 [SUCCÈS] test_app.py::TestEcritureWebApp::test_save_project_api
 [SUCCÈS] test_app.py::TestEcritureWebApp::test_synonyms_api
-==============================
-=== Rapport de Test ===
-Version : 1.0.0
-Date : 2026-09-08
-Heure : 13:11:19
-Statut : Succès
-------------------------------
-[SUCCÈS] test_project_manager.py::TestNovelProject::test_add_chapter
-[SUCCÈS] test_project_manager.py::TestNovelProject::test_add_scene
-[SUCCÈS] test_project_manager.py::TestNovelProject::test_custom_plot_card_fields
-[SUCCÈS] test_project_manager.py::TestNovelProject::test_default_data
-[SUCCÈS] test_project_manager.py::TestNovelProject::test_delete_node
-[SUCCÈS] test_project_manager.py::TestNovelProject::test_find_node
-[SUCCÈS] test_project_manager.py::TestNovelProject::test_monte_cristo_loading
-[SUCCÈS] test_project_manager.py::TestNovelProject::test_recalculate_word_counts
-[SUCCÈS] test_project_manager.py::TestNovelProject::test_save_and_load
-[IGNORÉ] test_project_manager.py::TestNovelProject::test_le_cid_loading
-==============================
