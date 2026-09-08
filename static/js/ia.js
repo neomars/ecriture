@@ -88,19 +88,39 @@
                         model: projectData.settings.ai_model || "llama3",
                         inject_lore_context: injectLore,
                         scene_id: sceneId,
-                        lang: window.activeLang
+                        lang: window.activeLang,
+                        stream: true
                     })
                 });
 
-                const data = await response.json();
                 document.getElementById('ai-preview-loading').classList.add('hidden');
 
                 if (response.ok) {
                     const resultContainer = document.getElementById('ai-preview-result-container');
-                    resultContainer.innerText = data.message;
+                    resultContainer.innerText = '';
                     resultContainer.classList.remove('hidden');
                     document.getElementById('ai-preview-actions').classList.remove('hidden');
+
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder("utf-8");
+                    let buffer = "";
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        buffer += decoder.decode(value, {stream: true});
+                        const lines = buffer.split('\n');
+                        buffer = lines.pop(); // Keep the last incomplete line in the buffer
+                        for (let line of lines) {
+                            if (line.startsWith('data: ')) {
+                                try {
+                                    const parsed = JSON.parse(line.substring(6));
+                                    resultContainer.innerText += parsed.token;
+                                } catch(e) {}
+                            }
+                        }
+                    }
                 } else {
+                    const data = await response.json();
                     alert((translations["error_ai_context"] || "AI error: Failed to generate") + ": " + (data.error || ""));
                     closeAiPreview();
                 }
@@ -271,21 +291,42 @@
                         model: projectData.settings.ai_model || "llama3",
                         inject_lore_context: injectLore,
                         scene_id: sceneId,
-                        lang: window.activeLang
+                        lang: window.activeLang,
+                        stream: true
                     })
                 });
 
                 if (res.ok) {
-                    const data = await res.json();
-                    chatMessages[loadingIndex] = { role: "assistant", content: data.message };
+                    chatMessages[loadingIndex] = { role: "assistant", content: "" };
+                    renderChat();
+
+                    const reader = res.body.getReader();
+                    const decoder = new TextDecoder("utf-8");
+                    let buffer = "";
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        buffer += decoder.decode(value, {stream: true});
+                        const lines = buffer.split('\n');
+                        buffer = lines.pop(); // Keep the last incomplete line in the buffer
+                        for (let line of lines) {
+                            if (line.startsWith('data: ')) {
+                                try {
+                                    const parsed = JSON.parse(line.substring(6));
+                                    chatMessages[loadingIndex].content += parsed.token;
+                                    renderChat();
+                                } catch(e) {}
+                            }
+                        }
+                    }
                 } else {
                     chatMessages[loadingIndex] = { role: "assistant", content: translations["error_ai_chat"] || "Error: Could not retrieve response from AI." };
+                    renderChat();
                 }
             } catch (err) {
                 chatMessages[loadingIndex] = { role: "assistant", content: translations["error_network_connection"] || "Error: Network connection failed." };
+                renderChat();
             }
-
-            renderChat();
         }
 
         // LORE EXTRACTION
@@ -452,20 +493,42 @@
                         temperature: 0.8,
                         model: projectData.settings.ai_model || "llama3",
                         inject_lore_context: false, // We already injected it in system prompt
-                        lang: window.activeLang
+                        lang: window.activeLang,
+                        stream: true
                     })
                 });
 
                 if (res.ok) {
-                    const data = await res.json();
-                    interviewMessages[loadingIdx].content = data.message;
+                    interviewMessages[loadingIdx].content = "";
+                    renderInterviewChat();
+
+                    const reader = res.body.getReader();
+                    const decoder = new TextDecoder("utf-8");
+                    let buffer = "";
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        buffer += decoder.decode(value, {stream: true});
+                        const lines = buffer.split('\n');
+                        buffer = lines.pop(); // Keep the last incomplete line in the buffer
+                        for (let line of lines) {
+                            if (line.startsWith('data: ')) {
+                                try {
+                                    const parsed = JSON.parse(line.substring(6));
+                                    interviewMessages[loadingIdx].content += parsed.token;
+                                    renderInterviewChat();
+                                } catch(e) {}
+                            }
+                        }
+                    }
                 } else {
                     interviewMessages[loadingIdx].content = window.activeLang === 'fr' ? "Le personnage ne répond pas." : "Character doesn't reply.";
+                    renderInterviewChat();
                 }
             } catch (e) {
                 interviewMessages[loadingIdx].content = "Error.";
+                renderInterviewChat();
             }
-            renderInterviewChat();
         }
 
         function sendInterviewMessage() {
