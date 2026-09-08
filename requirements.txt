@@ -32,3 +32,9 @@ pywebview
 PyQt6
 PyQt6-WebEngine
 qtpy
+
+# User requested HuggingFace transition
+torch
+transformers
+bitsandbytes
+accelerate

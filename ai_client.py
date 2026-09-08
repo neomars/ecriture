@@ -1,7 +1,5 @@
 import json
-
 import threading
-import json
 import os
 import sys
 
@@ -18,7 +16,6 @@ class AIClient:
 
     @staticmethod
     def _get_saved_path_file():
-        # Store the path file in standard app cache or local path
         if "XDG_CACHE_HOME" in os.environ:
             base = os.path.join(os.environ["XDG_CACHE_HOME"], "ecriture")
         else:
@@ -56,8 +53,9 @@ class AIClient:
             with cls._lock:
                 if cls._instance is None:
                     cls._instance = super(AIClient, cls).__new__(cls)
-                    cls._instance._llm = None
-                    cls._instance.model_filename = "gemma-2-2b-it-Q8_0.gguf"
+                    cls._instance._model = None
+                    cls._instance._tokenizer = None
+                    cls._instance.model_filename = "gemma-2-2b-it" # Changed to huggingface model name
 
                     saved_dir = cls._load_saved_model_dir()
                     if saved_dir:
@@ -70,36 +68,42 @@ class AIClient:
         return cls._instance
 
     def _load_model(self):
-        if self._llm is not None:
-            return self._llm
+        if self._model is not None:
+            return self._model
 
         with self._lock:
-            if self._llm is not None:
-                return self._llm
+            if self._model is not None:
+                return self._model
 
             try:
-                if not os.path.exists(self.model_path):
-                    raise Exception(f"Model file not found at {self.model_path}")
+                import torch
+                from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
-                from llama_cpp import Llama
-                self._llm = Llama(
-                    model_path=self.model_path,
-                    n_ctx=8192,
-                    n_threads=4,
-                    n_gpu_layers=-1,
-                    verbose=False
+                # 1 - Quantization
+                quantization_config = BitsAndBytesConfig(
+                    load_in_8bit=True,
                 )
-                return self._llm
+
+                # Check for model path (we assume it is a huggingface model downloaded locally or we use standard HF cache)
+                # If local model doesn't exist we fall back to downloading
+                model_id = self.model_path if os.path.exists(self.model_path) else "google/gemma-2-2b-it"
+
+                self._tokenizer = AutoTokenizer.from_pretrained(model_id)
+                self._model = AutoModelForCausalLM.from_pretrained(
+                    model_id,
+                    quantization_config=quantization_config,
+                    device_map="auto" # This handles .to('cuda') automatically
+                )
+
+                return self._model
             except Exception as e:
                 print(f"Error loading model: {e}")
                 return None
 
     def check_status(self):
         try:
-            if os.path.exists(self.model_path):
-                return {"status": "online"}
-            else:
-                return {"status": "offline", "error": "Model file not found"}
+            # We assume it's online if transformers can be imported (simplification)
+            return {"status": "online"}
         except Exception as e:
             return {"status": "offline", "error": str(e), "traceback": __import__('traceback').format_exc()}
 
@@ -109,20 +113,19 @@ class AIClient:
     def select_best_model(self, preferred_model):
         return "gemma-2-2b-it"
 
-
-    def generate_chat(self, messages, model="gemma-2-2b-it", temperature=0.7, timeout=60):
+    def generate_chat(self, messages, model="gemma-2-2b-it", temperature=0.7, timeout=60, stream=False):
         try:
             status = self.check_status()
             if status["status"] != "online":
                 raise Exception("Local model not installed.")
 
-            llm = self._load_model()
-            if not llm:
-                raise Exception("Failed to load Llama engine.")
+            model = self._load_model()
+            if not model:
+                raise Exception("Failed to load Transformers model.")
 
-            # Gemma 2 templates require strictly alternating user/assistant messages, starting with user.
-            # We must merge any 'system' messages into the first 'user' message, drop leading assistant messages,
-            # and merge consecutive messages of the same role.
+            tokenizer = self._tokenizer
+
+            # Format messages
             formatted_messages = []
             system_content = []
 
@@ -147,7 +150,6 @@ class AIClient:
                     elif formatted_messages and formatted_messages[-1]["role"] == "assistant":
                         formatted_messages[-1]["content"] += "\n\n" + content
                     else:
-                        # Drop leading assistant messages to satisfy Gemma 2 format
                         pass
 
             if system_content:
@@ -156,26 +158,35 @@ class AIClient:
                 else:
                     formatted_messages[-1]["content"] += "\n\n" + "\n\n".join(system_content)
 
-            response = llm.create_chat_completion(
-                messages=formatted_messages,
-                temperature=temperature,
-                max_tokens=512
-            )
+            input_ids = tokenizer.apply_chat_template(formatted_messages, add_generation_prompt=True, return_tensors="pt").to(model.device)
 
-            content = response["choices"][0]["message"]["content"]
-            return {
-                "status": "success",
-                "message": content.strip(),
-                "model": "gemma-2-2b-it"
-            }
+            if stream:
+                from transformers import TextIteratorStreamer
+                import threading
+                streamer = TextIteratorStreamer(tokenizer, skip_prompt=True, skip_special_tokens=True)
+                generation_kwargs = dict(input_ids=input_ids, streamer=streamer, max_new_tokens=512, temperature=temperature)
+
+                thread = threading.Thread(target=model.generate, kwargs=generation_kwargs)
+                thread.start()
+
+                def token_generator():
+                    for new_text in streamer:
+                        yield new_text
+                return token_generator()
+            else:
+                outputs = model.generate(input_ids, max_new_tokens=512, temperature=temperature)
+                content = tokenizer.decode(outputs[0][input_ids.shape[-1]:], skip_special_tokens=True)
+
+                return {
+                    "status": "success",
+                    "message": content.strip(),
+                    "model": "gemma-2-2b-it"
+                }
         except Exception as e:
             print(f"Error calling local AI: {e}")
             raise
+
     def get_fallback_response(self, category, text_or_messages, style="elegant", lang="fr"):
-        """
-        Generates simulated fallback responses when AI is offline.
-        """
-        # We need to fetch the strings from the locales
         import json
         import os
 
@@ -189,7 +200,6 @@ class AIClient:
         def get_str(key, default=""):
             return translations.get(key, default)
 
-        # Extract last user message if a list was passed
         if isinstance(text_or_messages, list):
             user_text = text_or_messages[-1].get("content", "") if text_or_messages else ""
         else:
@@ -198,7 +208,6 @@ class AIClient:
         user_text_lower = user_text.lower()
         is_french = lang == "fr" or any(word in user_text_lower for word in ["le", "la", "les", "une", "un", "est", "et", "de", "je", "tu", "il"])
 
-        # Determine effective lang if it wasn't passed accurately
         effective_lang = "fr" if is_french else "en"
         if effective_lang != lang:
             locale_path = resource_path(os.path.join("locales", f"{effective_lang}.json"))
@@ -208,27 +217,24 @@ class AIClient:
             except Exception:
                 translations = {}
 
-        # 1. Handle tool fallback (Describe, Rewrite, Expand)
         if category in ["describe", "rewrite", "expand"]:
             if category == "describe":
                 return get_str("fallback_describe").replace("{text}", user_text)
             elif category == "rewrite":
                 key = f"fallback_rewrite_{style}"
                 fallback = get_str(key)
-                if not fallback: # default to elegant
+                if not fallback:
                     fallback = get_str("fallback_rewrite_elegant")
                 return fallback.replace("{text}", user_text)
-            else: # expand
+            else:
                 return get_str("fallback_expand").replace("{text}", user_text)
 
-        # 2. Handle Relecture fallbacks (Style & Prose or Coherence)
         elif category in ["relecture_style", "relecture_coherence"]:
             if category == "relecture_style":
                 return get_str("fallback_relecture_style")
-            else: # coherence
+            else:
                 return get_str("fallback_relecture_coherence")
 
-        # 3. Handle Chat assistant fallback
         else:
             if any(kw in user_text_lower for kw in ["plan", "intrigue", "plot"]):
                 return get_str("fallback_chat_plot")

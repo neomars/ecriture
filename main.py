@@ -1065,7 +1065,16 @@ def handle_ai_tool():
 
     # Call Gemma via unified Client
     try:
-        res = ai_client.generate_chat(messages, model=selected_model, temperature=temperature, timeout=15)
+        stream = payload.get("stream", False)
+        res = ai_client.generate_chat(messages, model=selected_model, temperature=temperature, timeout=15, stream=stream)
+
+        if stream:
+            def generate():
+                for token in res:
+                    yield f"data: {json.dumps({'token': token})}\n\n"
+            from flask import Response
+            return Response(generate(), mimetype='text/event-stream')
+
         return jsonify({
             "status": "success",
             "message": res["message"],
@@ -1114,7 +1123,16 @@ def ai_chat():
 
     # Call Gemma via unified client
     try:
-        res = ai_client.generate_chat(messages, model=selected_model, temperature=temperature, timeout=15)
+        stream = payload.get("stream", False)
+        res = ai_client.generate_chat(messages, model=selected_model, temperature=temperature, timeout=15, stream=stream)
+
+        if stream:
+            def generate():
+                for token in res:
+                    yield f"data: {json.dumps({'token': token})}\n\n"
+            from flask import Response
+            return Response(generate(), mimetype='text/event-stream')
+
         return jsonify({
             "status": "success",
             "message": res["message"],
