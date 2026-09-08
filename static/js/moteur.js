@@ -740,6 +740,11 @@ window.showConfirm = function(message) {
             return val;
         }
 
+        // HELPER: Simple translation getter
+        function getTranslation(key) {
+            return translations[key] || key;
+        }
+
         let saveAbortController = null;
 
         // SAVE STATE BACK TO JSON FILE

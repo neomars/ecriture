@@ -88,12 +88,12 @@ class AIClient:
                 # If local model doesn't exist we fall back to downloading
                 model_id = self.model_path if os.path.exists(self.model_path) else "unsloth/gemma-2-2b-it"
 
-                self._tokenizer = AutoTokenizer.from_pretrained(model_id, token=os.environ.get("HF_TOKEN", True))
+                self._tokenizer = AutoTokenizer.from_pretrained(model_id, token=os.environ.get("HF_TOKEN"))
                 self._model = AutoModelForCausalLM.from_pretrained(
                     model_id,
                     quantization_config=quantization_config,
                     device_map="auto", # This handles .to('cuda') automatically
-                    token=os.environ.get("HF_TOKEN", True)
+                    token=os.environ.get("HF_TOKEN")
                 )
 
                 return self._model
