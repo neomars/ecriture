@@ -4,8 +4,8 @@
   "version": "0.1.0",
   "identifier": "com.tauri.dev",
   "build": {
-    "beforeDevCommand": "mkdir -p ../dist && cp ../templates/index.html ../dist/ && cp -r ../static ../dist/",
-    "beforeBuildCommand": "mkdir -p ../dist && cp ../templates/index.html ../dist/ && cp -r ../static ../dist/",
+    "beforeDevCommand": "mkdir -p dist && cp templates/index.html dist/ && cp -r static dist/",
+    "beforeBuildCommand": "mkdir -p dist && cp templates/index.html dist/ && cp -r static dist/",
     "frontendDist": "../dist"
   },
   "app": {
