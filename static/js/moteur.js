@@ -2607,7 +2607,7 @@ function renderStatisticsDashboard() {
             document.getElementById('chapter-type-modal').classList.add('hidden');
         }
 
-        function selectChapterCategory(category) {
+        window.selectChapterCategory = function selectChapterCategory(category) {
             activeChapterCategory = category;
 
             // Highlight active tab
@@ -2695,11 +2695,11 @@ function renderStatisticsDashboard() {
             }
         }
 
-        function addNewChapter() {
+        window.addNewChapter = function addNewChapter() {
             openChapterTypeModal();
         }
 
-        function addNewScene() {
+        window.addNewScene = function addNewScene() {
             let parentChapId = null;
 
             // Use currently selected chapter if scene/chapter is selected
