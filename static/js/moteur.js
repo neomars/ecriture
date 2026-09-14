@@ -2684,14 +2684,19 @@ function renderStatisticsDashboard() {
 
             renderTree();
             selectScene(newScene.id);
-            await persistProject();
+
             const chapterTypeModal = document.getElementById('chapter-type-modal');
             const shouldReload = chapterTypeModal && chapterTypeModal.getAttribute('data-uncancelable') === 'true';
 
             closeChapterTypeModal();
 
+            // Wait for save to complete before reloading
+            await persistProject();
+
             if (shouldReload) {
-                window.location.reload();
+                setTimeout(() => {
+                    window.location.reload();
+                }, 100);
             }
         }
 
