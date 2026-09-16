@@ -1,4 +1,3 @@
-window.originalFetch = window.fetch;
 
 window.showConfirm = function(message) {
     return new Promise((resolve) => {
@@ -261,30 +260,7 @@ window.showConfirm = function(message) {
 
         async function checkGemmaStatus() {
             try {
-                const res = await (async (...args) => {
-    try {
-        let _res = await (window.originalFetch || fetch)(...args);
-        if (!_res.ok) throw new Error("HTTP error " + _res.status);
-        return _res;
-    } catch (e) {
-        console.log("Appel backend désactivé temporairement");
-        console.error("error.log:", e);
-        let _mock = {};
-        let _url = String(args[0]);
-        if (_url.includes('projects/active')) _mock = { id: 'dummy', title: 'Dummy Project' };
-        else if (_url.includes('projects')) _mock = [];
-        else if (_url.includes('project?')) _mock = { title: "Dummy", author: "Dummy", chapters: [], plot: { cards: [], plotlines: [] }, timeline: { events: [], lines: [] }, settings: {} };
-        else if (_url.includes('locale/')) _mock = {};
-        else if (_url.includes('ai/status')) _mock = { installed: true };
-
-        return {
-            ok: true,
-            status: 200,
-            json: async () => _mock,
-            text: async () => JSON.stringify(_mock)
-        };
-    }
-})('/api/ai/status');
+                const res = await fetch('/api/ai/status');
                 if (res.ok) {
                     const data = await res.json();
                     if (!data.installed) {
@@ -310,57 +286,11 @@ window.showConfirm = function(message) {
 
             if (modal) modal.classList.remove('hidden');
 
-            (async (...args) => {
-    try {
-        let _res = await (window.originalFetch || fetch)(...args);
-        if (!_res.ok) throw new Error("HTTP error " + _res.status);
-        return _res;
-    } catch (e) {
-        console.log("Appel backend désactivé temporairement");
-        console.error("error.log:", e);
-        let _mock = {};
-        let _url = String(args[0]);
-        if (_url.includes('projects/active')) _mock = { id: 'dummy', title: 'Dummy Project' };
-        else if (_url.includes('projects')) _mock = [];
-        else if (_url.includes('project?')) _mock = { title: "Dummy", author: "Dummy", chapters: [], plot: { cards: [], plotlines: [] }, timeline: { events: [], lines: [] }, settings: {} };
-        else if (_url.includes('locale/')) _mock = {};
-        else if (_url.includes('ai/status')) _mock = { installed: true };
-
-        return {
-            ok: true,
-            status: 200,
-            json: async () => _mock,
-            text: async () => JSON.stringify(_mock)
-        };
-    }
-})('/api/ai/install_engine', { method: 'POST' })
+            fetch('/api/ai/install_engine', { method: 'POST' })
                 .then(res => res.json())
                 .then(data => {
                     const interval = setInterval(() => {
-                        (async (...args) => {
-    try {
-        let _res = await (window.originalFetch || fetch)(...args);
-        if (!_res.ok) throw new Error("HTTP error " + _res.status);
-        return _res;
-    } catch (e) {
-        console.log("Appel backend désactivé temporairement");
-        console.error("error.log:", e);
-        let _mock = {};
-        let _url = String(args[0]);
-        if (_url.includes('projects/active')) _mock = { id: 'dummy', title: 'Dummy Project' };
-        else if (_url.includes('projects')) _mock = [];
-        else if (_url.includes('project?')) _mock = { title: "Dummy", author: "Dummy", chapters: [], plot: { cards: [], plotlines: [] }, timeline: { events: [], lines: [] }, settings: {} };
-        else if (_url.includes('locale/')) _mock = {};
-        else if (_url.includes('ai/status')) _mock = { installed: true };
-
-        return {
-            ok: true,
-            status: 200,
-            json: async () => _mock,
-            text: async () => JSON.stringify(_mock)
-        };
-    }
-})('/api/ai/install_status')
+                        fetch('/api/ai/install_status')
                             .then(res => res.json())
                             .then(statusData => {
                                 if (statusData.message) {
@@ -440,30 +370,7 @@ window.showConfirm = function(message) {
                 const progressDiv = document.getElementById('gemma-install-progress-container');
                 if(progressDiv) progressDiv.classList.remove('hidden');
 
-                const response = await (async (...args) => {
-    try {
-        let _res = await (window.originalFetch || fetch)(...args);
-        if (!_res.ok) throw new Error("HTTP error " + _res.status);
-        return _res;
-    } catch (e) {
-        console.log("Appel backend désactivé temporairement");
-        console.error("error.log:", e);
-        let _mock = {};
-        let _url = String(args[0]);
-        if (_url.includes('projects/active')) _mock = { id: 'dummy', title: 'Dummy Project' };
-        else if (_url.includes('projects')) _mock = [];
-        else if (_url.includes('project?')) _mock = { title: "Dummy", author: "Dummy", chapters: [], plot: { cards: [], plotlines: [] }, timeline: { events: [], lines: [] }, settings: {} };
-        else if (_url.includes('locale/')) _mock = {};
-        else if (_url.includes('ai/status')) _mock = { installed: true };
-
-        return {
-            ok: true,
-            status: 200,
-            json: async () => _mock,
-            text: async () => JSON.stringify(_mock)
-        };
-    }
-})('/api/ai/install_engine', {
+                const response = await fetch('/api/ai/install_engine', {
                     method: 'POST'
                 });
 
@@ -483,30 +390,7 @@ window.showConfirm = function(message) {
 
         async function pollInstallStatus() {
             try {
-                const response = await (async (...args) => {
-    try {
-        let _res = await (window.originalFetch || fetch)(...args);
-        if (!_res.ok) throw new Error("HTTP error " + _res.status);
-        return _res;
-    } catch (e) {
-        console.log("Appel backend désactivé temporairement");
-        console.error("error.log:", e);
-        let _mock = {};
-        let _url = String(args[0]);
-        if (_url.includes('projects/active')) _mock = { id: 'dummy', title: 'Dummy Project' };
-        else if (_url.includes('projects')) _mock = [];
-        else if (_url.includes('project?')) _mock = { title: "Dummy", author: "Dummy", chapters: [], plot: { cards: [], plotlines: [] }, timeline: { events: [], lines: [] }, settings: {} };
-        else if (_url.includes('locale/')) _mock = {};
-        else if (_url.includes('ai/status')) _mock = { installed: true };
-
-        return {
-            ok: true,
-            status: 200,
-            json: async () => _mock,
-            text: async () => JSON.stringify(_mock)
-        };
-    }
-})('/api/ai/install_status');
+                const response = await fetch('/api/ai/install_status');
                 const data = await response.json();
 
                 const statusText = document.getElementById('gemma-install-status-text');
@@ -567,30 +451,7 @@ window.showConfirm = function(message) {
 
         async function loadProjectsList() {
             try {
-                const res = await (async (...args) => {
-    try {
-        let _res = await (window.originalFetch || fetch)(...args);
-        if (!_res.ok) throw new Error("HTTP error " + _res.status);
-        return _res;
-    } catch (e) {
-        console.log("Appel backend désactivé temporairement");
-        console.error("error.log:", e);
-        let _mock = {};
-        let _url = String(args[0]);
-        if (_url.includes('projects/active')) _mock = { id: 'dummy', title: 'Dummy Project' };
-        else if (_url.includes('projects')) _mock = [];
-        else if (_url.includes('project?')) _mock = { title: "Dummy", author: "Dummy", chapters: [], plot: { cards: [], plotlines: [] }, timeline: { events: [], lines: [] }, settings: {} };
-        else if (_url.includes('locale/')) _mock = {};
-        else if (_url.includes('ai/status')) _mock = { installed: true };
-
-        return {
-            ok: true,
-            status: 200,
-            json: async () => _mock,
-            text: async () => JSON.stringify(_mock)
-        };
-    }
-})(`/api/projects?t=${Date.now()}`);
+                const res = await fetch(`/api/projects?t=${Date.now()}`);
                 const projects = await res.json();
 
                 const select = document.getElementById('project-select');
@@ -604,30 +465,7 @@ window.showConfirm = function(message) {
                 });
 
                 // Get active project filename
-                const activeRes = await (async (...args) => {
-    try {
-        let _res = await (window.originalFetch || fetch)(...args);
-        if (!_res.ok) throw new Error("HTTP error " + _res.status);
-        return _res;
-    } catch (e) {
-        console.log("Appel backend désactivé temporairement");
-        console.error("error.log:", e);
-        let _mock = {};
-        let _url = String(args[0]);
-        if (_url.includes('projects/active')) _mock = { id: 'dummy', title: 'Dummy Project' };
-        else if (_url.includes('projects')) _mock = [];
-        else if (_url.includes('project?')) _mock = { title: "Dummy", author: "Dummy", chapters: [], plot: { cards: [], plotlines: [] }, timeline: { events: [], lines: [] }, settings: {} };
-        else if (_url.includes('locale/')) _mock = {};
-        else if (_url.includes('ai/status')) _mock = { installed: true };
-
-        return {
-            ok: true,
-            status: 200,
-            json: async () => _mock,
-            text: async () => JSON.stringify(_mock)
-        };
-    }
-})(`/api/projects/active?t=${Date.now()}`);
+                const activeRes = await fetch(`/api/projects/active?t=${Date.now()}`);
                 const activeData = await activeRes.json();
                 select.value = activeData.active_filename;
             } catch (err) {
@@ -645,30 +483,7 @@ window.showConfirm = function(message) {
                     if (autoSaveTimer) clearTimeout(autoSaveTimer);
                 }
 
-                const res = await (async (...args) => {
-    try {
-        let _res = await (window.originalFetch || fetch)(...args);
-        if (!_res.ok) throw new Error("HTTP error " + _res.status);
-        return _res;
-    } catch (e) {
-        console.log("Appel backend désactivé temporairement");
-        console.error("error.log:", e);
-        let _mock = {};
-        let _url = String(args[0]);
-        if (_url.includes('projects/active')) _mock = { id: 'dummy', title: 'Dummy Project' };
-        else if (_url.includes('projects')) _mock = [];
-        else if (_url.includes('project?')) _mock = { title: "Dummy", author: "Dummy", chapters: [], plot: { cards: [], plotlines: [] }, timeline: { events: [], lines: [] }, settings: {} };
-        else if (_url.includes('locale/')) _mock = {};
-        else if (_url.includes('ai/status')) _mock = { installed: true };
-
-        return {
-            ok: true,
-            status: 200,
-            json: async () => _mock,
-            text: async () => JSON.stringify(_mock)
-        };
-    }
-})('/api/projects/active', {
+                const res = await fetch('/api/projects/active', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ filename })
@@ -711,30 +526,7 @@ window.showConfirm = function(message) {
                     if (autoSaveTimer) clearTimeout(autoSaveTimer);
                 }
 
-                const res = await (async (...args) => {
-    try {
-        let _res = await (window.originalFetch || fetch)(...args);
-        if (!_res.ok) throw new Error("HTTP error " + _res.status);
-        return _res;
-    } catch (e) {
-        console.log("Appel backend désactivé temporairement");
-        console.error("error.log:", e);
-        let _mock = {};
-        let _url = String(args[0]);
-        if (_url.includes('projects/active')) _mock = { id: 'dummy', title: 'Dummy Project' };
-        else if (_url.includes('projects')) _mock = [];
-        else if (_url.includes('project?')) _mock = { title: "Dummy", author: "Dummy", chapters: [], plot: { cards: [], plotlines: [] }, timeline: { events: [], lines: [] }, settings: {} };
-        else if (_url.includes('locale/')) _mock = {};
-        else if (_url.includes('ai/status')) _mock = { installed: true };
-
-        return {
-            ok: true,
-            status: 200,
-            json: async () => _mock,
-            text: async () => JSON.stringify(_mock)
-        };
-    }
-})('/api/projects/create', {
+                const res = await fetch('/api/projects/create', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ title })
@@ -855,30 +647,7 @@ window.showConfirm = function(message) {
         // LOAD ACTIVE PROJECT FROM BACKEND JSON
         async function loadProject() {
             try {
-                const res = await (async (...args) => {
-    try {
-        let _res = await (window.originalFetch || fetch)(...args);
-        if (!_res.ok) throw new Error("HTTP error " + _res.status);
-        return _res;
-    } catch (e) {
-        console.log("Appel backend désactivé temporairement");
-        console.error("error.log:", e);
-        let _mock = {};
-        let _url = String(args[0]);
-        if (_url.includes('projects/active')) _mock = { id: 'dummy', title: 'Dummy Project' };
-        else if (_url.includes('projects')) _mock = [];
-        else if (_url.includes('project?')) _mock = { title: "Dummy", author: "Dummy", chapters: [], plot: { cards: [], plotlines: [] }, timeline: { events: [], lines: [] }, settings: {} };
-        else if (_url.includes('locale/')) _mock = {};
-        else if (_url.includes('ai/status')) _mock = { installed: true };
-
-        return {
-            ok: true,
-            status: 200,
-            json: async () => _mock,
-            text: async () => JSON.stringify(_mock)
-        };
-    }
-})(`/api/project?t=${Date.now()}`);
+                const res = await fetch(`/api/project?t=${Date.now()}`);
                 projectData = await res.json();
 
                 // Normalize all characters to ensure backward compatibility
@@ -925,30 +694,7 @@ window.showConfirm = function(message) {
         // FETCH EXTERNAL LOCALIZATION
         async function loadLocale(lang) {
             try {
-                const res = await (async (...args) => {
-    try {
-        let _res = await (window.originalFetch || fetch)(...args);
-        if (!_res.ok) throw new Error("HTTP error " + _res.status);
-        return _res;
-    } catch (e) {
-        console.log("Appel backend désactivé temporairement");
-        console.error("error.log:", e);
-        let _mock = {};
-        let _url = String(args[0]);
-        if (_url.includes('projects/active')) _mock = { id: 'dummy', title: 'Dummy Project' };
-        else if (_url.includes('projects')) _mock = [];
-        else if (_url.includes('project?')) _mock = { title: "Dummy", author: "Dummy", chapters: [], plot: { cards: [], plotlines: [] }, timeline: { events: [], lines: [] }, settings: {} };
-        else if (_url.includes('locale/')) _mock = {};
-        else if (_url.includes('ai/status')) _mock = { installed: true };
-
-        return {
-            ok: true,
-            status: 200,
-            json: async () => _mock,
-            text: async () => JSON.stringify(_mock)
-        };
-    }
-})(`/api/locale/${lang}`);
+                const res = await fetch(`/api/locale/${lang}`);
                 translations = await res.json();
                 window.activeLang = lang;
                 translateDOM();
@@ -1004,30 +750,7 @@ window.showConfirm = function(message) {
                     saveAbortController.abort();
                 }
                 saveAbortController = new AbortController();
-                const res = await (async (...args) => {
-    try {
-        let _res = await (window.originalFetch || fetch)(...args);
-        if (!_res.ok) throw new Error("HTTP error " + _res.status);
-        return _res;
-    } catch (e) {
-        console.log("Appel backend désactivé temporairement");
-        console.error("error.log:", e);
-        let _mock = {};
-        let _url = String(args[0]);
-        if (_url.includes('projects/active')) _mock = { id: 'dummy', title: 'Dummy Project' };
-        else if (_url.includes('projects')) _mock = [];
-        else if (_url.includes('project?')) _mock = { title: "Dummy", author: "Dummy", chapters: [], plot: { cards: [], plotlines: [] }, timeline: { events: [], lines: [] }, settings: {} };
-        else if (_url.includes('locale/')) _mock = {};
-        else if (_url.includes('ai/status')) _mock = { installed: true };
-
-        return {
-            ok: true,
-            status: 200,
-            json: async () => _mock,
-            text: async () => JSON.stringify(_mock)
-        };
-    }
-})('/api/project', {
+                const res = await fetch('/api/project', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(projectData),
@@ -1083,59 +806,13 @@ window.showConfirm = function(message) {
 
             if (shouldBackup) {
                 try {
-                    await (async (...args) => {
-    try {
-        let _res = await (window.originalFetch || fetch)(...args);
-        if (!_res.ok) throw new Error("HTTP error " + _res.status);
-        return _res;
-    } catch (e) {
-        console.log("Appel backend désactivé temporairement");
-        console.error("error.log:", e);
-        let _mock = {};
-        let _url = String(args[0]);
-        if (_url.includes('projects/active')) _mock = { id: 'dummy', title: 'Dummy Project' };
-        else if (_url.includes('projects')) _mock = [];
-        else if (_url.includes('project?')) _mock = { title: "Dummy", author: "Dummy", chapters: [], plot: { cards: [], plotlines: [] }, timeline: { events: [], lines: [] }, settings: {} };
-        else if (_url.includes('locale/')) _mock = {};
-        else if (_url.includes('ai/status')) _mock = { installed: true };
-
-        return {
-            ok: true,
-            status: 200,
-            json: async () => _mock,
-            text: async () => JSON.stringify(_mock)
-        };
-    }
-})('/api/backups/local/create', {
+                    await fetch('/api/backups/local/create', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ folder_path: path, frequency: freq })
                     });
                     // Save timestamps state back to project
-                    await (async (...args) => {
-    try {
-        let _res = await (window.originalFetch || fetch)(...args);
-        if (!_res.ok) throw new Error("HTTP error " + _res.status);
-        return _res;
-    } catch (e) {
-        console.log("Appel backend désactivé temporairement");
-        console.error("error.log:", e);
-        let _mock = {};
-        let _url = String(args[0]);
-        if (_url.includes('projects/active')) _mock = { id: 'dummy', title: 'Dummy Project' };
-        else if (_url.includes('projects')) _mock = [];
-        else if (_url.includes('project?')) _mock = { title: "Dummy", author: "Dummy", chapters: [], plot: { cards: [], plotlines: [] }, timeline: { events: [], lines: [] }, settings: {} };
-        else if (_url.includes('locale/')) _mock = {};
-        else if (_url.includes('ai/status')) _mock = { installed: true };
-
-        return {
-            ok: true,
-            status: 200,
-            json: async () => _mock,
-            text: async () => JSON.stringify(_mock)
-        };
-    }
-})('/api/project', {
+                    await fetch('/api/project', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(projectData)
@@ -3178,30 +2855,7 @@ function renderStatisticsDashboard() {
                 // Post save first to ensure we export latest
                 await persistProject();
 
-                const response = await (async (...args) => {
-    try {
-        let _res = await (window.originalFetch || fetch)(...args);
-        if (!_res.ok) throw new Error("HTTP error " + _res.status);
-        return _res;
-    } catch (e) {
-        console.log("Appel backend désactivé temporairement");
-        console.error("error.log:", e);
-        let _mock = {};
-        let _url = String(args[0]);
-        if (_url.includes('projects/active')) _mock = { id: 'dummy', title: 'Dummy Project' };
-        else if (_url.includes('projects')) _mock = [];
-        else if (_url.includes('project?')) _mock = { title: "Dummy", author: "Dummy", chapters: [], plot: { cards: [], plotlines: [] }, timeline: { events: [], lines: [] }, settings: {} };
-        else if (_url.includes('locale/')) _mock = {};
-        else if (_url.includes('ai/status')) _mock = { installed: true };
-
-        return {
-            ok: true,
-            status: 200,
-            json: async () => _mock,
-            text: async () => JSON.stringify(_mock)
-        };
-    }
-})('/api/export', {
+                const response = await fetch('/api/export', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ format: format })
@@ -3253,30 +2907,7 @@ function renderStatisticsDashboard() {
             const activeModel = projectData.settings.ai_model || "llama3";
 
             try {
-                const response = await (async (...args) => {
-    try {
-        let _res = await (window.originalFetch || fetch)(...args);
-        if (!_res.ok) throw new Error("HTTP error " + _res.status);
-        return _res;
-    } catch (e) {
-        console.log("Appel backend désactivé temporairement");
-        console.error("error.log:", e);
-        let _mock = {};
-        let _url = String(args[0]);
-        if (_url.includes('projects/active')) _mock = { id: 'dummy', title: 'Dummy Project' };
-        else if (_url.includes('projects')) _mock = [];
-        else if (_url.includes('project?')) _mock = { title: "Dummy", author: "Dummy", chapters: [], plot: { cards: [], plotlines: [] }, timeline: { events: [], lines: [] }, settings: {} };
-        else if (_url.includes('locale/')) _mock = {};
-        else if (_url.includes('ai/status')) _mock = { installed: true };
-
-        return {
-            ok: true,
-            status: 200,
-            json: async () => _mock,
-            text: async () => JSON.stringify(_mock)
-        };
-    }
-})('/api/ai/models');
+                const response = await fetch('/api/ai/models');
                 if (response.ok) {
                     const data = await response.json();
                     if (data.status === "success" && data.models && data.models.length > 0) {
@@ -3418,30 +3049,7 @@ function renderStatisticsDashboard() {
 
         window.triggerDirectoryPicker = async function() {
             try {
-                const res = await (async (...args) => {
-    try {
-        let _res = await (window.originalFetch || fetch)(...args);
-        if (!_res.ok) throw new Error("HTTP error " + _res.status);
-        return _res;
-    } catch (e) {
-        console.log("Appel backend désactivé temporairement");
-        console.error("error.log:", e);
-        let _mock = {};
-        let _url = String(args[0]);
-        if (_url.includes('projects/active')) _mock = { id: 'dummy', title: 'Dummy Project' };
-        else if (_url.includes('projects')) _mock = [];
-        else if (_url.includes('project?')) _mock = { title: "Dummy", author: "Dummy", chapters: [], plot: { cards: [], plotlines: [] }, timeline: { events: [], lines: [] }, settings: {} };
-        else if (_url.includes('locale/')) _mock = {};
-        else if (_url.includes('ai/status')) _mock = { installed: true };
-
-        return {
-            ok: true,
-            status: 200,
-            json: async () => _mock,
-            text: async () => JSON.stringify(_mock)
-        };
-    }
-})('/api/backups/choose_directory', {
+                const res = await fetch('/api/backups/choose_directory', {
                     method: 'POST'
                 });
                 if (res.ok) {
@@ -3483,30 +3091,7 @@ function renderStatisticsDashboard() {
                 projectData = null; // Prevent auto-save from overriding the newly switched project
                 if (autoSaveTimer) clearTimeout(autoSaveTimer);
 
-                const res = await (async (...args) => {
-    try {
-        let _res = await (window.originalFetch || fetch)(...args);
-        if (!_res.ok) throw new Error("HTTP error " + _res.status);
-        return _res;
-    } catch (e) {
-        console.log("Appel backend désactivé temporairement");
-        console.error("error.log:", e);
-        let _mock = {};
-        let _url = String(args[0]);
-        if (_url.includes('projects/active')) _mock = { id: 'dummy', title: 'Dummy Project' };
-        else if (_url.includes('projects')) _mock = [];
-        else if (_url.includes('project?')) _mock = { title: "Dummy", author: "Dummy", chapters: [], plot: { cards: [], plotlines: [] }, timeline: { events: [], lines: [] }, settings: {} };
-        else if (_url.includes('locale/')) _mock = {};
-        else if (_url.includes('ai/status')) _mock = { installed: true };
-
-        return {
-            ok: true,
-            status: 200,
-            json: async () => _mock,
-            text: async () => JSON.stringify(_mock)
-        };
-    }
-})('/api/projects/delete', {
+                const res = await fetch('/api/projects/delete', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ filename })
@@ -3538,30 +3123,7 @@ function renderStatisticsDashboard() {
 
         window.checkUpdatesOnStartup = async function checkUpdatesOnStartup() {
             try {
-                const response = await (async (...args) => {
-    try {
-        let _res = await (window.originalFetch || fetch)(...args);
-        if (!_res.ok) throw new Error("HTTP error " + _res.status);
-        return _res;
-    } catch (e) {
-        console.log("Appel backend désactivé temporairement");
-        console.error("error.log:", e);
-        let _mock = {};
-        let _url = String(args[0]);
-        if (_url.includes('projects/active')) _mock = { id: 'dummy', title: 'Dummy Project' };
-        else if (_url.includes('projects')) _mock = [];
-        else if (_url.includes('project?')) _mock = { title: "Dummy", author: "Dummy", chapters: [], plot: { cards: [], plotlines: [] }, timeline: { events: [], lines: [] }, settings: {} };
-        else if (_url.includes('locale/')) _mock = {};
-        else if (_url.includes('ai/status')) _mock = { installed: true };
-
-        return {
-            ok: true,
-            status: 200,
-            json: async () => _mock,
-            text: async () => JSON.stringify(_mock)
-        };
-    }
-})('/api/check_updates');
+                const response = await fetch('/api/check_updates');
                 const data = await response.json();
 
                 const updateContainer = document.getElementById('update-container');
@@ -4557,30 +4119,7 @@ function renderStatisticsDashboard() {
         async function quitApplication() {
             if (await showConfirm(window.activeLang === 'fr' ? "Voulez-vous quitter l'application ?" : "Do you want to quit the application?")) {
                 try {
-                    await (async (...args) => {
-    try {
-        let _res = await (window.originalFetch || fetch)(...args);
-        if (!_res.ok) throw new Error("HTTP error " + _res.status);
-        return _res;
-    } catch (e) {
-        console.log("Appel backend désactivé temporairement");
-        console.error("error.log:", e);
-        let _mock = {};
-        let _url = String(args[0]);
-        if (_url.includes('projects/active')) _mock = { id: 'dummy', title: 'Dummy Project' };
-        else if (_url.includes('projects')) _mock = [];
-        else if (_url.includes('project?')) _mock = { title: "Dummy", author: "Dummy", chapters: [], plot: { cards: [], plotlines: [] }, timeline: { events: [], lines: [] }, settings: {} };
-        else if (_url.includes('locale/')) _mock = {};
-        else if (_url.includes('ai/status')) _mock = { installed: true };
-
-        return {
-            ok: true,
-            status: 200,
-            json: async () => _mock,
-            text: async () => JSON.stringify(_mock)
-        };
-    }
-})('/api/quit', { method: 'POST' });
+                    await fetch('/api/quit', { method: 'POST' });
                 } catch(e) {}
                 window.close();
             }
@@ -4631,30 +4170,7 @@ window.loadBackupsList = async function() {
             fetchUrl += `?path=${encodeURIComponent(currentPath)}`;
         }
 
-        const response = await (async (...args) => {
-    try {
-        let _res = await (window.originalFetch || fetch)(...args);
-        if (!_res.ok) throw new Error("HTTP error " + _res.status);
-        return _res;
-    } catch (e) {
-        console.log("Appel backend désactivé temporairement");
-        console.error("error.log:", e);
-        let _mock = {};
-        let _url = String(args[0]);
-        if (_url.includes('projects/active')) _mock = { id: 'dummy', title: 'Dummy Project' };
-        else if (_url.includes('projects')) _mock = [];
-        else if (_url.includes('project?')) _mock = { title: "Dummy", author: "Dummy", chapters: [], plot: { cards: [], plotlines: [] }, timeline: { events: [], lines: [] }, settings: {} };
-        else if (_url.includes('locale/')) _mock = {};
-        else if (_url.includes('ai/status')) _mock = { installed: true };
-
-        return {
-            ok: true,
-            status: 200,
-            json: async () => _mock,
-            text: async () => JSON.stringify(_mock)
-        };
-    }
-})(fetchUrl);
+        const response = await fetch(fetchUrl);
         const data = await response.json();
 
         if (data.error || !data.backups || data.backups.length === 0) {
@@ -4693,30 +4209,7 @@ window.restoreBackup = async function(filename, path = "") {
         const payload = { filename: filename };
         if (path) payload.path = path;
 
-        const response = await (async (...args) => {
-    try {
-        let _res = await (window.originalFetch || fetch)(...args);
-        if (!_res.ok) throw new Error("HTTP error " + _res.status);
-        return _res;
-    } catch (e) {
-        console.log("Appel backend désactivé temporairement");
-        console.error("error.log:", e);
-        let _mock = {};
-        let _url = String(args[0]);
-        if (_url.includes('projects/active')) _mock = { id: 'dummy', title: 'Dummy Project' };
-        else if (_url.includes('projects')) _mock = [];
-        else if (_url.includes('project?')) _mock = { title: "Dummy", author: "Dummy", chapters: [], plot: { cards: [], plotlines: [] }, timeline: { events: [], lines: [] }, settings: {} };
-        else if (_url.includes('locale/')) _mock = {};
-        else if (_url.includes('ai/status')) _mock = { installed: true };
-
-        return {
-            ok: true,
-            status: 200,
-            json: async () => _mock,
-            text: async () => JSON.stringify(_mock)
-        };
-    }
-})('/api/backups/local/restore', {
+        const response = await fetch('/api/backups/local/restore', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -4752,30 +4245,7 @@ window.importDocument = async function() {
     btn.disabled = true;
 
     try {
-        const response = await (async (...args) => {
-    try {
-        let _res = await (window.originalFetch || fetch)(...args);
-        if (!_res.ok) throw new Error("HTTP error " + _res.status);
-        return _res;
-    } catch (e) {
-        console.log("Appel backend désactivé temporairement");
-        console.error("error.log:", e);
-        let _mock = {};
-        let _url = String(args[0]);
-        if (_url.includes('projects/active')) _mock = { id: 'dummy', title: 'Dummy Project' };
-        else if (_url.includes('projects')) _mock = [];
-        else if (_url.includes('project?')) _mock = { title: "Dummy", author: "Dummy", chapters: [], plot: { cards: [], plotlines: [] }, timeline: { events: [], lines: [] }, settings: {} };
-        else if (_url.includes('locale/')) _mock = {};
-        else if (_url.includes('ai/status')) _mock = { installed: true };
-
-        return {
-            ok: true,
-            status: 200,
-            json: async () => _mock,
-            text: async () => JSON.stringify(_mock)
-        };
-    }
-})('/api/import/document', {
+        const response = await fetch('/api/import/document', {
             method: 'POST',
             body: formData
         });
