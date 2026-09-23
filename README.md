@@ -2,7 +2,7 @@
 
 **🇫🇷 [Français](#-français) · 🇬🇧 [English](#-english)**
 
-![Écriture](ecriture-rust/images/screenshot_main_fr.png)
+![Écriture](ecriture/images/screenshot_main_fr.png)
 
 ---
 
@@ -55,7 +55,7 @@ L'IA fonctionne entièrement sur votre machine grâce au modèle **Gemma 2 (2B)*
 
 | Mode verrouillé / concentration | Grille d'intrigue | Trame chronologique |
 |---|---|---|
-| ![Mode verrouillé](ecriture-rust/images/screenshot_locked.png) | ![Grille d'intrigue](ecriture-rust/images/screenshot_plot_grid.png) | ![Trame](ecriture-rust/images/screenshot_timeline.png) |
+| ![Mode verrouillé](ecriture/images/screenshot_locked.png) | ![Grille d'intrigue](ecriture/images/screenshot_plot_grid.png) | ![Trame](ecriture/images/screenshot_timeline.png) |
 
 ### Installation (depuis les Releases)
 
@@ -63,9 +63,9 @@ Les versions prêtes à l'emploi sont publiées sur la page **[Releases](https:/
 
 | Système | Fichier à télécharger |
 |---|---|
-| Windows 10 / 11 (64 bits) | `ecriture-rust_<version>_x64-setup.exe` |
-| macOS 11 ou plus récent (Apple Silicon M1/M2/M3…) | `ecriture-rust_<version>_aarch64.dmg` |
-| Linux Debian / Ubuntu / Mint (64 bits) | `ecriture-rust_<version>_amd64.deb` |
+| Windows 10 / 11 (64 bits) | `ecriture_<version>_x64-setup.exe` |
+| macOS 11 ou plus récent (Apple Silicon M1/M2/M3…) | `ecriture_<version>_aarch64.dmg` |
+| Linux Debian / Ubuntu / Mint (64 bits) | `ecriture_<version>_amd64.deb` |
 
 #### Windows
 1. Double-cliquez sur le fichier `…_x64-setup.exe`.
@@ -79,7 +79,7 @@ Les versions prêtes à l'emploi sont publiées sur la page **[Releases](https:/
 #### Linux (Debian / Ubuntu)
 Double-cliquez sur le fichier `.deb` pour l'ouvrir dans votre gestionnaire de logiciels, ou en ligne de commande :
 ```bash
-sudo apt install ./ecriture-rust_<version>_amd64.deb
+sudo apt install ./ecriture_<version>_amd64.deb
 ```
 L'application apparaît ensuite dans le menu de vos applications.
 
@@ -146,7 +146,7 @@ The AI runs entirely on your machine using the **Gemma 2 (2B)** model and the **
 
 | Main interface | Locked / focus mode | Plot grid | Timeline |
 |---|---|---|---|
-| ![Main interface](ecriture-rust/images/screenshot_main_en.png) | ![Locked mode](ecriture-rust/images/screenshot_locked.png) | ![Plot grid](ecriture-rust/images/screenshot_plot_grid.png) | ![Timeline](ecriture-rust/images/screenshot_timeline.png) |
+| ![Main interface](ecriture/images/screenshot_main_en.png) | ![Locked mode](ecriture/images/screenshot_locked.png) | ![Plot grid](ecriture/images/screenshot_plot_grid.png) | ![Timeline](ecriture/images/screenshot_timeline.png) |
 
 ### Installation (from the Releases)
 
@@ -154,9 +154,9 @@ Ready-to-use builds are published on the **[Releases](https://github.com/neomars
 
 | System | File to download |
 |---|---|
-| Windows 10 / 11 (64-bit) | `ecriture-rust_<version>_x64-setup.exe` |
-| macOS 11 or later (Apple Silicon M1/M2/M3…) | `ecriture-rust_<version>_aarch64.dmg` |
-| Linux Debian / Ubuntu / Mint (64-bit) | `ecriture-rust_<version>_amd64.deb` |
+| Windows 10 / 11 (64-bit) | `ecriture_<version>_x64-setup.exe` |
+| macOS 11 or later (Apple Silicon M1/M2/M3…) | `ecriture_<version>_aarch64.dmg` |
+| Linux Debian / Ubuntu / Mint (64-bit) | `ecriture_<version>_amd64.deb` |
 
 #### Windows
 1. Double-click the `…_x64-setup.exe` file.
@@ -170,7 +170,7 @@ Ready-to-use builds are published on the **[Releases](https://github.com/neomars
 #### Linux (Debian / Ubuntu)
 Double-click the `.deb` file to open it in your software manager, or from a terminal:
 ```bash
-sudo apt install ./ecriture-rust_<version>_amd64.deb
+sudo apt install ./ecriture_<version>_amd64.deb
 ```
 The app then appears in your applications menu.
 

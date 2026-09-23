@@ -32,7 +32,7 @@
 
 2. **Navigate to the Rust/Tauri project folder:**
    ```bash
-   cd ecriture-rust
+   cd ecriture
    ```
 
 3. **Install Frontend Dependencies:**
@@ -59,11 +59,11 @@
    produce the actual installable app, with the same GPU auto-detection
    but decided at *runtime* (by whoever ends up running it) rather than
    on your machine at build time. The generated executable will be
-   located in `ecriture-rust/src-tauri/target/release/`.
+   located in `ecriture/src-tauri/target/release/`.
 
 ## Project Architecture
 
-The `ecriture-rust` project is built with:
+The `ecriture` project is built with:
 - **Frontend:** HTML5, Tailwind CSS, Vanilla TypeScript, bundled with Vite.
 - **Backend:** Rust with the Tauri framework, providing communication (IPC) with the frontend.
 
@@ -71,7 +71,7 @@ The data model uses a JSON file format to store the entire novel (settings, manu
 
 ## Backend Migration Status
 
-The Rust backend lives in two crates under `ecriture-rust/`:
+The Rust backend lives in two crates under `ecriture/`:
 
 - **`ecriture-core`** — framework-agnostic business logic (no Tauri
   dependency), fully covered by unit and integration tests:
@@ -82,7 +82,7 @@ The Rust backend lives in two crates under `ecriture-rust/`:
 - **`src-tauri`** — thin `#[tauri::command]` adapters over `ecriture-core`,
   exposed to the frontend via `window.__TAURI__`.
 
-Run `cargo test` inside `ecriture-rust/ecriture-core` to run the full
+Run `cargo test` inside `ecriture/ecriture-core` to run the full
 regression/quality/feature-verification suite (60+ tests, including a
 non-regression test against the real `lexique.db`). Run `cargo clippy` in
 either crate for lint/quality checks.
@@ -97,14 +97,11 @@ llama.cpp — the same engine the Python app drives through
 `bartowski/gemma-2-2b-it-GGUF` (`gemma-2-2b-it-Q8_0.gguf`, ~2.7 GB).
 
 - **Download destination** (`ecriture_core::ai::model_store::model_cache_dir`,
-  first writable candidate wins): `$ECRITURE_RUST_MODEL_DIR` →
-  `$XDG_CACHE_HOME/ecriture-rust` → `~/.cache/ecriture-rust` →
-  `<cwd>/ecriture-rust_models` → the OS temp dir. This is a **separate**
-  directory from the original Python app's `~/.cache/ecriture` (that
-  directory belongs to `github.com/neomars/ecriture` and is used for more
-  than just the model) — the two apps do not share a model file, so
-  expect a fresh ~2.7 GB download the first time you run this build even
-  if you already have the Python app's model installed.
+  first writable candidate wins): `$ECRITURE_MODEL_DIR` →
+  `$XDG_CACHE_HOME/ecriture` → `~/.cache/ecriture` →
+  `<cwd>/ecriture_models` → the OS temp dir. This is the same directory
+  and file name the original Python version used, so a model already
+  downloaded by the Python version is reused instead of downloaded again.
 - The app downloads it automatically the first time no model is found
   (mirrors the "Gemma missing" install flow), streaming to a `.part` file
   and renaming it into place only once complete.
@@ -146,7 +143,7 @@ device llama.cpp can see, GPU or not) to confirm the right one is
 actually being used.
 
 Want the human-readable report instead of just launching? Run
-`ecriture-rust/scripts/detect-gpu.sh` directly - it inspects the actual
+`ecriture/scripts/detect-gpu.sh` directly - it inspects the actual
 hardware and installed SDKs on the machine it runs on (GPU vendor via
 `lspci`/`nvidia-smi`, CUDA/ROCm install, a working Vulkan driver, or no
 GPU at all) and explains which `--features gpu-*` flag it would use, if
@@ -163,7 +160,7 @@ Or pick the feature matching your GPU by hand and pass it through when building:
 | Any vendor (NVIDIA/AMD/Intel) via Vulkan | `gpu-vulkan` | Vulkan loader + a GLSL-to-SPIR-V compiler - see below |
 
 ```bash
-# from ecriture-rust/src-tauri
+# from ecriture/src-tauri
 cargo build --features gpu-cuda      # or gpu-rocm / gpu-metal / gpu-vulkan
 # or, to also run the desktop app with it:
 cargo tauri dev --features gpu-cuda
@@ -211,7 +208,7 @@ actually on the end user's machine at *runtime*, instead of anyone
 needing to pick a build in advance:
 
 ```bash
-# from ecriture-rust
+# from ecriture
 npm run package:linux      # produces the Linux app
 npm run package:windows    # produces the Windows .exe
 ```
