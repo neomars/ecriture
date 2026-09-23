@@ -210,6 +210,7 @@ window.showConfirm = function(message) {
 
 
 
+            await applyFirstLaunchDefaults();
             await loadProjectsList();
             await loadProject();
             await reportLegacyImport();
@@ -456,6 +457,26 @@ window.showConfirm = function(message) {
 
             // Open the (last) imported novel straight away.
             if (imported.length) await switchProject(imported[imported.length - 1]);
+        }
+
+        // Very first launch (no language chosen yet): follow the system
+        // language, and open the English sample novel instead of the French
+        // one unless the system is in French.
+        const SUPPORTED_LANGS = ['fr', 'en', 'es', 'ru'];
+        async function applyFirstLaunchDefaults() {
+            try {
+                if (localStorage.getItem('app-lang')) return;
+                const systemLang = (navigator.language || 'en').slice(0, 2).toLowerCase();
+                const lang = SUPPORTED_LANGS.includes(systemLang) ? systemLang : 'en';
+                localStorage.setItem('app-lang', lang);
+                if (lang === 'fr') return;
+                const active = await window.api_invoke('get_active_project_filename');
+                if (active === 'le_comte_de_monte_cristo.json') {
+                    await window.api_invoke('load_project', { filename: 'pride_and_prejudice.json' });
+                }
+            } catch (e) {
+                console.error("Failed to apply first-launch defaults:", e);
+            }
         }
 
         // Tell the user once about novels recovered from the Python version.
@@ -4710,7 +4731,7 @@ function closeGemmaInstallingModal() {
                         menu.innerHTML = `<div class="text-[10px] text-slate-400 p-2 italic">${window.activeLang === 'fr' ? 'Aucun synonyme' : 'No synonyms found'}</div>`;
                     } else {
                         menu.innerHTML = synonyms.map(syn => `
-                            <button onclick="applySynonymReplacement('${escapeHtml(syn)}')" class="w-full text-left px-2.5 py-1.5 hover:bg-slate-700 text-slate-100 hover:text-white bg-transparent text-xs font-semibold rounded-md transition-colors block truncate">
+                            <button data-synonym="${escapeHtml(syn)}" onclick="applySynonymReplacement(this.dataset.synonym)" class="w-full text-left px-2.5 py-1.5 hover:bg-slate-700 text-slate-100 hover:text-white bg-transparent text-xs font-semibold rounded-md transition-colors block truncate">
                                 ${escapeHtml(syn)}
                             </button>
                         `).join('');

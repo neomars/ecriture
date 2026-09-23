@@ -19,11 +19,11 @@ Cette version est une réécriture complète en **Rust** (avec **Tauri** pour l'
 - **Mise en page réglable** : police, taille, interligne, texte aligné à gauche ou justifié.
 - **Compteur de mots et de caractères** en temps réel, et **enregistrement automatique**.
 - **Recherche globale** dans le manuscrit, les personnages et les notes.
-- **Synonymes** : sélectionnez un mot puis cliquez sur « Synonymes » (dictionnaire français intégré, fonctionne hors ligne).
+- **Synonymes** : sélectionnez un mot puis cliquez sur « Synonymes ». Dictionnaires **français** et **anglais** intégrés, qui fonctionnent hors ligne. Le dictionnaire anglais reconnaît aussi les formes conjuguées et les pluriels (*walked*, *went*, *ladies*…).
 - **Verrouillage du roman** (lecture seule) pour éviter toute modification involontaire.
 
 #### 🗂️ Organisation du roman
-- **Plusieurs romans** : créez, renommez, supprimez et passez d'un projet à l'autre. Un exemple complet (*Le Comte de Monte-Cristo*) est fourni.
+- **Plusieurs romans** : créez, renommez, supprimez et passez d'un projet à l'autre. Deux romans complets sont fournis en exemple, avec leurs personnages, intrigues et lieux : *Le Comte de Monte-Cristo* (français) et *Pride and Prejudice* (anglais). Au premier lancement, Écriture s'ouvre sur celui qui correspond à la langue de votre système.
 - **Import de romans** (`.json`), notamment ceux de l'ancienne version d'Écriture.
 - **Structure en chapitres et scènes**, avec pages liminaires (avant le début), corps du roman et pages finales (après la fin).
 - **Fiches personnages** détaillées : rôle, surnoms, traits de caractère, apparence, relations, notes libres et scènes associées.
@@ -103,6 +103,8 @@ Pour les développeurs : prérequis, compilation, architecture du code et accél
 
 Écriture est créé par Martial Limousin et distribué sous licence libre [CeCILL V2.1](http://www.cecill.info/licences/Licence_CeCILL_V2.1-fr.html).
 
+Les romans d'exemple sont dans le domaine public ; le texte de *Pride and Prejudice* provient de [Project Gutenberg](https://www.gutenberg.org/ebooks/1342). Le dictionnaire anglais est construit à partir de [WordNet 3.0](https://wordnet.princeton.edu/) (© 2006 Princeton University, [licence WordNet](ecriture/ecriture-core/resources/WORDNET_LICENSE.txt)).
+
 ---
 
 ## 🇬🇧 English
@@ -118,11 +120,11 @@ This version is a complete rewrite in **Rust** (with **Tauri** for the interface
 - **Adjustable layout**: font, size, line spacing, left-aligned or justified text.
 - Real-time **word and character count**, and **auto-save**.
 - **Global search** across the manuscript, characters and notes.
-- **Synonyms**: select a word and click "Synonyms" (built-in French dictionary, works offline).
+- **Synonyms**: select a word and click "Synonyms". Built-in **French** and **English** dictionaries that work offline. The English dictionary also recognises inflected forms and plurals (*walked*, *went*, *ladies*…).
 - **Novel lock** (read-only) to prevent accidental edits.
 
 #### 🗂️ Organising your novel
-- **Multiple novels**: create, rename, delete and switch between projects. A complete example (*The Count of Monte Cristo*, in French) is included.
+- **Multiple novels**: create, rename, delete and switch between projects. Two complete sample novels are included, with their characters, plot lines and places: *Pride and Prejudice* (English) and *The Count of Monte Cristo* (French). On first launch, Écriture opens the one matching your system language.
 - **Novel import** (`.json`), including novels from the previous version of Écriture.
 - **Chapters and scenes** structure, with front matter (before the story), main body and back matter (after the end).
 - Detailed **character sheets**: role, aliases, traits, appearance, relationships, free notes and linked scenes.
@@ -201,3 +203,5 @@ For developers: prerequisites, build steps, code architecture and GPU accelerati
 ### License
 
 Écriture is created by Martial Limousin and released under the free [CeCILL V2.1](http://www.cecill.info/licences/Licence_CeCILL_V2.1-en.html) license.
+
+The sample novels are in the public domain; the text of *Pride and Prejudice* comes from [Project Gutenberg](https://www.gutenberg.org/ebooks/1342). The English dictionary is built from [WordNet 3.0](https://wordnet.princeton.edu/) (© 2006 Princeton University, [WordNet license](ecriture/ecriture-core/resources/WORDNET_LICENSE.txt)).

@@ -191,7 +191,11 @@ pub struct ProjectManager {
     pub active_config_file: PathBuf,
 }
 
-const PROTECTED_PROJECTS: &[&str] = &["le_comte_de_monte_cristo.json", "le_cid_corneille.json"];
+const PROTECTED_PROJECTS: &[&str] = &[
+    "le_comte_de_monte_cristo.json",
+    "pride_and_prejudice.json",
+    "le_cid_corneille.json",
+];
 
 impl ProjectManager {
     pub fn new(base_dir: impl AsRef<Path>) -> Self {
@@ -773,6 +777,25 @@ mod tests {
         reloaded.load().unwrap();
         assert_eq!(reloaded.data.characters.len(), data.characters.len());
         assert_eq!(reloaded.data.manuscript.len(), data.manuscript.len());
+    }
+
+    #[test]
+    fn bundled_pride_and_prejudice_project_is_complete() {
+        let path = PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "/resources/default_projects/pride_and_prejudice.json"));
+        let content = fs::read_to_string(&path).expect("bundled Pride and Prejudice project should exist");
+        let data: NovelData = serde_json::from_str(&content).expect("should deserialize into NovelData");
+
+        assert_eq!(data.settings.title, "Pride and Prejudice");
+        assert_eq!(data.settings.lang, "en");
+        assert_eq!(data.manuscript.len(), 61);
+        assert!(data.manuscript.iter().all(|c| !c.summary.is_empty() && c.children.len() == 1));
+        assert!(!content.to_lowercase().contains("gutenberg"));
+        let scene_ids: Vec<&str> = data.manuscript.iter().flat_map(|c| c.children.iter().map(|s| s.id.as_str())).collect();
+        assert!(data.plot.cards.iter().all(|card| scene_ids.contains(&card.scene_id.as_str())));
+
+        let mut project = NovelProject { filepath: None, data };
+        project.recalculate_word_counts();
+        assert!(project.data.settings.overall_written > 120_000);
     }
 
     #[test]

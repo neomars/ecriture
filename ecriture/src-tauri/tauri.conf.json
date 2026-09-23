@@ -36,6 +36,8 @@
     ],
     "resources": {
       "../ecriture-core/resources/lexique.db": "resources/lexique.db",
+      "../ecriture-core/resources/thesaurus_en.db": "resources/thesaurus_en.db",
+      "../ecriture-core/resources/WORDNET_LICENSE.txt": "resources/WORDNET_LICENSE.txt",
       "../ecriture-core/resources/default_projects": "resources/default_projects"
     },
     "macOS": {
