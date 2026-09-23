@@ -10,8 +10,9 @@ the backend:
 - [`src-tauri/`](src-tauri) — the Tauri command layer that exposes
   `ecriture-core` to the frontend, plus the desktop shell configuration.
 
-See the [project root README](../README.md) (or [README-fr.md](../README-fr.md))
-for the full feature list, installation steps, and current migration status.
+See the [project root README](../README.md) (French + English) for the full
+feature list and installation from the releases, and
+[DEVELOPMENT.md](../DEVELOPMENT.md) for build steps and technical details.
 
 ## Recommended IDE Setup
 

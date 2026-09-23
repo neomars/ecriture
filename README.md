@@ -1,294 +1,187 @@
 # Écriture
 
-Écriture is a word processing application designed specifically for authors and writers. It integrates Artificial Intelligence assistance, literary project management features, and linguistic tools to help you write your next novel.
+**🇫🇷 [Français](#-français) · 🇬🇧 [English](#-english)**
 
-This project is a Rust port (using Tauri for the frontend) of the original application written in Python, offering better performance and a smaller memory footprint.
+![Écriture](ecriture-rust/images/screenshot_main_fr.png)
 
-## Main Features
+---
 
-- **Literary Project Management:** Create, load, and save your novel projects. Manage the structure of your manuscript (chapters and scenes), your characters, the plot, and your notes.
-- **Advanced Text Editor:** Continuous scroll editor, rich text formatting (Bold, Italic, Small Caps), visual page breaks, and real-time word counting.
-- **Integrated AI Assistant:** Help with rewriting, text expansion, POV shifts, and description generation via a local AI (supporting Hugging Face/Transformers models).
-- **Goal Tracking:** Set and track your daily and overall writing goals.
-- **Plot Grid:** Visualize your story as a timeline or a grid with plot cards.
-- **Linguistic Tools:** Integrated synonym search (for French and English) and support for NLP (Natural Language Processing) tools.
-- **Export & Backup:** Export your document to multiple formats (DOCX, PDF, EPUB, MOBI, ODT, TXT) and manage local (ZIP) backups.
+## 🇫🇷 Français
 
-## Screenshots
+Écriture est un logiciel de traitement de texte conçu pour les romanciers et les auteurs. Il réunit en une seule application le manuscrit, la planification de l'intrigue, les fiches personnages et une intelligence artificielle **100 % locale** : vos textes ne quittent jamais votre ordinateur.
 
-### Main Interface (English)
-![Main Interface (EN)](ecriture-rust/images/screenshot_main_en.png)
+Cette version est une réécriture complète en **Rust** (avec **Tauri** pour l'interface) de l'application Python d'origine : elle démarre plus vite, consomme moins de mémoire et s'installe comme un logiciel classique, sans Python à installer.
 
-### Locked / Focus Mode
-![Focus Mode](ecriture-rust/images/screenshot_locked.png)
+### Fonctionnalités principales
 
-### Plot Grid
-![Plot Grid](ecriture-rust/images/screenshot_plot_grid.png)
+#### ✍️ Rédaction
+- **Éditeur de manuscrit** en défilement continu, avec gras, italique, petites capitales, mise en forme des dialogues, annotations, sauts de page et numéros de page.
+- **Mise en page réglable** : police, taille, interligne, texte aligné à gauche ou justifié.
+- **Compteur de mots et de caractères** en temps réel, et **enregistrement automatique**.
+- **Recherche globale** dans le manuscrit, les personnages et les notes.
+- **Synonymes** : sélectionnez un mot puis cliquez sur « Synonymes » (dictionnaire français intégré, fonctionne hors ligne).
+- **Verrouillage du roman** (lecture seule) pour éviter toute modification involontaire.
 
-### Timeline
-![Timeline](ecriture-rust/images/screenshot_timeline.png)
+#### 🗂️ Organisation du roman
+- **Plusieurs romans** : créez, renommez, supprimez et passez d'un projet à l'autre. Un exemple complet (*Le Comte de Monte-Cristo*) est fourni.
+- **Structure en chapitres et scènes**, avec pages liminaires (avant le début), corps du roman et pages finales (après la fin).
+- **Fiches personnages** détaillées : rôle, surnoms, traits de caractère, apparence, relations, notes libres et scènes associées.
+- **Graphe des relations** entre personnages.
+- **Notes de récit** pour les lieux, l'univers et la documentation.
+- **Grille d'intrigue** et **trame chronologique visuelle** : cartes d'intrigue par scène, reliées entre elles et aux personnages.
 
-## Installation
+#### 🎯 Objectifs et concentration
+- **Objectifs d'écriture** quotidien et global, avec barres de progression.
+- **Minuteur Focus** pour des sessions d'écriture chronométrées.
 
-### Prerequisites
+#### 🤖 Assistant IA local (Gemma)
+L'IA fonctionne entièrement sur votre machine grâce au modèle **Gemma 2 (2B)** et au moteur **llama.cpp**. Aucun compte, aucun abonnement, aucune donnée envoyée sur Internet.
+- **Sur une sélection de texte** : décrire, réécrire dans un style (soutenu, poétique, argotique, médiéval, brutal, cynique, humoristique, action…), développer, changer de point de vue (1ʳᵉ personne, 3ᵉ personne, témoin, omniscient), *Show, don't tell*, ajout de détails sensoriels.
+- **Atelier de relecture** : répétitions et mots faibles, rythme et structure, typographie, analyse du style et de la cohérence par l'IA, statistiques (richesse lexicale, ratio de dialogue…).
+- **Brainstorming** : génération de complications pour relancer une scène, générateur de noms (personnages, lieux, tavernes, planètes…).
+- **Discussion** avec un assistant qui connaît vos personnages et vos notes (injection automatique du contexte).
+- **Extraction automatique des personnages** à partir de votre texte.
+- Le modèle (~2,7 Go) est **téléchargé automatiquement** à la première utilisation. Le **GPU** est utilisé s'il est disponible (Vulkan sous Windows/Linux, Metal sous macOS), sinon le processeur prend le relais.
 
-1. **Rust & Cargo:** You must have Rust installed on your system. You can install it via [rustup](https://rustup.rs/).
-2. **Node.js & npm:** Make sure you have Node.js installed. You can download it from [nodejs.org](https://nodejs.org/).
-3. **Tauri Prerequisites:** Follow the official Tauri guide to install the system dependencies required for compilation (specific to Windows, macOS, or Linux): [Tauri Prerequisites](https://tauri.app/v1/guides/getting-started/prerequisites).
-4. **llama.cpp build toolchain:** the local AI engine (`llama-cpp-2`) compiles llama.cpp from source at build time via `cmake` + `bindgen`, which needs a C/C++ compiler and `clang` (for `libclang`, used to generate FFI bindings):
-   - Debian/Ubuntu: `sudo apt install build-essential cmake clang libclang-dev`
-   - Fedora: `sudo dnf install gcc gcc-c++ cmake clang clang-devel`
-   - Arch: `sudo pacman -S base-devel cmake clang`
-   - macOS: `xcode-select --install` (gives you clang + cmake via Homebrew: `brew install cmake`)
+#### 💾 Export et sauvegarde
+- **Export** en Word (`.docx`), PDF, OpenDocument (`.odt`), ePub, Mobipocket (`.mobi`) et texte brut (`.txt`).
+- **Sauvegardes locales** manuelles ou automatiques (quotidiennes, hebdomadaires ou mensuelles), avec restauration.
 
-   If the build fails with `fatal error: 'stdbool.h' file not found` (or a similar missing standard-header error) even after installing `clang`, `bindgen`'s `libclang` isn't finding that clang installation's own bundled headers. Point it there explicitly:
-   ```bash
-   export BINDGEN_EXTRA_CLANG_ARGS="-I$(clang -print-resource-dir)/include"
-   npm run tauri dev
-   ```
-   (add that `export` line to your shell profile so it's set for future runs too).
+#### 🌍 Autres
+- Interface disponible en **français, anglais, espagnol et russe**.
+- **Vérification des mises à jour** au démarrage.
 
-### Installation Steps
+### Captures d'écran
 
-1. **Clone the repository:**
-   ```bash
-   git clone <your-repository-url>
-   cd ecriture
-   ```
-
-2. **Navigate to the Rust/Tauri project folder:**
-   ```bash
-   cd ecriture-rust
-   ```
-
-3. **Install Frontend Dependencies:**
-   ```bash
-   npm install
-   ```
-
-4. **Run the application in Development Mode:**
-   ```bash
-   npm run start
-   ```
-   This detects your GPU (if any) the same way `scripts/detect-gpu.sh`
-   does and launches with the matching `--features gpu-*` flag
-   automatically - no flag to remember, and it correctly stays CPU-only
-   on a machine without a usable GPU. It then starts the Vite
-   development server (frontend) and compiles/runs the Tauri application
-   (Rust backend), same as `npm run tauri dev` (still available if you
-   want to force a specific backend by hand - see "GPU acceleration"
-   below - or force CPU-only regardless of what's detected).
-
-5. **Build the application for Production:**
-   See "Building the distributable app" under "GPU acceleration" below
-   for `npm run package:linux` / `npm run package:windows` - these
-   produce the actual installable app, with the same GPU auto-detection
-   but decided at *runtime* (by whoever ends up running it) rather than
-   on your machine at build time. The generated executable will be
-   located in `ecriture-rust/src-tauri/target/release/`.
-
-## Project Architecture
-
-The `ecriture-rust` project is built with:
-- **Frontend:** HTML5, Tailwind CSS, Vanilla TypeScript, bundled with Vite.
-- **Backend:** Rust with the Tauri framework, providing communication (IPC) with the frontend.
-
-The data model uses a JSON file format to store the entire novel (settings, manuscript, plot, characters, notes).
-
-## Backend Migration Status
-
-The Rust backend lives in two crates under `ecriture-rust/`:
-
-- **`ecriture-core`** — framework-agnostic business logic (no Tauri
-  dependency), fully covered by unit and integration tests:
-  project persistence and manuscript tree editing, export to
-  txt/docx/pdf/odt/epub/mobi, French synonym lookup (bundled `lexique.db`),
-  local JSON backups, locale strings, AI prompt templates + offline
-  fallback responses, and update-check version comparison.
-- **`src-tauri`** — thin `#[tauri::command]` adapters over `ecriture-core`,
-  exposed to the frontend via `window.__TAURI__`.
-
-Run `cargo test` inside `ecriture-rust/ecriture-core` to run the full
-regression/quality/feature-verification suite (60+ tests, including a
-non-regression test against the real `lexique.db`). Run `cargo clippy` in
-either crate for lint/quality checks.
-
-### Local AI (Gemma)
-
-Contextual AI tools (describe/rewrite/expand/POV/relecture/chat/character
-extraction) run on a real local model via
-[`llama-cpp-2`](https://crates.io/crates/llama-cpp-2) (Rust bindings to
-llama.cpp — the same engine the Python app drives through
-`llama-cpp-python`), with the same GGUF checkpoint the Python app used:
-`bartowski/gemma-2-2b-it-GGUF` (`gemma-2-2b-it-Q8_0.gguf`, ~2.7 GB).
-
-- **Download destination** (`ecriture_core::ai::model_store::model_cache_dir`,
-  first writable candidate wins): `$ECRITURE_RUST_MODEL_DIR` →
-  `$XDG_CACHE_HOME/ecriture-rust` → `~/.cache/ecriture-rust` →
-  `<cwd>/ecriture-rust_models` → the OS temp dir. This is a **separate**
-  directory from the original Python app's `~/.cache/ecriture` (that
-  directory belongs to `github.com/neomars/ecriture` and is used for more
-  than just the model) — the two apps do not share a model file, so
-  expect a fresh ~2.7 GB download the first time you run this build even
-  if you already have the Python app's model installed.
-- The app downloads it automatically the first time no model is found
-  (mirrors the "Gemma missing" install flow), streaming to a `.part` file
-  and renaming it into place only once complete.
-- Prompting uses the chat template embedded in the GGUF file itself
-  (Gemma's own `<start_of_turn>`/`<end_of_turn>` format via
-  `LlamaModel::apply_chat_template`) rather than a hand-rolled template.
-- If the model isn't installed yet, or a generation fails for any reason,
-  every AI command falls back to the same offline "simulated" response
-  text the Python app shows when its model isn't installed — never an
-  error dialog.
-
-#### GPU acceleration
-
-The engine always *asks* to offload every layer to a GPU (`n_gpu_layers`
-is set to a large value unconditionally) - but only on a GPU device
-reporting at least 3 GiB of total memory. The bundled Gemma-2-2b
-checkpoint is ~2.7 GB on disk, and its KV cache + compute buffers add
-real overhead on top at runtime, so a smaller GPU is more likely to fail
-to allocate (or barely help, offloading only a handful of layers) than
-to give the speedup GPU offload is for - below that threshold, that
-device is skipped and every layer stays on CPU instead. Whether any of
-this actually happens at all further depends on which GPU backend was
-compiled in.
-
-**`npm run start` detects this automatically** - it's a small wrapper
-(`scripts/dev-with-gpu.sh`) that runs the same hardware detection as
-`scripts/detect-gpu.sh` before launching `tauri dev`, and passes the
-matching `--features gpu-*` flag through for you. This is the
-recommended way to run the app day-to-day: no flag to remember, and it
-correctly stays CPU-only when nothing GPU-specific is detected. Plain
-`cargo build`/`npm run tauri dev` (no wrapper) still produce a CPU-only
-build, unaffected - useful if you want to force CPU-only regardless of
-what's installed, or if `bash` isn't available (the wrapper needs it;
-Windows users without Git Bash/WSL should pick a feature from the table
-below by hand instead). Enabling the wrong feature, or one whose SDK
-isn't installed, fails the build; check the terminal output for
-`[ai] ggml backend devices` after your first AI request (it lists every
-device llama.cpp can see, GPU or not) to confirm the right one is
-actually being used.
-
-Want the human-readable report instead of just launching? Run
-`ecriture-rust/scripts/detect-gpu.sh` directly - it inspects the actual
-hardware and installed SDKs on the machine it runs on (GPU vendor via
-`lspci`/`nvidia-smi`, CUDA/ROCm install, a working Vulkan driver, or no
-GPU at all) and explains which `--features gpu-*` flag it would use, if
-any (`./detect-gpu.sh --feature` prints just the flag name, which is
-what `npm run start` captures).
-
-Or pick the feature matching your GPU by hand and pass it through when building:
-
-| Vendor | Feature | Needs installed first |
+| Mode verrouillé / concentration | Grille d'intrigue | Trame chronologique |
 |---|---|---|
-| NVIDIA | `gpu-cuda` | [CUDA Toolkit](https://developer.nvidia.com/cuda-downloads) |
-| AMD | `gpu-rocm` | [ROCm](https://rocm.docs.amd.com/) |
-| Apple Silicon / Intel Mac | `gpu-metal` | Xcode Command Line Tools (`xcode-select --install`) |
-| Any vendor (NVIDIA/AMD/Intel) via Vulkan | `gpu-vulkan` | Vulkan loader + a GLSL-to-SPIR-V compiler - see below |
+| ![Mode verrouillé](ecriture-rust/images/screenshot_locked.png) | ![Grille d'intrigue](ecriture-rust/images/screenshot_plot_grid.png) | ![Trame](ecriture-rust/images/screenshot_timeline.png) |
 
+### Installation (depuis les Releases)
+
+Les versions prêtes à l'emploi sont publiées sur la page **[Releases](https://github.com/neomars/ecriture/releases/latest)**. Ouvrez la dernière version, dépliez la section **Assets** et téléchargez le fichier correspondant à votre système :
+
+| Système | Fichier à télécharger |
+|---|---|
+| Windows 10 / 11 (64 bits) | `ecriture-rust_<version>_x64-setup.exe` |
+| macOS 11 ou plus récent (Apple Silicon M1/M2/M3…) | `ecriture-rust_<version>_aarch64.dmg` |
+| Linux Debian / Ubuntu / Mint (64 bits) | `ecriture-rust_<version>_amd64.deb` |
+
+#### Windows
+1. Double-cliquez sur le fichier `…_x64-setup.exe`.
+2. Si Windows affiche « Windows a protégé votre ordinateur » (SmartScreen), cliquez sur **Informations complémentaires**, puis **Exécuter quand même** : l'application n'est pas signée numériquement, ce message est normal.
+3. Suivez l'assistant d'installation, puis lancez **Écriture** depuis le menu Démarrer.
+
+#### macOS
+1. Ouvrez le fichier `.dmg` et glissez l'application dans le dossier **Applications**.
+2. Au premier lancement, macOS peut refuser d'ouvrir une application non signée : faites un **clic droit** (ou Ctrl + clic) sur l'application → **Ouvrir**, puis confirmez. Si cela ne suffit pas, allez dans **Réglages Système → Confidentialité et sécurité** et cliquez sur **Ouvrir quand même**.
+
+#### Linux (Debian / Ubuntu)
+Double-cliquez sur le fichier `.deb` pour l'ouvrir dans votre gestionnaire de logiciels, ou en ligne de commande :
 ```bash
-# from ecriture-rust/src-tauri
-cargo build --features gpu-cuda      # or gpu-rocm / gpu-metal / gpu-vulkan
-# or, to also run the desktop app with it:
-cargo tauri dev --features gpu-cuda
+sudo apt install ./ecriture-rust_<version>_amd64.deb
 ```
+L'application apparaît ensuite dans le menu de vos applications.
 
-`gpu-vulkan` is the closest thing to a universal option: on a machine
-whose vendor doesn't have a `gpu-*` feature of its own above (or where
-you don't know which vendor's GPU is installed), it's the one to try
-first, since it drives the GPU through its own driver's Vulkan
-implementation rather than a vendor-specific toolkit. It isn't exposed by
-`llama-cpp-2` itself (only `llama-cpp-sys-2`, one layer below, has it),
-so `ecriture-core/Cargo.toml` depends on `llama-cpp-sys-2` directly just
-to reach that flag - Cargo's feature unification means it's still the
-exact same underlying crate `llama-cpp-2` already uses, not a second copy.
-It needs, at build time only:
-- Debian/Ubuntu: `sudo apt install libvulkan-dev glslc` (or
-  `libshaderc-dev`, which provides the same `glslc` shader compiler under
-  a different package name on some distros)
-- Fedora: `sudo dnf install vulkan-loader-devel shaderc`
-- Arch: `sudo pacman -S vulkan-icd-loader shaderc`
-- macOS: not supported (use `gpu-metal` instead) - Vulkan on Apple
-  platforms would go through the MoltenVK translation layer, which isn't
-  what llama.cpp's Vulkan backend targets here.
-- Windows: also needs the [Vulkan SDK](https://vulkan.lunarg.com/)
-  installed and `VULKAN_SDK` set (llama-cpp-sys-2's build script checks
-  for it on that platform only).
+#### Premier lancement
+- Au premier usage d'un outil IA, Écriture propose de **télécharger le modèle Gemma** (~2,7 Go, connexion Internet nécessaire une seule fois). Vous pouvez aussi continuer sans IA : toutes les autres fonctionnalités restent disponibles.
+- Pour mettre à jour, téléchargez simplement la nouvelle version depuis les Releases et installez-la par-dessus l'ancienne.
 
-At *run* time, Vulkan itself only needs the GPU's regular driver (the one
-you'd already have for any 3D application) - no separate toolkit to
-install on the machine actually running the app, unlike CUDA/ROCm.
+### Compiler depuis les sources
 
-Intel GPUs have no dedicated feature of their own here (llama.cpp's SYCL
-backend isn't among the bindings' flags), but a discrete or integrated
-Intel GPU exposing a Vulkan driver (typical on Linux via Mesa's `ANV`
-driver) can still be reached through `gpu-vulkan`.
+Pour les développeurs : prérequis, compilation, architecture du code et accélération GPU sont décrits dans **[DEVELOPMENT.md](DEVELOPMENT.md)** (en anglais).
 
-#### Building the distributable app (Windows .exe / Linux app)
+### Licence
 
-The commands above (`cargo build --features gpu-cuda`, etc.) are for
-local development - picking one specific vendor's feature by hand ahead
-of time. The actual **distributable app** - what end users install as a
-Windows `.exe` or a Linux package - is built differently: with
-`gpu-vulkan` always on, so a single shipped binary adapts to whatever's
-actually on the end user's machine at *runtime*, instead of anyone
-needing to pick a build in advance:
+Écriture est créé par Martial Limousin et distribué sous licence libre [CeCILL V2.1](http://www.cecill.info/licences/Licence_CeCILL_V2.1-fr.html).
 
+---
+
+## 🇬🇧 English
+
+Écriture is a word processor built for novelists and authors. It brings together your manuscript, plot planning, character sheets and a **100% local** artificial intelligence in a single application: your writing never leaves your computer.
+
+This version is a complete rewrite in **Rust** (with **Tauri** for the interface) of the original Python application: it starts faster, uses less memory and installs like any regular program, with no Python to set up.
+
+### Main features
+
+#### ✍️ Writing
+- **Manuscript editor** with continuous scrolling, bold, italic, small caps, dialogue formatting, annotations, page breaks and page numbers.
+- **Adjustable layout**: font, size, line spacing, left-aligned or justified text.
+- Real-time **word and character count**, and **auto-save**.
+- **Global search** across the manuscript, characters and notes.
+- **Synonyms**: select a word and click "Synonyms" (built-in French dictionary, works offline).
+- **Novel lock** (read-only) to prevent accidental edits.
+
+#### 🗂️ Organising your novel
+- **Multiple novels**: create, rename, delete and switch between projects. A complete example (*The Count of Monte Cristo*, in French) is included.
+- **Chapters and scenes** structure, with front matter (before the story), main body and back matter (after the end).
+- Detailed **character sheets**: role, aliases, traits, appearance, relationships, free notes and linked scenes.
+- **Character relationship graph**.
+- **Story notes** for places, worldbuilding and research.
+- **Plot grid** and **visual timeline**: per-scene plot cards, linked to each other and to characters.
+
+#### 🎯 Goals and focus
+- **Daily and overall word goals**, with progress bars.
+- **Focus timer** for timed writing sessions.
+
+#### 🤖 Local AI assistant (Gemma)
+The AI runs entirely on your machine using the **Gemma 2 (2B)** model and the **llama.cpp** engine. No account, no subscription, no data sent over the Internet.
+- **On a text selection**: describe, rewrite in a style (elegant, poetic, slang, medieval, blunt, cynical, humorous, action…), expand, change point of view (first person, third person, witness, omniscient), *show, don't tell*, add sensory details.
+- **Proofreading workshop**: repetitions and weak words, rhythm and structure, typography, AI style and consistency analysis, statistics (lexical richness, dialogue ratio…).
+- **Brainstorming**: plot complications to get a stalled scene moving, name generator (characters, places, taverns, planets…).
+- **Chat** with an assistant that knows your characters and notes (automatic context injection).
+- **Automatic character extraction** from your text.
+- The model (~2.7 GB) is **downloaded automatically** on first use. The **GPU** is used when available (Vulkan on Windows/Linux, Metal on macOS); otherwise the CPU takes over.
+
+#### 💾 Export and backup
+- **Export** to Word (`.docx`), PDF, OpenDocument (`.odt`), ePub, Mobipocket (`.mobi`) and plain text (`.txt`).
+- Manual or automatic **local backups** (daily, weekly or monthly), with restore.
+
+#### 🌍 Other
+- Interface available in **French, English, Spanish and Russian**.
+- **Update check** at startup.
+
+### Screenshots
+
+| Main interface | Locked / focus mode | Plot grid | Timeline |
+|---|---|---|---|
+| ![Main interface](ecriture-rust/images/screenshot_main_en.png) | ![Locked mode](ecriture-rust/images/screenshot_locked.png) | ![Plot grid](ecriture-rust/images/screenshot_plot_grid.png) | ![Timeline](ecriture-rust/images/screenshot_timeline.png) |
+
+### Installation (from the Releases)
+
+Ready-to-use builds are published on the **[Releases](https://github.com/neomars/ecriture/releases/latest)** page. Open the latest release, expand the **Assets** section and download the file for your system:
+
+| System | File to download |
+|---|---|
+| Windows 10 / 11 (64-bit) | `ecriture-rust_<version>_x64-setup.exe` |
+| macOS 11 or later (Apple Silicon M1/M2/M3…) | `ecriture-rust_<version>_aarch64.dmg` |
+| Linux Debian / Ubuntu / Mint (64-bit) | `ecriture-rust_<version>_amd64.deb` |
+
+#### Windows
+1. Double-click the `…_x64-setup.exe` file.
+2. If Windows shows "Windows protected your PC" (SmartScreen), click **More info**, then **Run anyway**: the app is not digitally signed, so this warning is expected.
+3. Follow the installer, then launch **Écriture** from the Start menu.
+
+#### macOS
+1. Open the `.dmg` file and drag the app into the **Applications** folder.
+2. On first launch, macOS may refuse to open an unsigned app: **right-click** (or Control-click) the app → **Open**, then confirm. If that is not enough, go to **System Settings → Privacy & Security** and click **Open Anyway**.
+
+#### Linux (Debian / Ubuntu)
+Double-click the `.deb` file to open it in your software manager, or from a terminal:
 ```bash
-# from ecriture-rust
-npm run package:linux      # produces the Linux app
-npm run package:windows    # produces the Windows .exe
+sudo apt install ./ecriture-rust_<version>_amd64.deb
 ```
+The app then appears in your applications menu.
 
-- On a machine with a Vulkan-capable GPU with at least 3 GiB of memory
-  (NVIDIA/AMD/Intel - the overwhelming majority of PCs), it's used
-  automatically: `n_gpu_layers` is always requested (see above), and
-  llama.cpp's own device enumeration at startup decides whether there's
-  actually anything big enough to offload to.
-- On a machine with no GPU (or no working Vulkan driver), it falls back
-  to CPU automatically - no separate build, no user-facing toggle to
-  flip.
-- `package:windows` additionally sets `LLAMA_STATIC_CRT=1` (a
-  `llama-cpp-sys-2` build-time env var), so the Windows build statically
-  links the MSVC C runtime into the executable instead of depending on
-  the end user having the Visual C++ Redistributable already installed -
-  the distributable is meant to run standalone, with nothing extra to
-  install beyond what a PC with a working display already has.
-- Check `[ai] ggml backend devices` in the app's logs after the first AI
-  request to confirm whether a GPU was actually found and used - this
-  works identically in the distributable and in `cargo tauri dev`.
+#### First launch
+- The first time you use an AI tool, Écriture offers to **download the Gemma model** (~2.7 GB, Internet connection needed only once). You can also carry on without AI: every other feature remains available.
+- To update, just download the new version from the Releases and install it over the old one.
 
-**Known edge case**: this links against the system's Vulkan loader
-(`libvulkan.so.1` / `vulkan-1.dll`), which any machine with a working GPU
-driver already has - the app doesn't bundle this itself, the same way it
-doesn't bundle GPU drivers. That's not literally every machine, though: a
-genuinely headless install with no display/graphics stack at all
-(unusual for this app's actual users, a desktop writing tool, but
-possible on e.g. a minimal server-like setup) may lack the Vulkan loader
-entirely, in which case the app would fail to *launch* rather than
-gracefully falling back to CPU. If that's ever hit, `npm run tauri build`
-(no `--features` flag) produces a CPU-only build with no such dependency,
-as a fallback distributable.
+### Building from source
 
-**Not verified end-to-end in the environment this was built in**: that
-sandbox's network policy blocks `huggingface.co`, so the actual multi-GB
-download and a real generation could not be run there. The download
-logic itself is unit-tested against a local HTTP server (success, HTTP
-error, and connection-refused cases), and the low-level llama.cpp call
-sequence was written against `llama-cpp-2`'s own official
-`examples/simple`. Please verify the first real download + a few AI
-requests on your machine and report anything unexpected.
+For developers: prerequisites, build steps, code architecture and GPU acceleration are covered in **[DEVELOPMENT.md](DEVELOPMENT.md)**.
 
-**Other known gaps vs. the original Python app** (tracked as future work,
-not silently faked):
-- Synonym lookup only has real data for French. The Python app additionally
-  used NLTK WordNet + spaCy for English/Spanish/Russian; there is no
-  equivalent pure-Rust crate, so those languages currently return an empty
-  list rather than pretending to work.
-- Native OS integrations that need extra Tauri plugins (folder picker for
-  backups, document import from `.docx`/`.odt`/`.epub`, live auto-update
-  download) are not wired up yet.
+### License
 
-> *Note: For the French version of this README, please see [README-fr.md](README-fr.md).*
+Écriture is created by Martial Limousin and released under the free [CeCILL V2.1](http://www.cecill.info/licences/Licence_CeCILL_V2.1-en.html) license.
