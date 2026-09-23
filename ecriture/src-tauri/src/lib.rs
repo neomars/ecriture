@@ -13,7 +13,7 @@ use ecriture_core::ai::model_store;
 use ecriture_core::export::{self, ExportFormat};
 use ecriture_core::model::NovelData;
 use ecriture_core::synonyms::SynonymDb;
-use ecriture_core::{ai, backup, locale, update, NovelProject, ProjectManager};
+use ecriture_core::{ai, backup, locale, update, ImportOutcome, NovelProject, ProjectManager};
 use serde::Serialize;
 use serde_json::Value;
 use std::path::PathBuf;
@@ -33,6 +33,9 @@ pub struct AppState {
     /// Progress of an in-flight (or just-finished) model download, polled
     /// by the frontend. Shared with the background download thread.
     pub ai_install: Arc<Mutex<AiInstallState>>,
+    /// Novels recovered from the Python version at this startup (see
+    /// [`legacy_python_project_dirs`]), reported once to the frontend.
+    pub legacy_import_report: Mutex<Vec<String>>,
 }
 
 #[derive(Clone, Serialize)]
@@ -633,18 +636,62 @@ fn ai_install_status(state: State<AppState>) -> Result<AiInstallState, String> {
     Ok(state.ai_install.lock().unwrap().clone())
 }
 
+/// Asks GitHub for the latest release of Écriture. Runs off the main
+/// thread (it's a network call) and never fails: offline or on any error it
+/// just reports "no update".
 #[tauri::command]
-fn check_updates() -> Result<Value, String> {
-    struct NoFetcher;
-    impl update::ReleaseFetcher for NoFetcher {
-        fn latest_release(&self, _repo: &str) -> Result<update::GithubRelease, String> {
-            // No HTTP client is wired up in this build; report "no update"
-            // rather than fabricate a result. See `update` module docs.
-            Err("update checks are not wired to a network client in this build".into())
-        }
-    }
-    let status = update::check_for_update(&NoFetcher, update::os_keyword());
+async fn check_updates() -> Result<Value, String> {
+    let status = tauri::async_runtime::spawn_blocking(|| {
+        update::check_for_update(&update::GithubFetcher::default(), update::os_keyword())
+    })
+    .await
+    .map_err(|e| e.to_string())?;
     serde_json::to_value(status).map_err(|e| e.to_string())
+}
+
+/// Imports a novel file chosen by the user (e.g. a `.json` project from
+/// the Python version) without switching to it.
+#[tauri::command]
+fn import_project(file_name: String, content: String, state: State<AppState>) -> Result<Value, String> {
+    let outcome = state
+        .project_manager
+        .import_project(&file_name, &content)
+        .map_err(|e| e.to_string())?;
+    Ok(match outcome {
+        ImportOutcome::Imported(filename) => serde_json::json!({"status": "imported", "filename": filename}),
+        ImportOutcome::AlreadyPresent(filename) => {
+            serde_json::json!({"status": "already_present", "filename": filename})
+        }
+    })
+}
+
+/// Returns (once) the novels recovered from the Python version at startup.
+#[tauri::command]
+fn take_legacy_import_report(state: State<AppState>) -> Vec<String> {
+    std::mem::take(&mut *state.legacy_import_report.lock().unwrap())
+}
+
+/// Where the Python version of Écriture (Windows installer, `ecriture.iss`)
+/// may have left its novels. It kept them in a `projects` folder relative
+/// to its working directory, next to an `active_project.txt` it wrote on
+/// every run - normally the install folder, `%LOCALAPPDATA%\Programs\Ecriture`,
+/// or the user's profile folder depending on how the shortcut started it.
+/// Only folders with that `active_project.txt` marker are considered. On
+/// macOS/Linux the Python version ran from wherever it was unpacked, so
+/// there is no known location: users import those files by hand.
+fn legacy_python_project_dirs() -> Vec<PathBuf> {
+    let mut candidates = Vec::new();
+    if let Some(local) = std::env::var_os("LOCALAPPDATA") {
+        candidates.push(PathBuf::from(local).join("Programs").join("Ecriture"));
+    }
+    if let Some(profile) = std::env::var_os("USERPROFILE") {
+        candidates.push(PathBuf::from(profile));
+    }
+    candidates
+        .into_iter()
+        .filter(|dir| dir.join("active_project.txt").is_file())
+        .map(|dir| dir.join("projects"))
+        .collect()
 }
 
 #[tauri::command]
@@ -702,6 +749,13 @@ pub fn run() {
                 }
             }
 
+            let legacy_import_report = project_manager
+                .import_legacy_projects(&legacy_python_project_dirs())
+                .unwrap_or_else(|e| {
+                    eprintln!("[projects] failed to recover Python-version novels: {e}");
+                    Vec::new()
+                });
+
             let initial_project = project_manager
                 .load_active()
                 .expect("failed to load or create the initial project");
@@ -712,6 +766,7 @@ pub fn run() {
                 lexique_db_path,
                 ai_engine: Mutex::new(None),
                 ai_install: Arc::new(Mutex::new(AiInstallState::default())),
+                legacy_import_report: Mutex::new(legacy_import_report),
             });
 
             Ok(())
@@ -736,6 +791,8 @@ pub fn run() {
             ai_install_engine,
             ai_install_status,
             check_updates,
+            import_project,
+            take_legacy_import_report,
             backup_create,
             backup_list,
             backup_restore,

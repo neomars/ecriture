@@ -237,5 +237,11 @@
   "rewrite_brutal": "Brutal / Seco",
   "rewrite_cynical": "Cínico",
   "pov_omniscient": "Omnisciente",
-  "gemma_not_bundled": "Esta versión aún no incluye un motor de IA local. Las herramientas de IA utilizan respuestas de reserva sin conexión."
+  "gemma_not_bundled": "Esta versión aún no incluye un motor de IA local. Las herramientas de IA utilizan respuestas de reserva sin conexión.",
+  "import_novel": "Importar",
+  "import_novel_tooltip": "Importar una novela (.json), por ejemplo de la versión anterior de Écriture",
+  "import_result_imported": "{count} novela(s) importada(s).",
+  "import_result_already": "{count} novela(s) ya presente(s), no duplicada(s).",
+  "import_result_failed": "No se pudo importar: {files} (no es un archivo de novela de Écriture válido).",
+  "legacy_import_notice": "Se recuperaron {count} novela(s) de la versión anterior de Écriture: {titles}. Las encontrará en la lista de novelas."
 }

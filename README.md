@@ -24,6 +24,7 @@ Cette version est une réécriture complète en **Rust** (avec **Tauri** pour l'
 
 #### 🗂️ Organisation du roman
 - **Plusieurs romans** : créez, renommez, supprimez et passez d'un projet à l'autre. Un exemple complet (*Le Comte de Monte-Cristo*) est fourni.
+- **Import de romans** (`.json`), notamment ceux de l'ancienne version d'Écriture.
 - **Structure en chapitres et scènes**, avec pages liminaires (avant le début), corps du roman et pages finales (après la fin).
 - **Fiches personnages** détaillées : rôle, surnoms, traits de caractère, apparence, relations, notes libres et scènes associées.
 - **Graphe des relations** entre personnages.
@@ -49,6 +50,7 @@ L'IA fonctionne entièrement sur votre machine grâce au modèle **Gemma 2 (2B)*
 
 #### 🌍 Autres
 - Interface disponible en **français, anglais, espagnol et russe**.
+- **Vérification des mises à jour** au démarrage : quand une nouvelle version est publiée, Écriture vous propose le lien de téléchargement.
 
 ### Captures d'écran
 
@@ -87,15 +89,11 @@ L'application apparaît ensuite dans le menu de vos applications.
 - Pour mettre à jour, téléchargez simplement la nouvelle version depuis les Releases et installez-la par-dessus l'ancienne.
 
 #### Vous utilisiez la version Python (1.x) ?
-Vos romans ne sont pas repris automatiquement, mais ils restent compatibles. Ce sont les fichiers `.json` du dossier `projects` de votre ancienne installation. Pour les retrouver dans la version 2 :
-1. Lancez Écriture 2 une première fois, puis fermez-le (cela crée son dossier de projets).
-2. Copiez vos fichiers `.json` dans ce dossier :
-   - Windows : `%APPDATA%\com.neomars.ecriture\projects`
-   - macOS : `~/Library/Application Support/com.neomars.ecriture/projects`
-   - Linux : `~/.local/share/com.neomars.ecriture/projects`
-3. Relancez Écriture : vos romans apparaissent dans la liste.
+Vos romans sont compatibles avec la version 2 :
+- **Windows** (version installée avec `Ecriture_Installer.exe`) : au premier lancement, Écriture 2 **récupère automatiquement** vos romans et vous indique lesquels. Rien à faire.
+- **Autres cas** (macOS, Linux, version portable…) : cliquez sur **📥 Importer**, à côté du choix du roman, et sélectionnez les fichiers `.json` du dossier `projects` de votre ancienne installation. Vous pouvez en sélectionner plusieurs à la fois.
 
-Le modèle IA déjà téléchargé par la version Python est réutilisé automatiquement.
+Un roman déjà présent n'est jamais dupliqué ni écrasé. Le modèle IA déjà téléchargé par la version Python est réutilisé automatiquement.
 
 ### Compiler depuis les sources
 
@@ -125,6 +123,7 @@ This version is a complete rewrite in **Rust** (with **Tauri** for the interface
 
 #### 🗂️ Organising your novel
 - **Multiple novels**: create, rename, delete and switch between projects. A complete example (*The Count of Monte Cristo*, in French) is included.
+- **Novel import** (`.json`), including novels from the previous version of Écriture.
 - **Chapters and scenes** structure, with front matter (before the story), main body and back matter (after the end).
 - Detailed **character sheets**: role, aliases, traits, appearance, relationships, free notes and linked scenes.
 - **Character relationship graph**.
@@ -150,6 +149,7 @@ The AI runs entirely on your machine using the **Gemma 2 (2B)** model and the **
 
 #### 🌍 Other
 - Interface available in **French, English, Spanish and Russian**.
+- **Update check** at startup: when a new version is released, Écriture offers you the download link.
 
 ### Screenshots
 
@@ -188,15 +188,11 @@ The app then appears in your applications menu.
 - To update, just download the new version from the Releases and install it over the old one.
 
 #### Upgrading from the Python version (1.x)?
-Your novels are not carried over automatically, but they remain compatible. They are the `.json` files in the `projects` folder of your old installation. To get them into version 2:
-1. Launch Écriture 2 once, then close it (this creates its projects folder).
-2. Copy your `.json` files into that folder:
-   - Windows: `%APPDATA%\com.neomars.ecriture\projects`
-   - macOS: `~/Library/Application Support/com.neomars.ecriture/projects`
-   - Linux: `~/.local/share/com.neomars.ecriture/projects`
-3. Relaunch Écriture: your novels appear in the list.
+Your novels are compatible with version 2:
+- **Windows** (installed with `Ecriture_Installer.exe`): on first launch, Écriture 2 **recovers your novels automatically** and tells you which ones. Nothing to do.
+- **Other cases** (macOS, Linux, portable version…): click **📥 Import**, next to the novel selector, and select the `.json` files in the `projects` folder of your old installation. You can select several at once.
 
-The AI model already downloaded by the Python version is reused automatically.
+A novel that is already present is never duplicated or overwritten. The AI model already downloaded by the Python version is reused automatically.
 
 ### Building from source
 
