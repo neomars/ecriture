@@ -1,231 +1,187 @@
-# Écriture - Outil d'aide à la rédaction de romans / Novel Writing Assistant
+# Écriture
 
-*Écrire, partager, transmettre sont des droits fondamentaux. 
-*Créé par Martial Limousin - 2026.*
-*Licence libre CeCILL / CeCILL Free Software License Agreement ([http://www.cecill.info](http://www.cecill.info/licences/Licence_CeCILL_V2.1-fr.html)).*
+**🇫🇷 [Français](#-français) · 🇬🇧 [English](#-english)**
 
----
-
-## 🌍 Langues / Languages
-* [Français (French)](#français)
-* [English (Anglais)](#english)
+![Écriture](ecriture-rust/images/screenshot_main_fr.png)
 
 ---
 
-<div id="français"></div>
+## 🇫🇷 Français
 
-# version française 🇫🇷
+Écriture est un logiciel de traitement de texte conçu pour les romanciers et les auteurs. Il réunit en une seule application le manuscrit, la planification de l'intrigue, les fiches personnages et une intelligence artificielle **100 % locale** : vos textes ne quittent jamais votre ordinateur.
 
-**Écriture** est une application web de bureau élégante, moderne et sans distraction conçue en Python (Flask) et JavaScript (Tailwind CSS) pour aider les écrivains à planifier, structurer et rédiger leurs romans. Cette application intègre tous les outils indispensables aux romanciers au sein d'une interface unifiée, réactive et bilingue.
+Cette version est une réécriture complète en **Rust** (avec **Tauri** pour l'interface) de l'application Python d'origine : elle démarre plus vite, consomme moins de mémoire et s'installe comme un logiciel classique, sans Python à installer.
 
-## 📸 Aperçus de l'Application
+### Fonctionnalités principales
 
-### Interface Principale (Français)
-![Interface Principale en Français](images/screenshot_main_fr.png)
+#### ✍️ Rédaction
+- **Éditeur de manuscrit** en défilement continu, avec gras, italique, petites capitales, mise en forme des dialogues, annotations, sauts de page et numéros de page.
+- **Mise en page réglable** : police, taille, interligne, texte aligné à gauche ou justifié.
+- **Compteur de mots et de caractères** en temps réel, et **enregistrement automatique**.
+- **Recherche globale** dans le manuscrit, les personnages et les notes.
+- **Synonymes** : sélectionnez un mot puis cliquez sur « Synonymes » (dictionnaire français intégré, fonctionne hors ligne).
+- **Verrouillage du roman** (lecture seule) pour éviter toute modification involontaire.
 
-### Interface Principale (English)
-![Main Interface in English](images/screenshot_main_en.png)
+#### 🗂️ Organisation du roman
+- **Plusieurs romans** : créez, renommez, supprimez et passez d'un projet à l'autre. Un exemple complet (*Le Comte de Monte-Cristo*) est fourni.
+- **Structure en chapitres et scènes**, avec pages liminaires (avant le début), corps du roman et pages finales (après la fin).
+- **Fiches personnages** détaillées : rôle, surnoms, traits de caractère, apparence, relations, notes libres et scènes associées.
+- **Graphe des relations** entre personnages.
+- **Notes de récit** pour les lieux, l'univers et la documentation.
+- **Grille d'intrigue** et **trame chronologique visuelle** : cartes d'intrigue par scène, reliées entre elles et aux personnages.
 
-### Grille d'Intrigue (Plot Grid - Vue Table)
-![Grille d'Intrigue](images/screenshot_plot_grid.png)
+#### 🎯 Objectifs et concentration
+- **Objectifs d'écriture** quotidien et global, avec barres de progression.
+- **Minuteur Focus** pour des sessions d'écriture chronométrées.
 
-### Trame Visuelle Chronologique (Timeline & Liaisons)
-![Trame Visuelle](images/screenshot_timeline.png)
+#### 🤖 Assistant IA local (Gemma)
+L'IA fonctionne entièrement sur votre machine grâce au modèle **Gemma 2 (2B)** et au moteur **llama.cpp**. Aucun compte, aucun abonnement, aucune donnée envoyée sur Internet.
+- **Sur une sélection de texte** : décrire, réécrire dans un style (soutenu, poétique, argotique, médiéval, brutal, cynique, humoristique, action…), développer, changer de point de vue (1ʳᵉ personne, 3ᵉ personne, témoin, omniscient), *Show, don't tell*, ajout de détails sensoriels.
+- **Atelier de relecture** : répétitions et mots faibles, rythme et structure, typographie, analyse du style et de la cohérence par l'IA, statistiques (richesse lexicale, ratio de dialogue…).
+- **Brainstorming** : génération de complications pour relancer une scène, générateur de noms (personnages, lieux, tavernes, planètes…).
+- **Discussion** avec un assistant qui connaît vos personnages et vos notes (injection automatique du contexte).
+- **Extraction automatique des personnages** à partir de votre texte.
+- Le modèle (~2,7 Go) est **téléchargé automatiquement** à la première utilisation. Le **GPU** est utilisé s'il est disponible (Vulkan sous Windows/Linux, Metal sous macOS), sinon le processeur prend le relais.
 
-### Verrouillage du Roman (Lecture seule)
-![Espace Verrouillé](images/screenshot_locked.png)
+#### 💾 Export et sauvegarde
+- **Export** en Word (`.docx`), PDF, OpenDocument (`.odt`), ePub, Mobipocket (`.mobi`) et texte brut (`.txt`).
+- **Sauvegardes locales** manuelles ou automatiques (quotidiennes, hebdomadaires ou mensuelles), avec restauration.
 
----
+#### 🌍 Autres
+- Interface disponible en **français, anglais, espagnol et russe**.
+- **Vérification des mises à jour** au démarrage.
 
-## ✨ Fonctionnalités Clés
+### Captures d'écran
 
-*   **Éditeur de Texte Minimaliste & Distraction-Free** : Conçu pour optimiser la concentration avec des polices élégantes (Georgia), des marges de lecture parfaites et une sauvegarde automatique et silencieuse à chaque frappe.
-*   **Arbre de Navigation Interactif** : Gérez de manière hiérarchique vos chapitres, scènes, fiches de personnages et notes de récit dans la barre latérale gauche. Ordonnez et renommez vos éléments d'un simple clic.
-*   **Fiches Personnages & Lore de Récit** : Créez des profils détaillés avec pseudonymes/alias, traits de caractère, apparence et notes biographiques. Créez des cartes de relations dynamiques entre personnages et associez-les directement aux scènes via des listes d'apparition interactives. Le lore pertinent est automatiquement injecté dans l'IA pour préserver la cohérence de vos textes.
-*   **Écriture IA Contextuelle & Sélection de Texte** : Un menu contextuel intelligent apparaît sous votre sélection de texte. Utilisez les outils *Décrire*, *Réécrire* (avec styles élégant, argotique, poétique, brutal, cynique), *Développer*, ou *Point de Vue (POV)* (1ère personne, 3ème personne, témoin) avec insertion directe, régénération ou annulation.
-*   **Brainstorming & Déblocage Créatif** : Une boîte à "Idées" dédiée génère 3 complications narratives pour relancer une scène enlisée ou génère des noms et toponymes cohérents selon les racines linguistiques de votre univers.
-*   **Assistant de Chat IA Intelligent** : Chattez avec un assistant d'écriture persistant dans le volet droit. L'application utilise une IA embarquée totalement déconnectée d'internet (Gemma 4) fonctionnant 100% en local.
-*   **Personnalisation des paramètres IA** : Ajustez la température de créativité (de 0.0 à 1.0) et gérez les modèles d'IA locaux directement depuis les paramètres du projet.
-*   **Grille d'Intrigue & Trame Chronologique Visuelle** : Un espace de planification interactif à double affichage. Alterner entre la **Vue Grille** classique (tableau d'intrigue inspiré de la méthode Snowflake) et la **Trame Visuelle** (frise chronologique horizontale). Reliez graphiquement vos cartes d'intrigue entre elles par des lignes de flux dynamiques (courbes de Bézier SVG) et associez-y vos personnages pour visualiser la structure de votre roman.
-*   **Exportation Multi-Formats Professionnelle** : Compilez et exportez l'intégralité de votre roman structuré en un clic vers six formats populaires : Word (`.docx`), PDF (`.pdf`), OpenDocument (`.odt`), ePub (`.epub`), Mobipocket (`.mobi`) ou texte brut (`.txt`).
-*   **Suivi des Objectifs & Statistiques** : Fixez des objectifs quotidiens et globaux. Des barres de progression interactives calculent vos mots en temps réel.
-*   **Minuteur de Focus (Focus Timer)** : Un minuteur Pomodoro réglable intégré pour rythmer vos sessions d'écriture intensives.
-*   **Barre Assistante Redimensionnable** : Ajustez facilement la largeur du panneau droit à l'aide d'une poignée de redimensionnement réactive, avec persistance automatique de la taille choisie.
-*   **Internationalisation Dynamique** : Basculez instantanément toute l'interface entre le **Français** et l'**Anglais** sans aucun rechargement de page.
-*   **Sécurité & Verrouillage** : Verrouillez vos romans pour empêcher toute modification accidentelle (mode lecture seule avec badges visuels de verrouillage).
+| Mode verrouillé / concentration | Grille d'intrigue | Trame chronologique |
+|---|---|---|
+| ![Mode verrouillé](ecriture-rust/images/screenshot_locked.png) | ![Grille d'intrigue](ecriture-rust/images/screenshot_plot_grid.png) | ![Trame](ecriture-rust/images/screenshot_timeline.png) |
 
----
+### Installation (depuis les Releases)
 
-## 🛠️ Technologies Utilisées
+Les versions prêtes à l'emploi sont publiées sur la page **[Releases](https://github.com/neomars/ecriture/releases/latest)**. Ouvrez la dernière version, dépliez la section **Assets** et téléchargez le fichier correspondant à votre système :
 
-*   **Backend** : Python 3, Flask.
-*   **Exportations** : Python-docx, ReportLab (PDF), formatage de paquets zip binaires natifs pour ODT, ePub, et Mobipocket.
-*   **Données Lexicales & Synonymes** : Intègre la base de données Lexique.org pour la lemmatisation automatique ainsi que la ressource sémantique libre [WOLF](https://almanach.inria.fr/software_and_resources/WOLF-en.html) (Wordnet Libre du Français, développé par l'ALMAnaCH à l'Inria) pour une recherche de synonymes riche et contextuelle.
-*   **Stockage des Données** : Format JSON structuré (`projects/` directory) géré par un module de gestion robuste (`project_manager.py`).
-*   **Frontend** : HTML5, Tailwind CSS, JavaScript moderne (Vanilla JS, Single Page Application).
-*   **Localisation** : Fichiers de traduction externes JSON (`locales/fr.json`, `locales/en.json`) pour un découplage total.
+| Système | Fichier à télécharger |
+|---|---|
+| Windows 10 / 11 (64 bits) | `ecriture-rust_<version>_x64-setup.exe` |
+| macOS 11 ou plus récent (Apple Silicon M1/M2/M3…) | `ecriture-rust_<version>_aarch64.dmg` |
+| Linux Debian / Ubuntu / Mint (64 bits) | `ecriture-rust_<version>_amd64.deb` |
 
----
+#### Windows
+1. Double-cliquez sur le fichier `…_x64-setup.exe`.
+2. Si Windows affiche « Windows a protégé votre ordinateur » (SmartScreen), cliquez sur **Informations complémentaires**, puis **Exécuter quand même** : l'application n'est pas signée numériquement, ce message est normal.
+3. Suivez l'assistant d'installation, puis lancez **Écriture** depuis le menu Démarrer.
 
-## 📥 Téléchargement
+#### macOS
+1. Ouvrez le fichier `.dmg` et glissez l'application dans le dossier **Applications**.
+2. Au premier lancement, macOS peut refuser d'ouvrir une application non signée : faites un **clic droit** (ou Ctrl + clic) sur l'application → **Ouvrir**, puis confirmez. Si cela ne suffit pas, allez dans **Réglages Système → Confidentialité et sécurité** et cliquez sur **Ouvrir quand même**.
 
-Les versions exécutables prêtes à l'emploi (Windows, macOS, Linux) sont disponibles sur la page des releases :
-👉 **[https://github.com/neomars/ecriture/releases](https://github.com/neomars/ecriture/releases)**
-
----
-
-## 🚀 Installation des fichiers source (pour utilisateur averti)
-
-### Prérequis
-*   **Python 3.8** ou supérieur installé.
-
-### Étape 1 : Cloner ou extraire le projet
-Placez-vous dans le répertoire racine du projet.
-
-### Étape 2 : Créer et activer un environnement virtuel
-Sur **macOS / Linux** :
+#### Linux (Debian / Ubuntu)
+Double-cliquez sur le fichier `.deb` pour l'ouvrir dans votre gestionnaire de logiciels, ou en ligne de commande :
 ```bash
-python3 -m venv venv
-source venv/bin/activate
+sudo apt install ./ecriture-rust_<version>_amd64.deb
 ```
-Sur **Windows** :
-```cmd
-python -m venv venv
-venv\Scripts\activate
-```
+L'application apparaît ensuite dans le menu de vos applications.
 
-### Étape 3 : Installer les dépendances
-Installez les dépendances nécessaires au fonctionnement et à l'export :
+#### Premier lancement
+- Au premier usage d'un outil IA, Écriture propose de **télécharger le modèle Gemma** (~2,7 Go, connexion Internet nécessaire une seule fois). Vous pouvez aussi continuer sans IA : toutes les autres fonctionnalités restent disponibles.
+- Pour mettre à jour, téléchargez simplement la nouvelle version depuis les Releases et installez-la par-dessus l'ancienne.
+
+### Compiler depuis les sources
+
+Pour les développeurs : prérequis, compilation, architecture du code et accélération GPU sont décrits dans **[DEVELOPMENT.md](DEVELOPMENT.md)** (en anglais).
+
+### Licence
+
+Écriture est créé par Martial Limousin et distribué sous licence libre [CeCILL V2.1](http://www.cecill.info/licences/Licence_CeCILL_V2.1-fr.html).
+
+---
+
+## 🇬🇧 English
+
+Écriture is a word processor built for novelists and authors. It brings together your manuscript, plot planning, character sheets and a **100% local** artificial intelligence in a single application: your writing never leaves your computer.
+
+This version is a complete rewrite in **Rust** (with **Tauri** for the interface) of the original Python application: it starts faster, uses less memory and installs like any regular program, with no Python to set up.
+
+### Main features
+
+#### ✍️ Writing
+- **Manuscript editor** with continuous scrolling, bold, italic, small caps, dialogue formatting, annotations, page breaks and page numbers.
+- **Adjustable layout**: font, size, line spacing, left-aligned or justified text.
+- Real-time **word and character count**, and **auto-save**.
+- **Global search** across the manuscript, characters and notes.
+- **Synonyms**: select a word and click "Synonyms" (built-in French dictionary, works offline).
+- **Novel lock** (read-only) to prevent accidental edits.
+
+#### 🗂️ Organising your novel
+- **Multiple novels**: create, rename, delete and switch between projects. A complete example (*The Count of Monte Cristo*, in French) is included.
+- **Chapters and scenes** structure, with front matter (before the story), main body and back matter (after the end).
+- Detailed **character sheets**: role, aliases, traits, appearance, relationships, free notes and linked scenes.
+- **Character relationship graph**.
+- **Story notes** for places, worldbuilding and research.
+- **Plot grid** and **visual timeline**: per-scene plot cards, linked to each other and to characters.
+
+#### 🎯 Goals and focus
+- **Daily and overall word goals**, with progress bars.
+- **Focus timer** for timed writing sessions.
+
+#### 🤖 Local AI assistant (Gemma)
+The AI runs entirely on your machine using the **Gemma 2 (2B)** model and the **llama.cpp** engine. No account, no subscription, no data sent over the Internet.
+- **On a text selection**: describe, rewrite in a style (elegant, poetic, slang, medieval, blunt, cynical, humorous, action…), expand, change point of view (first person, third person, witness, omniscient), *show, don't tell*, add sensory details.
+- **Proofreading workshop**: repetitions and weak words, rhythm and structure, typography, AI style and consistency analysis, statistics (lexical richness, dialogue ratio…).
+- **Brainstorming**: plot complications to get a stalled scene moving, name generator (characters, places, taverns, planets…).
+- **Chat** with an assistant that knows your characters and notes (automatic context injection).
+- **Automatic character extraction** from your text.
+- The model (~2.7 GB) is **downloaded automatically** on first use. The **GPU** is used when available (Vulkan on Windows/Linux, Metal on macOS); otherwise the CPU takes over.
+
+#### 💾 Export and backup
+- **Export** to Word (`.docx`), PDF, OpenDocument (`.odt`), ePub, Mobipocket (`.mobi`) and plain text (`.txt`).
+- Manual or automatic **local backups** (daily, weekly or monthly), with restore.
+
+#### 🌍 Other
+- Interface available in **French, English, Spanish and Russian**.
+- **Update check** at startup.
+
+### Screenshots
+
+| Main interface | Locked / focus mode | Plot grid | Timeline |
+|---|---|---|---|
+| ![Main interface](ecriture-rust/images/screenshot_main_en.png) | ![Locked mode](ecriture-rust/images/screenshot_locked.png) | ![Plot grid](ecriture-rust/images/screenshot_plot_grid.png) | ![Timeline](ecriture-rust/images/screenshot_timeline.png) |
+
+### Installation (from the Releases)
+
+Ready-to-use builds are published on the **[Releases](https://github.com/neomars/ecriture/releases/latest)** page. Open the latest release, expand the **Assets** section and download the file for your system:
+
+| System | File to download |
+|---|---|
+| Windows 10 / 11 (64-bit) | `ecriture-rust_<version>_x64-setup.exe` |
+| macOS 11 or later (Apple Silicon M1/M2/M3…) | `ecriture-rust_<version>_aarch64.dmg` |
+| Linux Debian / Ubuntu / Mint (64-bit) | `ecriture-rust_<version>_amd64.deb` |
+
+#### Windows
+1. Double-click the `…_x64-setup.exe` file.
+2. If Windows shows "Windows protected your PC" (SmartScreen), click **More info**, then **Run anyway**: the app is not digitally signed, so this warning is expected.
+3. Follow the installer, then launch **Écriture** from the Start menu.
+
+#### macOS
+1. Open the `.dmg` file and drag the app into the **Applications** folder.
+2. On first launch, macOS may refuse to open an unsigned app: **right-click** (or Control-click) the app → **Open**, then confirm. If that is not enough, go to **System Settings → Privacy & Security** and click **Open Anyway**.
+
+#### Linux (Debian / Ubuntu)
+Double-click the `.deb` file to open it in your software manager, or from a terminal:
 ```bash
-pip install -r requirements.txt
+sudo apt install ./ecriture-rust_<version>_amd64.deb
 ```
+The app then appears in your applications menu.
 
-### Étape 4 : Lancer le serveur d'application
-```bash
-python main.py
-```
+#### First launch
+- The first time you use an AI tool, Écriture offers to **download the Gemma model** (~2.7 GB, Internet connection needed only once). You can also carry on without AI: every other feature remains available.
+- To update, just download the new version from the Releases and install it over the old one.
 
-### Étape 5 : Accéder à l'application
-Ouvrez votre navigateur web et accédez à :
-👉 **[http://localhost:5000](http://localhost:5000)**
+### Building from source
 
----
+For developers: prerequisites, build steps, code architecture and GPU acceleration are covered in **[DEVELOPMENT.md](DEVELOPMENT.md)**.
 
-## 📝 Guide d'Utilisation
+### License
 
-1.  **Création de Roman** : Cliquez sur le bouton **"+" Nouveau roman** dans l'en-tête pour créer instantanément un nouveau projet.
-2.  **Rédaction & IA Contextuelle** : Sélectionnez une Scène pour commencer à taper dans l'éditeur. Surlignez n'importe quel texte pour voir apparaître le menu d'outils d'écriture IA contextuels.
-3.  **Fiches Personnages & Lore** : Ajoutez des fiches de personnages et associez-les à vos scènes. Définissez leurs caractéristiques, ainsi que leurs relations dynamiques.
-4.  **Grille d'Intrigue & Trame Visuelle** : Cliquez sur **Grille d'intrigue** dans l'arbre pour afficher l'espace de planification. Utilisez les onglets **Vue Grille** et **Trame Visuelle** pour alterner entre le tableau et la frise chronologique interactive. Associez des personnages et connectez des cartes entre elles via des lignes de flux graphiques directement depuis le formulaire d'édition d'une carte.
-5.  **Bouton IA** : Activez ou désactivez l'Assistant IA à l'aide de l'interrupteur **Activer l'IA** dans la barre supérieure. Lors de la première utilisation, si l'IA locale n'est pas installée et que votre système possède au moins 12 Go de RAM et 5 Go de stockage libre, l'application peut télécharger automatiquement le modèle par défaut **Gemma 4** fonctionnant en local, sans logiciel tiers.
-6.  **Paramètres de Projet** : Cliquez sur **Paramètres du projet** pour changer le titre, définir l'objectif de mots global, verrouiller/déverrouiller le roman, ajuster la température de l'IA, gérer les modèles locaux, ou supprimer le roman.
-
----
-
-<div id="english"></div>
-
-# ENGLISH VERSION 🇬🇧
-
-**Écriture** is an elegant, modern, and distraction-free desktop web application built with Python (Flask) and JavaScript (Tailwind CSS) designed to assist writers in planning, structuring, and drafting their novels. This application combines essential novel-writing tools in a single-page responsive, bilingual interface.
-
-## 📸 Application Screenshots
-
-### Main Workspace (French)
-![Main Workspace in French](images/screenshot_main_fr.png)
-
-### Main Workspace (English)
-![Main Workspace in English](images/screenshot_main_en.png)
-
-### Plot Grid View (Classic Table Grid)
-![Plot Grid](images/screenshot_plot_grid.png)
-
-### Visual Chronological Timeline (Connections & Flow)
-![Visual Chronological Timeline](images/screenshot_timeline.png)
-
-### Locked Novel View (Read-Only)
-![Locked Space](images/screenshot_locked.png)
-
----
-
-## ✨ Key Features
-
-*   **Distraction-Free Text Editor**: Designed to maximize focus with gorgeous typography (Georgia), optimal margins, and silent automatic saving on every keystroke.
-*   **Interactive Navigation Tree**: Hierarchical management of chapters, scenes, characters, and notes in the left sidebar. Edit, rename, or delete elements instantly.
-*   **Rich Character Profiles & Story Lore**: Create detailed character profiles with aliases, traits, physical appearance, and background notes. Define dynamic relationship grids and link characters directly to scene checklists. Character details and notes context are automatically injected into AI prompts for seamless consistency.
-*   **Contextual AI Writing Menu**: Select any text in the editor to bring up a floating smart caret menu. Use tools like *Describe*, *Rewrite* (with elegant, slang, poetic, brutal, and cynical style presets), *Expand*, or *Point of View (POV)* shifts (1st person, 3rd person, external witness) with support for direct replacements, regeneration, and fine-tuning.
-*   **Brainstorming & Creative Unblocking**: A dedicated "Ideas" modal analyzes your stuck scene to generate 3 coherent narrative complications to restart the action, or generates contextual names and toponyms respecting your world's linguistic roots.
-*   **Smart AI Chat Assistant**: Chat with a persistent writing companion in the right-hand sidebar. The application uses a fully offline embedded local AI (Gemma 4) operating 100% locally on your machine.
-*   **Customizable AI Parameters**: Adjust the AI creativity temperature (from 0.0 to 1.0) and manage local AI models from the Project Settings panel.
-*   **Plot Grid & Visual Chronological Timeline**: A dual-view interactive plotting workspace. Switch seamlessly between the classic **Grid View** (table layout inspired by the Snowflake method) and the **Visual Timeline** (horizontal flowchart). Graphically connect plot cards with dynamic SVG flowlines, and link characters directly to cards to visually track story flow.
-*   **Professional Multi-Format Document Export**: Compile and export your entire structured novel instantly with one click into six popular formats: Word (`.docx`), PDF (`.pdf`), OpenDocument (`.odt`), ePub (`.epub`), Mobipocket (`.mobi`), or plain text (`.txt`).
-*   **Goals & Statistics Tracker**: Define daily and overall word count goals. Real-time progress bars calculate counts dynamically as you write.
-*   **Focus Timer**: Built-in adjustable Pomodoro timer to pace your writing sprints.
-*   **Resizable Assistant Sidebar**: Easily adjust the width of the right panel using a responsive drag handle, with automatic local width persistence.
-*   **Dynamic Localization**: Change the entire interface language instantly between **English** and **French** with zero page reloads.
-*   **Workspace Security**: Lock your novel to prevent accidental edits (read-only mode with clear visual indicator badges).
-
----
-
-## 🛠️ Built With
-
-*   **Backend**: Python 3, Flask.
-*   **Exports**: Python-docx, ReportLab (PDF), native zip structural stream packets for ODT, ePub, and Mobipocket.
-*   **Lexical Data & Synonyms**: Integrates Lexique.org database for automatic lemmatization and the free French wordnet [WOLF](https://almanach.inria.fr/software_and_resources/WOLF-en.html) (Wordnet Libre du Français, developed by ALMAnaCH at Inria) for rich and contextual synonyms lookup.
-*   **Data Storage**: Structured JSON formatted projects (saved under `/projects/` directory) powered by a robust backend manager (`project_manager.py`).
-*   **Frontend**: HTML5, Tailwind CSS, Modern JavaScript (Vanilla JS, Single Page Application style).
-*   **Localization**: Decoupled external translation files (`locales/fr.json`, `locales/en.json`).
-
----
-
-## 📥 Download
-
-Ready-to-use executable releases (Windows, macOS, Linux) are available on the releases page:
-👉 **[https://github.com/neomars/ecriture/releases](https://github.com/neomars/ecriture/releases)**
-
----
-
-## 🚀 Setup & Installation
-
-### Prerequisites
-*   **Python 3.8** or higher installed.
-
-### Step 1: Clone or extract the project files
-Navigate to the project root directory.
-
-### Step 2: Create and activate a virtual environment
-On **macOS / Linux**:
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
-On **Windows**:
-```cmd
-python -m venv venv
-venv\Scripts\activate
-```
-
-### Step 3: Install dependencies
-Install Flask and export dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-### Step 4: Run the application server
-```bash
-python main.py
-```
-
-### Step 5: Access the application
-Open your favorite web browser and go to:
-👉 **[http://localhost:5000](http://localhost:5000)**
-
----
-
-## 📝 User Guide
-
-1.  **Creating Novels**: Click the **"+" New novel / Nouveau roman** button in the top bar to create a fresh project.
-2.  **Drafting & Contextual AI**: Click any Scene in the navigation tree to open the editor. Highlight any text block to trigger floating smart AI writing tools.
-3.  **Characters & Lore**: Manage full character bios, dynamic relationship networks, and appearances. Check occurrences to link characters to specific scenes.
-4.  **Plotting & Timeline**: Access the **Plot Grid** from the sidebar. Toggle between **Grid View** and **Visual Timeline** tabs. Link characters and draw graphical connection flowlines between plot cards directly from the card edit popup to map your story's chronological flow simply.
-5.  **AI Toggle**: Turn the AI assistant on or off using the **Toggle AI / Activer l'IA** switch in the top header. On first use, if the local AI model is missing and your system meets the requirements (12GB RAM, 5GB free disk space), you will be prompted to automatically download the embedded **Gemma 4** model directly.
-6.  **Project Settings**: Adjust project titles, overall word goals, lock/unlock the workspace, customize AI parameters (temperature, model selection), or delete the current novel via the **Project settings** modal.
+Écriture is created by Martial Limousin and released under the free [CeCILL V2.1](http://www.cecill.info/licences/Licence_CeCILL_V2.1-en.html) license.
