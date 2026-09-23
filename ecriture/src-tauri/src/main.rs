@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    ecriture_rust_lib::run()
+    ecriture_lib::run()
 }

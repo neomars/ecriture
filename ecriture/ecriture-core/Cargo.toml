@@ -35,7 +35,7 @@ encoding_rs = "0.8"
 # else the same way the clang/bindgen requirement did before it was
 # documented. Pick the one matching your GPU and pass it through when
 # building:
-#   cargo build -p ecriture-rust --features ecriture-core/gpu-cuda
+#   cargo build -p ecriture --features ecriture-core/gpu-cuda
 # See the README's "Local AI (Gemma)" section for OS-specific setup.
 gpu-cuda = ["llama-cpp-2/cuda"]
 gpu-rocm = ["llama-cpp-2/rocm"]

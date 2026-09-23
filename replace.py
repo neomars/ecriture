@@ -62,4 +62,4 @@ def process_file(filepath):
     with open(filepath, 'w', encoding='utf-8') as f:
         f.write(content)
 
-process_file('ecriture-rust/static/js/moteur.js')
+process_file('ecriture/static/js/moteur.js')
