@@ -12,7 +12,7 @@ use ecriture_core::ai::inference::LlamaEngine;
 use ecriture_core::ai::model_store;
 use ecriture_core::export::{self, ExportFormat};
 use ecriture_core::model::NovelData;
-use ecriture_core::synonyms::SynonymDb;
+use ecriture_core::synonyms::{EnglishThesaurus, SynonymDb};
 use ecriture_core::{ai, backup, locale, update, ImportOutcome, NovelProject, ProjectManager};
 use serde::Serialize;
 use serde_json::Value;
@@ -26,6 +26,8 @@ pub struct AppState {
     /// Where the bundled `lexique.db` resource was found at startup, if any
     /// (see [`resolve_lexique_db_path`]).
     pub lexique_db_path: Option<PathBuf>,
+    /// Where the bundled English thesaurus (`thesaurus_en.db`) was found.
+    pub thesaurus_en_path: Option<PathBuf>,
     /// The local Gemma engine, loaded lazily on first use (loading a
     /// multi-gigabyte GGUF file takes real time, so we don't do it at
     /// startup) and cached for the app's lifetime thereafter.
@@ -65,19 +67,23 @@ impl Default for AiInstallState {
 /// by `ecriture-core` for a plain `cargo run`/`cargo test` invocation that
 /// has no `AppHandle` at all.
 fn resolve_lexique_db_path(app: &tauri::App) -> Option<PathBuf> {
+    resolve_resource(app, "lexique.db")
+}
+
+/// Finds a bundled file from `ecriture-core/resources` (see
+/// `tauri.conf.json`'s `bundle.resources`), falling back to the source tree
+/// in development.
+fn resolve_resource(app: &tauri::App, name: &str) -> Option<PathBuf> {
     if let Ok(path) = app
         .path()
-        .resolve("resources/lexique.db", tauri::path::BaseDirectory::Resource)
+        .resolve(format!("resources/{name}"), tauri::path::BaseDirectory::Resource)
     {
         if path.exists() {
             return Some(path);
         }
     }
 
-    let dev_fallback = PathBuf::from(concat!(
-        env!("CARGO_MANIFEST_DIR"),
-        "/../ecriture-core/resources/lexique.db"
-    ));
+    let dev_fallback = PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "/../ecriture-core/resources")).join(name);
     dev_fallback.exists().then_some(dev_fallback)
 }
 
@@ -227,6 +233,13 @@ fn export_draft(format: String, state: State<AppState>) -> Result<Vec<u8>, Strin
 fn get_synonyms(word: String, lang: String, state: State<AppState>) -> Result<Vec<String>, String> {
     if word.trim().is_empty() {
         return Ok(Vec::new());
+    }
+    if lang == "en" {
+        let Some(path) = state.thesaurus_en_path.as_ref() else {
+            return Ok(Vec::new());
+        };
+        let thesaurus = EnglishThesaurus::open(path).map_err(|e| e.to_string())?;
+        return thesaurus.lookup(&word).map_err(|e| e.to_string());
     }
     let Some(db_path) = state.lexique_db_path.as_ref() else {
         return Ok(Vec::new());
@@ -737,6 +750,7 @@ pub fn run() {
                 .expect("failed to create the app data directory");
 
             let lexique_db_path = resolve_lexique_db_path(app);
+            let thesaurus_en_path = resolve_resource(app, "thesaurus_en.db");
 
             let project_manager = ProjectManager::new(&base_dir);
             project_manager
@@ -764,6 +778,7 @@ pub fn run() {
                 active_project: Mutex::new(Some(initial_project)),
                 project_manager,
                 lexique_db_path,
+                thesaurus_en_path,
                 ai_engine: Mutex::new(None),
                 ai_install: Arc::new(Mutex::new(AiInstallState::default())),
                 legacy_import_report: Mutex::new(legacy_import_report),
