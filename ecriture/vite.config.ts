@@ -7,7 +7,7 @@ const host = process.env.TAURI_DEV_HOST;
 export default defineConfig(() => ({
 
   optimizeDeps: {
-    include: ["@tauri-apps/api/core"]
+    include: ["@tauri-apps/api/core", "@tauri-apps/plugin-opener"]
   },
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //

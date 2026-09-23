@@ -212,8 +212,10 @@ window.showConfirm = function(message) {
 
             await loadProjectsList();
             await loadProject();
+            await reportLegacyImport();
             await checkGemmaStatus();
-            await window.checkUpdatesOnStartup();
+            // Network call: don't hold up the rest of startup for it.
+            window.checkUpdatesOnStartup();
             initDonationTimer();
         });
 
@@ -417,6 +419,58 @@ window.showConfirm = function(message) {
                 }
             } catch (err) {
                 console.error("Failed to switch project:", err);
+            }
+        }
+
+        // IMPORT NOVELS (e.g. .json projects from the Python version, 1.x)
+        window.openImportProjectPicker = function openImportProjectPicker() {
+            const input = document.getElementById('import-project-input');
+            input.value = "";
+            input.click();
+        }
+
+        window.importProjectFiles = async function importProjectFiles(fileList) {
+            const files = Array.from(fileList || []);
+            if (files.length === 0) return;
+
+            let imported = [];
+            let alreadyPresent = 0;
+            let failed = [];
+            for (const file of files) {
+                try {
+                    const content = await file.text();
+                    const result = await window.api_invoke('import_project', { fileName: file.name, content });
+                    if (result.status === 'imported') imported.push(result.filename);
+                    else alreadyPresent++;
+                } catch (e) {
+                    failed.push(file.name);
+                }
+            }
+
+            await loadProjectsList();
+            const messages = [];
+            if (imported.length) messages.push(formatTranslation('import_result_imported', { count: imported.length }));
+            if (alreadyPresent) messages.push(formatTranslation('import_result_already', { count: alreadyPresent }));
+            if (failed.length) messages.push(formatTranslation('import_result_failed', { files: failed.join(', ') }));
+            alert(messages.join('\n'));
+
+            // Open the (last) imported novel straight away.
+            if (imported.length) await switchProject(imported[imported.length - 1]);
+        }
+
+        // Tell the user once about novels recovered from the Python version.
+        async function reportLegacyImport() {
+            try {
+                const recovered = await window.api_invoke('take_legacy_import_report');
+                if (!recovered || recovered.length === 0) return;
+                const select = document.getElementById('project-select');
+                const titles = recovered.map(fn => {
+                    const opt = Array.from(select.options).find(o => o.value === fn);
+                    return opt ? opt.innerText : fn;
+                });
+                alert(formatTranslation('legacy_import_notice', { count: recovered.length, titles: titles.join(', ') }));
+            } catch (e) {
+                console.error("Failed to read legacy import report:", e);
             }
         }
 
@@ -3167,6 +3221,9 @@ function renderStatisticsDashboard() {
         window.checkUpdatesOnStartup = async function checkUpdatesOnStartup() {
             try {
                 const data = await window.api_invoke("check_updates");
+                // Couldn't reach GitHub (offline...): say nothing rather than
+                // claiming the app is up to date.
+                if (!data.checked) return;
 
                 const updateContainer = document.getElementById('update-container');
                 const aboutText = document.querySelector('[data-i18n="about_text"]');

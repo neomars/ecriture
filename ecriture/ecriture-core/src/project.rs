@@ -381,6 +381,110 @@ impl ProjectManager {
         }
         Ok(None)
     }
+
+    /// Imports a novel file (e.g. one saved by the Python version of
+    /// Écriture) into `projects_dir`, without changing the active project.
+    ///
+    /// `content` must parse as a novel; it is otherwise written as-is so no
+    /// field is lost. A file identical to one already present is not
+    /// duplicated ([`ImportOutcome::AlreadyPresent`]). The file name is
+    /// derived from `file_name` and never overwrites an existing project; if
+    /// another project already has the same title, a " (2)", " (3)"...
+    /// suffix is added to the imported title so both stay distinguishable
+    /// in the novel list.
+    pub fn import_project(&self, file_name: &str, content: &str) -> Result<ImportOutcome> {
+        let mut imported: serde_json::Value = serde_json::from_str(content)?;
+        let data: NovelData = serde_json::from_value(imported.clone())?;
+        self.ensure_dirs()?;
+
+        let mut existing_titles = Vec::new();
+        for entry in fs::read_dir(&self.projects_dir)? {
+            let path = entry?.path();
+            if path.extension().and_then(|e| e.to_str()) != Some("json") {
+                continue;
+            }
+            let Ok(text) = fs::read_to_string(&path) else { continue };
+            let Ok(value) = serde_json::from_str::<serde_json::Value>(&text) else { continue };
+            if value == imported {
+                let name = path.file_name().unwrap().to_string_lossy().to_string();
+                return Ok(ImportOutcome::AlreadyPresent(name));
+            }
+            if let Ok(other) = serde_json::from_value::<NovelData>(value) {
+                existing_titles.push(other.settings.title);
+            }
+        }
+
+        let stem = Path::new(file_name)
+            .file_stem()
+            .map(|s| sanitize_title(&s.to_string_lossy()))
+            .filter(|s| s != "unnamed_project")
+            .unwrap_or_else(|| sanitize_title(&data.settings.title));
+        let mut filename = format!("{stem}.json");
+        let mut counter = 1;
+        while self.projects_dir.join(&filename).exists() {
+            filename = format!("{stem}_{counter}.json");
+            counter += 1;
+        }
+
+        let title = data.settings.title;
+        let body = if existing_titles.contains(&title) {
+            let mut n = 2;
+            while existing_titles.contains(&format!("{title} ({n})")) {
+                n += 1;
+            }
+            imported["settings"]["title"] = serde_json::Value::String(format!("{title} ({n})"));
+            serde_json::to_string_pretty(&imported)?
+        } else {
+            content.to_string()
+        };
+        fs::write(self.projects_dir.join(&filename), body)?;
+        Ok(ImportOutcome::Imported(filename))
+    }
+
+    /// One-time recovery of novels left by the Python version of Écriture:
+    /// imports every `.json` file found in `legacy_dirs` (see
+    /// [`Self::import_project`]) and returns the file names actually
+    /// imported. It only ever runs once per installation - a marker file
+    /// next to `projects/` records that it happened - so a recovered novel
+    /// the user later edits or deletes is never imported again. Unreadable
+    /// or invalid files are skipped.
+    pub fn import_legacy_projects(&self, legacy_dirs: &[PathBuf]) -> Result<Vec<String>> {
+        let marker = self.legacy_import_marker();
+        if marker.exists() {
+            return Ok(Vec::new());
+        }
+        let mut imported = Vec::new();
+        for dir in legacy_dirs {
+            let Ok(entries) = fs::read_dir(dir) else { continue };
+            let mut paths: Vec<PathBuf> = entries.filter_map(|e| e.ok()).map(|e| e.path()).collect();
+            paths.sort();
+            for path in paths {
+                if path.extension().and_then(|e| e.to_str()) != Some("json") {
+                    continue;
+                }
+                let Ok(content) = fs::read_to_string(&path) else { continue };
+                let name = path.file_name().unwrap().to_string_lossy().to_string();
+                if let Ok(ImportOutcome::Imported(filename)) = self.import_project(&name, &content) {
+                    imported.push(filename);
+                }
+            }
+        }
+        self.ensure_dirs()?;
+        fs::write(&marker, "")?;
+        Ok(imported)
+    }
+
+    fn legacy_import_marker(&self) -> PathBuf {
+        self.projects_dir.with_file_name("legacy_import_done")
+    }
+}
+
+/// Result of [`ProjectManager::import_project`]; both variants carry the
+/// file name of the project in `projects_dir`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ImportOutcome {
+    Imported(String),
+    AlreadyPresent(String),
 }
 
 /// Mirrors the filename-safety filter in `main.py::create_project`:
@@ -679,6 +783,95 @@ mod tests {
             mgr.create_project("   "),
             Err(ProjectError::EmptyTitle)
         ));
+    }
+
+    fn novel_json(title: &str) -> String {
+        let mut project = NovelProject::new(None);
+        project.data.settings.title = title.into();
+        serde_json::to_string_pretty(&project.data).unwrap()
+    }
+
+    #[test]
+    fn import_project_adds_a_novel_without_changing_the_active_one() {
+        let dir = tempdir().unwrap();
+        let mgr = ProjectManager::new(dir.path());
+        mgr.create_project("Current").unwrap();
+
+        let outcome = mgr.import_project("Mon Roman.json", &novel_json("Mon roman")).unwrap();
+        assert_eq!(outcome, ImportOutcome::Imported("mon_roman.json".into()));
+        assert_eq!(mgr.get_active_filename().unwrap(), "current.json");
+        let titles: Vec<String> = mgr.list_projects().unwrap().into_iter().map(|p| p.title).collect();
+        assert!(titles.contains(&"Mon roman".to_string()));
+    }
+
+    #[test]
+    fn import_project_keeps_unknown_fields_verbatim() {
+        let dir = tempdir().unwrap();
+        let mgr = ProjectManager::new(dir.path());
+        let mut value: serde_json::Value = serde_json::from_str(&novel_json("Old")).unwrap();
+        value["python_only_field"] = serde_json::json!({"keep": true});
+        let content = serde_json::to_string(&value).unwrap();
+
+        mgr.import_project("old.json", &content).unwrap();
+        let written = fs::read_to_string(mgr.projects_dir.join("old.json")).unwrap();
+        assert_eq!(written, content);
+    }
+
+    #[test]
+    fn importing_the_same_file_twice_does_not_duplicate_it() {
+        let dir = tempdir().unwrap();
+        let mgr = ProjectManager::new(dir.path());
+        let content = novel_json("Twice");
+        assert!(matches!(mgr.import_project("twice.json", &content).unwrap(), ImportOutcome::Imported(_)));
+        assert_eq!(
+            mgr.import_project("renamed.json", &content).unwrap(),
+            ImportOutcome::AlreadyPresent("twice.json".into())
+        );
+        assert_eq!(mgr.list_projects().unwrap().len(), 1);
+    }
+
+    #[test]
+    fn import_never_overwrites_and_disambiguates_same_title() {
+        let dir = tempdir().unwrap();
+        let mgr = ProjectManager::new(dir.path());
+        mgr.import_project("book.json", &novel_json("Book")).unwrap();
+        let mut other: serde_json::Value = serde_json::from_str(&novel_json("Book")).unwrap();
+        other["characters"] = serde_json::json!([]);
+
+        let outcome = mgr.import_project("book.json", &other.to_string()).unwrap();
+        assert_eq!(outcome, ImportOutcome::Imported("book_1.json".into()));
+        let mut titles: Vec<String> = mgr.list_projects().unwrap().into_iter().map(|p| p.title).collect();
+        titles.sort();
+        assert_eq!(titles, vec!["Book".to_string(), "Book (2)".to_string()]);
+    }
+
+    #[test]
+    fn import_rejects_files_that_are_not_novels() {
+        let dir = tempdir().unwrap();
+        let mgr = ProjectManager::new(dir.path());
+        assert!(mgr.import_project("x.json", "not json").is_err());
+        assert!(mgr.import_project("x.json", "{\"foo\": 1}").is_err());
+        assert!(mgr.list_projects().unwrap().is_empty());
+    }
+
+    #[test]
+    fn legacy_import_runs_once_and_skips_invalid_files() {
+        let dir = tempdir().unwrap();
+        let legacy = dir.path().join("python_install").join("projects");
+        fs::create_dir_all(&legacy).unwrap();
+        fs::write(legacy.join("a.json"), novel_json("A")).unwrap();
+        fs::write(legacy.join("broken.json"), "{").unwrap();
+        fs::write(legacy.join("notes.txt"), "ignored").unwrap();
+        let mgr = ProjectManager::new(dir.path().join("app"));
+
+        let missing = dir.path().join("does_not_exist");
+        let imported = mgr.import_legacy_projects(&[missing, legacy.clone()]).unwrap();
+        assert_eq!(imported, vec!["a.json".to_string()]);
+
+        // Deleting the recovered novel must not bring it back next launch.
+        fs::remove_file(mgr.projects_dir.join("a.json")).unwrap();
+        assert!(mgr.import_legacy_projects(&[legacy]).unwrap().is_empty());
+        assert!(mgr.list_projects().unwrap().is_empty());
     }
 
     #[test]

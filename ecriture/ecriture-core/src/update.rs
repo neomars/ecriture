@@ -3,10 +3,10 @@
 //!
 //! The actual HTTP call is behind the [`ReleaseFetcher`] trait so the
 //! comparison/selection logic can be tested without a network round trip;
-//! a Tauri command layer supplies a real fetcher (e.g. backed by
-//! `reqwest` or `ureq`).
+//! [`GithubFetcher`] is the real implementation used by the app.
 
 use serde::{Deserialize, Serialize};
+use std::time::Duration;
 
 /// The running app version, taken from this crate's `Cargo.toml` so it
 /// only has to be bumped in one place per release.
@@ -33,8 +33,46 @@ pub trait ReleaseFetcher {
     fn latest_release(&self, repo: &str) -> Result<GithubRelease, String>;
 }
 
+/// Fetches the latest published (non-draft, non-prerelease) release from
+/// the GitHub REST API. Blocking, with a short timeout so an offline
+/// machine just reports "no update" quickly.
+pub struct GithubFetcher {
+    /// API root, overridable for tests.
+    pub api_base: String,
+}
+
+impl Default for GithubFetcher {
+    fn default() -> Self {
+        Self { api_base: "https://api.github.com".into() }
+    }
+}
+
+impl ReleaseFetcher for GithubFetcher {
+    fn latest_release(&self, repo: &str) -> Result<GithubRelease, String> {
+        let client = reqwest::blocking::Client::builder()
+            .timeout(Duration::from_secs(10))
+            // GitHub's API rejects requests without a User-Agent.
+            .user_agent(concat!("Ecriture/", env!("CARGO_PKG_VERSION")))
+            .build()
+            .map_err(|e| e.to_string())?;
+        let response = client
+            .get(format!("{}/repos/{repo}/releases/latest", self.api_base))
+            .header("Accept", "application/vnd.github+json")
+            .send()
+            .map_err(|e| e.to_string())?;
+        if !response.status().is_success() {
+            return Err(format!("HTTP {}", response.status().as_u16()));
+        }
+        let body = response.text().map_err(|e| e.to_string())?;
+        serde_json::from_str(&body).map_err(|e| e.to_string())
+    }
+}
+
 #[derive(Debug, Clone, Serialize, PartialEq)]
 pub struct UpdateStatus {
+    /// False when the release couldn't be fetched (offline, GitHub down...),
+    /// so the UI doesn't claim the app is up to date without knowing.
+    pub checked: bool,
     pub update_available: bool,
     pub current_version: String,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -48,8 +86,9 @@ pub struct UpdateStatus {
 }
 
 impl UpdateStatus {
-    fn none() -> Self {
+    fn none(checked: bool) -> Self {
         Self {
+            checked,
             update_available: false,
             current_version: CURRENT_VERSION.to_string(),
             latest_version: None,
@@ -65,7 +104,7 @@ impl UpdateStatus {
 /// means "no update available" (logged by the caller if desired).
 pub fn check_for_update(fetcher: &impl ReleaseFetcher, os_keyword: &str) -> UpdateStatus {
     let Ok(release) = fetcher.latest_release(GITHUB_REPO) else {
-        return UpdateStatus::none();
+        return UpdateStatus::none(false);
     };
 
     let latest_tag = release.tag_name.trim_start_matches('v').to_string();
@@ -80,6 +119,7 @@ pub fn check_for_update(fetcher: &impl ReleaseFetcher, os_keyword: &str) -> Upda
                 }
             }
             UpdateStatus {
+                checked: true,
                 update_available: true,
                 current_version: CURRENT_VERSION.to_string(),
                 latest_version: Some(latest_tag),
@@ -88,19 +128,21 @@ pub fn check_for_update(fetcher: &impl ReleaseFetcher, os_keyword: &str) -> Upda
                 release_page: Some(release.html_url),
             }
         }
-        _ => UpdateStatus::none(),
+        _ => UpdateStatus::none(true),
     }
 }
 
-/// Returns the OS keyword used to pick a release asset, matching
-/// `main.py::get_os_keyword`.
+/// Returns the part of a release asset's file name that identifies this
+/// OS's installer, as published by the release workflow
+/// (`ecriture_<version>_x64-setup.exe`, `..._aarch64.dmg`,
+/// `..._amd64.deb`).
 pub fn os_keyword() -> &'static str {
     if cfg!(target_os = "windows") {
-        "windows"
+        "-setup.exe"
     } else if cfg!(target_os = "macos") {
-        "macos"
+        ".dmg"
     } else {
-        "linux"
+        ".deb"
     }
 }
 
@@ -168,18 +210,70 @@ mod tests {
         let fetcher = MockFetcher(Ok(release(
             "v2.1.0",
             vec![
-                ReleaseAsset { name: "ecriture-windows-x64.zip".into(), browser_download_url: "win".into() },
-                ReleaseAsset { name: "ecriture-linux-x64.tar.gz".into(), browser_download_url: "lin".into() },
+                ReleaseAsset { name: "ecriture_2.1.0_x64-setup.exe".into(), browser_download_url: "win".into() },
+                ReleaseAsset { name: "ecriture_2.1.0_aarch64.dmg".into(), browser_download_url: "mac".into() },
+                ReleaseAsset { name: "ecriture_2.1.0_amd64.deb".into(), browser_download_url: "lin".into() },
             ],
         )));
-        let status = check_for_update(&fetcher, "linux");
-        assert_eq!(status.download_url.as_deref(), Some("lin"));
+        assert_eq!(check_for_update(&fetcher, ".deb").download_url.as_deref(), Some("lin"));
+        assert_eq!(check_for_update(&fetcher, ".dmg").download_url.as_deref(), Some("mac"));
+        assert_eq!(check_for_update(&fetcher, "-setup.exe").download_url.as_deref(), Some("win"));
+    }
+
+    /// Serves one HTTP response on loopback and returns its base URL.
+    fn serve_once(status_line: &'static str, body: &'static str) -> String {
+        use std::io::{BufRead, BufReader, Write};
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let addr = listener.local_addr().unwrap();
+        std::thread::spawn(move || {
+            if let Ok((mut stream, _)) = listener.accept() {
+                let mut reader = BufReader::new(stream.try_clone().unwrap());
+                let mut line = String::new();
+                loop {
+                    line.clear();
+                    if reader.read_line(&mut line).unwrap_or(0) == 0 || line == "\r\n" {
+                        break;
+                    }
+                }
+                let resp = format!(
+                    "{status_line}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+                    body.len()
+                );
+                let _ = stream.write_all(resp.as_bytes());
+            }
+        });
+        format!("http://{addr}")
+    }
+
+    #[test]
+    fn github_fetcher_parses_the_latest_release() {
+        let body = r#"{"tag_name":"v2.1.0","html_url":"https://github.com/neomars/ecriture/releases/tag/v2.1.0",
+            "body":"notes","draft":false,
+            "assets":[{"name":"ecriture_2.1.0_amd64.deb","browser_download_url":"https://example.com/deb","size":1}]}"#;
+        let fetcher = GithubFetcher { api_base: serve_once("HTTP/1.1 200 OK", body) };
+        let release = fetcher.latest_release(GITHUB_REPO).unwrap();
+        assert_eq!(release.tag_name, "v2.1.0");
+        assert_eq!(release.assets[0].name, "ecriture_2.1.0_amd64.deb");
+    }
+
+    #[test]
+    fn github_fetcher_reports_http_and_network_errors() {
+        let fetcher = GithubFetcher { api_base: serve_once("HTTP/1.1 404 Not Found", "") };
+        assert_eq!(fetcher.latest_release(GITHUB_REPO).unwrap_err(), "HTTP 404");
+
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let addr = listener.local_addr().unwrap();
+        drop(listener);
+        let fetcher = GithubFetcher { api_base: format!("http://{addr}") };
+        assert!(fetcher.latest_release(GITHUB_REPO).is_err());
     }
 
     #[test]
     fn same_or_older_release_reports_no_update() {
         let fetcher = MockFetcher(Ok(release(&format!("v{CURRENT_VERSION}"), vec![])));
-        assert!(!check_for_update(&fetcher, "linux").update_available);
+        let status = check_for_update(&fetcher, "linux");
+        assert!(status.checked);
+        assert!(!status.update_available);
 
         let fetcher_old = MockFetcher(Ok(release("v1.3.0", vec![])));
         assert!(!check_for_update(&fetcher_old, "linux").update_available);
@@ -190,6 +284,7 @@ mod tests {
         let fetcher = MockFetcher(Err("network down".into()));
         let status = check_for_update(&fetcher, "linux");
         assert!(!status.update_available);
+        assert!(!status.checked);
         assert_eq!(status.current_version, CURRENT_VERSION);
     }
 }

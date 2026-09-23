@@ -91,6 +91,11 @@
                     <span>➕</span>
                     <span data-i18n="add_novel">Nouveau</span>
                 </button>
+                <button onclick="openImportProjectPicker()" data-i18n-title="import_novel_tooltip" title="Importer un roman (.json), par exemple de l'ancienne version d'Écriture" class="text-indigo-600 hover:text-indigo-800 text-xs font-bold px-2 py-1.5 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-all flex items-center space-x-1">
+                    <span>📥</span>
+                    <span data-i18n="import_novel">Importer</span>
+                </button>
+                <input type="file" id="import-project-input" accept=".json,application/json" multiple class="hidden" onchange="importProjectFiles(this.files)">
             </div>
         </div>
 

@@ -237,5 +237,11 @@
   "rewrite_brutal": "Brutal / Dry",
   "rewrite_cynical": "Cynical",
   "pov_omniscient": "Omniscient",
-  "gemma_not_bundled": "No local AI engine is bundled with this build yet. AI tools use offline fallback responses instead."
+  "gemma_not_bundled": "No local AI engine is bundled with this build yet. AI tools use offline fallback responses instead.",
+  "import_novel": "Import",
+  "import_novel_tooltip": "Import a novel (.json), e.g. from the previous version of Écriture",
+  "import_result_imported": "{count} novel(s) imported.",
+  "import_result_already": "{count} novel(s) already present, not duplicated.",
+  "import_result_failed": "Could not import: {files} (not a valid Écriture novel file).",
+  "legacy_import_notice": "{count} novel(s) from the previous version of Écriture were recovered: {titles}. You will find them in the novel list."
 }

@@ -17,4 +17,4 @@ pub mod synonyms;
 pub mod update;
 
 pub use model::NovelData;
-pub use project::{NovelProject, ProjectManager};
+pub use project::{ImportOutcome, NovelProject, ProjectManager};
