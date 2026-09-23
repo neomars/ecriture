@@ -1,8 +1,9 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "ecriture",
-  "version": "0.1.0",
-  "identifier": "com.jules.ecriture",
+  "productName": "Écriture",
+  "mainBinaryName": "ecriture",
+  "version": "2.0.0",
+  "identifier": "com.neomars.ecriture",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -13,7 +14,7 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "ecriture",
+        "title": "Écriture",
         "width": 1280,
         "height": 800,
         "maximized": true

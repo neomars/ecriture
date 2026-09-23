@@ -8,7 +8,9 @@
 
 use serde::{Deserialize, Serialize};
 
-pub const CURRENT_VERSION: &str = "1.0.0";
+/// The running app version, taken from this crate's `Cargo.toml` so it
+/// only has to be bumped in one place per release.
+pub const CURRENT_VERSION: &str = env!("CARGO_PKG_VERSION");
 pub const GITHUB_REPO: &str = "neomars/ecriture";
 
 #[derive(Debug, Clone, Deserialize)]
@@ -154,17 +156,17 @@ mod tests {
 
     #[test]
     fn newer_release_reports_update_available() {
-        let fetcher = MockFetcher(Ok(release("v1.1.0", vec![])));
+        let fetcher = MockFetcher(Ok(release("v2.1.0", vec![])));
         let status = check_for_update(&fetcher, "linux");
         assert!(status.update_available);
-        assert_eq!(status.latest_version.as_deref(), Some("1.1.0"));
+        assert_eq!(status.latest_version.as_deref(), Some("2.1.0"));
         assert_eq!(status.download_url.as_deref(), Some("https://example.com/release"));
     }
 
     #[test]
     fn matching_os_asset_is_preferred_over_the_release_page() {
         let fetcher = MockFetcher(Ok(release(
-            "v1.1.0",
+            "v2.1.0",
             vec![
                 ReleaseAsset { name: "ecriture-windows-x64.zip".into(), browser_download_url: "win".into() },
                 ReleaseAsset { name: "ecriture-linux-x64.tar.gz".into(), browser_download_url: "lin".into() },
@@ -176,10 +178,10 @@ mod tests {
 
     #[test]
     fn same_or_older_release_reports_no_update() {
-        let fetcher = MockFetcher(Ok(release("v1.0.0", vec![])));
+        let fetcher = MockFetcher(Ok(release(&format!("v{CURRENT_VERSION}"), vec![])));
         assert!(!check_for_update(&fetcher, "linux").update_available);
 
-        let fetcher_old = MockFetcher(Ok(release("v0.9.0", vec![])));
+        let fetcher_old = MockFetcher(Ok(release("v1.3.0", vec![])));
         assert!(!check_for_update(&fetcher_old, "linux").update_available);
     }
 

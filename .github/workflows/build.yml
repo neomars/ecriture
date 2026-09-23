@@ -216,6 +216,18 @@ jobs:
           pattern: ecriture-*
           path: artifacts
 
+      # The product name is "Écriture", so Tauri names the Windows/macOS
+      # installers "Écriture_<version>_...". Give release assets plain
+      # ASCII names (matching the Linux .deb, which is built as
+      # "ecriture_<version>_amd64.deb") so download links stay clean.
+      - name: Give installers ASCII file names
+        run: |
+          find artifacts -type f -name 'Écriture_*' | while read -r f; do
+            base=$(basename "$f")
+            mv "$f" "$(dirname "$f")/ecriture_${base#Écriture_}"
+          done
+          find artifacts -type f \( -name '*.deb' -o -name '*.dmg' -o -name '*.exe' \)
+
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v3.0.3
         with:
