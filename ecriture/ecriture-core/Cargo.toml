@@ -1,6 +1,6 @@
 [package]
 name = "ecriture-core"
-version = "0.1.0"
+version = "2.0.0"
 edition = "2021"
 description = "Core backend logic for Ecriture: project management, export, synonyms, backups, and local Gemma AI (download + llama.cpp inference). Framework-agnostic (no Tauri dependency) so it can be unit-tested in isolation."
 
@@ -35,7 +35,7 @@ encoding_rs = "0.8"
 # else the same way the clang/bindgen requirement did before it was
 # documented. Pick the one matching your GPU and pass it through when
 # building:
-#   cargo build -p ecriture-rust --features ecriture-core/gpu-cuda
+#   cargo build -p ecriture --features ecriture-core/gpu-cuda
 # See the README's "Local AI (Gemma)" section for OS-specific setup.
 gpu-cuda = ["llama-cpp-2/cuda"]
 gpu-rocm = ["llama-cpp-2/rocm"]

@@ -1,0 +1,10 @@
+{
+  "productName": "ecriture",
+  "bundle": {
+    "linux": {
+      "deb": {
+        "desktopTemplate": "linux/ecriture.desktop"
+      }
+    }
+  }
+}

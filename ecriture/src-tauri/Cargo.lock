@@ -1013,8 +1013,21 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d0881ea181b1df73ff77ffaaf9c7544ecc11e82fba9b5f27b262a3c73a332555"
 
 [[package]]
+name = "ecriture"
+version = "2.0.0"
+dependencies = [
+ "ecriture-core",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-opener",
+ "uuid",
+]
+
+[[package]]
 name = "ecriture-core"
-version = "0.1.0"
+version = "2.0.0"
 dependencies = [
  "docx-rs",
  "encoding_rs",
@@ -1032,19 +1045,6 @@ dependencies = [
  "time",
  "uuid",
  "zip 0.6.6",
-]
-
-[[package]]
-name = "ecriture-rust"
-version = "0.1.0"
-dependencies = [
- "ecriture-core",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tauri-plugin-opener",
- "uuid",
 ]
 
 [[package]]

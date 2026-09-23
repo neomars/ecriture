@@ -88,7 +88,7 @@ jobs:
       #    scratch path (.../out/build/ggml/src/ggml-vulkan/vulkan-shaders
       #    -gen-prefix/src/vulkan-shaders-gen-build/CMakeFiles/CMakeScratch
       #    /TryCompile-xxxxxx/.../vc145.pdb). Under the default target dir
-      #    (ecriture-rust/src-tauri/target) that path measured 269
+      #    (ecriture/src-tauri/target) that path measured 269
       #    characters - over Windows' 260-char MAX_PATH - and MSVC's
       #    cl.exe reports an inaccessible-too-long path with the exact
       #    same misleading text as a genuine concurrent-write conflict
@@ -161,19 +161,19 @@ jobs:
         uses: Swatinem/rust-cache@v2.9.2
         with:
           workspaces: |
-            ecriture-rust/ecriture-core
-            ecriture-rust/src-tauri
+            ecriture/ecriture-core
+            ecriture/src-tauri
 
-      # Runs directly inside ecriture-rust rather than via the repo root's
-      # `npm install`/`npm run --prefix ecriture-rust` delegation: on
+      # Runs directly inside ecriture rather than via the repo root's
+      # `npm install`/`npm run --prefix ecriture` delegation: on
       # windows-latest, both the root's postinstall hook AND a plain
-      # `npm install --prefix ecriture-rust` fail with "'npm' is not
+      # `npm install --prefix ecriture` fail with "'npm' is not
       # recognized" - confirmed against two separate real failed CI runs
       # (Linux/macOS tolerate `--prefix` fine, something about Windows'
       # cmd.exe-based spawn under `--prefix` doesn't). cd'ing in directly
       # with working-directory avoids `--prefix` entirely.
       - name: Install npm dependencies
-        working-directory: ecriture-rust
+        working-directory: ecriture
         run: npm install
 
       # bindgen's libclang doesn't always find its own bundled headers on
@@ -184,7 +184,7 @@ jobs:
         run: echo "BINDGEN_EXTRA_CLANG_ARGS=-I$(clang -print-resource-dir)/include" >> "$GITHUB_ENV"
 
       - name: Build the app
-        working-directory: ecriture-rust
+        working-directory: ecriture
         run: npm run ${{ matrix.package_script }}
 
       # Windows builds under CARGO_TARGET_DIR=C:\ct (see the Vulkan SDK
@@ -193,8 +193,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ecriture-rust-${{ matrix.name }}
-          path: ${{ matrix.platform == 'windows-latest' && 'C:\ct\release\bundle\' || 'ecriture-rust/src-tauri/target/release/bundle/' }}
+          name: ecriture-${{ matrix.name }}
+          path: ${{ matrix.platform == 'windows-latest' && 'C:\ct\release\bundle\' || 'ecriture/src-tauri/target/release/bundle/' }}
           if-no-files-found: warn
 
   # Only on a real `v*` tag push (not workflow_dispatch test runs): takes
@@ -213,8 +213,20 @@ jobs:
       - name: Download all platform artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: ecriture-rust-*
+          pattern: ecriture-*
           path: artifacts
+
+      # The product name is "Écriture", so Tauri names the Windows/macOS
+      # installers "Écriture_<version>_...". Give release assets plain
+      # ASCII names (matching the Linux .deb, which is built as
+      # "ecriture_<version>_amd64.deb") so download links stay clean.
+      - name: Give installers ASCII file names
+        run: |
+          find artifacts -type f -name 'Écriture_*' | while read -r f; do
+            base=$(basename "$f")
+            mv "$f" "$(dirname "$f")/ecriture_${base#Écriture_}"
+          done
+          find artifacts -type f \( -name '*.deb' -o -name '*.dmg' -o -name '*.exe' \)
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v3.0.3

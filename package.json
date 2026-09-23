@@ -1,11 +1,11 @@
 {
   "scripts": {
-    "postinstall": "npm install --prefix ecriture-rust",
-    "tauri": "npm run tauri --prefix ecriture-rust --",
-    "start": "npm run start --prefix ecriture-rust",
-    "package:linux": "npm run package:linux --prefix ecriture-rust",
-    "package:windows": "npm run package:windows --prefix ecriture-rust",
-    "package:macos": "npm run package:macos --prefix ecriture-rust"
+    "postinstall": "npm install --prefix ecriture",
+    "tauri": "npm run tauri --prefix ecriture --",
+    "start": "npm run start --prefix ecriture",
+    "package:linux": "npm run package:linux --prefix ecriture",
+    "package:windows": "npm run package:windows --prefix ecriture",
+    "package:macos": "npm run package:macos --prefix ecriture"
   },
   "dependencies": {
     "jsdom": "^29.1.1",

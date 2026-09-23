@@ -96,14 +96,14 @@ if $machine_mode; then
     exit 0
 fi
 
-echo "=== ecriture-rust GPU detection ==="
+echo "=== ecriture GPU detection ==="
 for n in "${notes[@]}"; do
     echo "- $n"
 done
 echo
 if [ -n "$recommend" ]; then
     echo "Recommended: cargo build --features $recommend"
-    echo "(run from ecriture-rust/src-tauri; or from ecriture-rust/ecriture-core to build just the core crate)"
+    echo "(run from ecriture/src-tauri; or from ecriture/ecriture-core to build just the core crate)"
 else
     echo "Recommended: no gpu-* feature (CPU-only build) - this is the default and always works:"
     echo "  cargo build"
