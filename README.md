@@ -49,7 +49,6 @@ L'IA fonctionne entièrement sur votre machine grâce au modèle **Gemma 2 (2B)*
 
 #### 🌍 Autres
 - Interface disponible en **français, anglais, espagnol et russe**.
-- **Vérification des mises à jour** au démarrage.
 
 ### Captures d'écran
 
@@ -86,6 +85,17 @@ L'application apparaît ensuite dans le menu de vos applications.
 #### Premier lancement
 - Au premier usage d'un outil IA, Écriture propose de **télécharger le modèle Gemma** (~2,7 Go, connexion Internet nécessaire une seule fois). Vous pouvez aussi continuer sans IA : toutes les autres fonctionnalités restent disponibles.
 - Pour mettre à jour, téléchargez simplement la nouvelle version depuis les Releases et installez-la par-dessus l'ancienne.
+
+#### Vous utilisiez la version Python (1.x) ?
+Vos romans ne sont pas repris automatiquement, mais ils restent compatibles. Ce sont les fichiers `.json` du dossier `projects` de votre ancienne installation. Pour les retrouver dans la version 2 :
+1. Lancez Écriture 2 une première fois, puis fermez-le (cela crée son dossier de projets).
+2. Copiez vos fichiers `.json` dans ce dossier :
+   - Windows : `%APPDATA%\com.neomars.ecriture\projects`
+   - macOS : `~/Library/Application Support/com.neomars.ecriture/projects`
+   - Linux : `~/.local/share/com.neomars.ecriture/projects`
+3. Relancez Écriture : vos romans apparaissent dans la liste.
+
+Le modèle IA déjà téléchargé par la version Python est réutilisé automatiquement.
 
 ### Compiler depuis les sources
 
@@ -140,7 +150,6 @@ The AI runs entirely on your machine using the **Gemma 2 (2B)** model and the **
 
 #### 🌍 Other
 - Interface available in **French, English, Spanish and Russian**.
-- **Update check** at startup.
 
 ### Screenshots
 
@@ -177,6 +186,17 @@ The app then appears in your applications menu.
 #### First launch
 - The first time you use an AI tool, Écriture offers to **download the Gemma model** (~2.7 GB, Internet connection needed only once). You can also carry on without AI: every other feature remains available.
 - To update, just download the new version from the Releases and install it over the old one.
+
+#### Upgrading from the Python version (1.x)?
+Your novels are not carried over automatically, but they remain compatible. They are the `.json` files in the `projects` folder of your old installation. To get them into version 2:
+1. Launch Écriture 2 once, then close it (this creates its projects folder).
+2. Copy your `.json` files into that folder:
+   - Windows: `%APPDATA%\com.neomars.ecriture\projects`
+   - macOS: `~/Library/Application Support/com.neomars.ecriture/projects`
+   - Linux: `~/.local/share/com.neomars.ecriture/projects`
+3. Relaunch Écriture: your novels appear in the list.
+
+The AI model already downloaded by the Python version is reused automatically.
 
 ### Building from source
 

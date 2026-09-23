@@ -23,7 +23,7 @@ const ENV_OVERRIDE: &str = "ECRITURE_MODEL_DIR";
 /// in order:
 /// 1. `$ECRITURE_MODEL_DIR`
 /// 2. `$XDG_CACHE_HOME/ecriture`
-/// 3. `~/.cache/ecriture`
+/// 3. `~/.cache/ecriture` (`~` = `$HOME`, or `%USERPROFILE%` on Windows)
 /// 4. `<cwd>/ecriture_models`
 /// 5. `<system temp dir>/ecriture`
 ///
@@ -43,7 +43,12 @@ pub fn model_cache_dir() -> PathBuf {
             candidates.push(PathBuf::from(xdg).join("ecriture"));
         }
     }
-    if let Some(home) = std::env::var_os("HOME") {
+    // Like Python's `os.path.expanduser("~")`: HOME, else USERPROFILE,
+    // which is what Windows sets (HOME usually isn't).
+    if let Some(home) = std::env::var_os("HOME")
+        .filter(|h| !h.is_empty())
+        .or_else(|| std::env::var_os("USERPROFILE"))
+    {
         candidates.push(PathBuf::from(home).join(".cache").join("ecriture"));
     }
     if let Ok(cwd) = std::env::current_dir() {
