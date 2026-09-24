@@ -4,6 +4,10 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 // @ts-ignore
 window.__TAURI__ = { core: { invoke } };
 
+// Lets app.js open a web page in the user's default browser.
+// @ts-ignore
+window.openExternalUrl = (url: string) => openUrl(url);
+
 // The webview doesn't open `target="_blank"` links by itself: send external
 // web links (update download, release notes, about/donation links) to the
 // user's default browser instead.

@@ -243,5 +243,20 @@
   "import_result_imported": "{count} novela(s) importada(s).",
   "import_result_already": "{count} novela(s) ya presente(s), no duplicada(s).",
   "import_result_failed": "No se pudo importar: {files} (no es un archivo de novela de Écriture válido).",
-  "legacy_import_notice": "Se recuperaron {count} novela(s) de la versión anterior de Écriture: {titles}. Las encontrará en la lista de novelas."
+  "legacy_import_notice": "Se recuperaron {count} novela(s) de la versión anterior de Écriture: {titles}. Las encontrará en la lista de novelas.",
+  "ai_report_btn": "Denunciar",
+  "ai_report_title": "Denunciar contenido generado por IA",
+  "ai_report_intro": "Este texto fue generado por IA. Si es ofensivo, peligroso, inapropiado o falso, denúncielo: ayuda a mejorar Écriture.",
+  "ai_report_content_label": "Contenido denunciado",
+  "ai_report_reason_label": "Motivo",
+  "ai_report_reason_offensive": "Ofensivo, de odio o discriminatorio",
+  "ai_report_reason_sexual": "Contenido sexual o inapropiado",
+  "ai_report_reason_dangerous": "Peligroso, violento o ilegal",
+  "ai_report_reason_false": "Falso o engañoso",
+  "ai_report_reason_other": "Otro",
+  "ai_report_comment_label": "Comentario (opcional)",
+  "ai_report_privacy": "Solo se envían el contenido anterior (que puede editar) y su comentario, nunca su novela. No se envía nada sin su confirmación.",
+  "ai_report_send_form": "Enviar mediante el formulario (sin cuenta)",
+  "ai_report_send_github": "Enviar en GitHub",
+  "ai_report_copied": "La denuncia se ha copiado: péguela en el formulario que se abrirá."
 }

@@ -3242,6 +3242,7 @@ function renderStatisticsDashboard() {
         window.checkUpdatesOnStartup = async function checkUpdatesOnStartup() {
             try {
                 const data = await window.api_invoke("check_updates");
+                window.appVersion = data.current_version;
                 // Couldn't reach GitHub (offline...): say nothing rather than
                 // claiming the app is up to date.
                 if (!data.checked) return;
@@ -5314,12 +5315,105 @@ function closeGemmaInstallingModal() {
                         lore_context: loreContext
                     });
                     feedbackEl.innerText = data.feedback;
+                    const feedback = data.feedback;
+                    feedbackEl.appendChild(createAiReportButton(() => feedback, 'relecture: ' + activeRelectureCategory));
                 } catch (aiErr) {
                     feedbackEl.innerText = translations["error_ai_feedback"] || "Error: Could not retrieve feedback from AI.";
                 }
             } catch (err) {
                 feedbackEl.innerText = translations["error_network_connection"] || "Network connection error.";
             }
+        }
+
+        // --- REPORT AI-GENERATED CONTENT ---
+        // Every piece of AI output gets a "Report" button (Microsoft Store
+        // policy 11.16). The AI runs locally and the app has no server, so a
+        // report is sent by the user from their browser: as a pre-filled
+        // GitHub issue, or - without any account - copied to the clipboard
+        // before opening the project's feedback form.
+        const AI_REPORT_GITHUB_URL = 'https://github.com/neomars/ecriture/issues/new';
+        const AI_REPORT_FORM_URL = 'https://forms.gle/FQ8TtmzaCinQPExb9';
+        const AI_REPORT_MAX_CONTENT = 3000; // keeps the GitHub URL well under its length limit
+        let aiReportSource = '';
+
+        function createAiReportButton(getContent, source) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'ai-report-btn block mt-1.5 text-[10px] font-semibold text-slate-400 hover:text-red-600 transition-colors';
+            btn.title = formatTranslation('ai_report_title') || "Report AI-generated content";
+            btn.textContent = '🚩 ' + (formatTranslation('ai_report_btn') || 'Report');
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openAiReport(getContent(), source);
+            });
+            return btn;
+        }
+
+        window.openAiReport = function openAiReport(content, source) {
+            aiReportSource = source || '';
+            document.getElementById('ai-report-content').value = (content || '').trim();
+            document.getElementById('ai-report-reason').value = 'offensive';
+            document.getElementById('ai-report-comment').value = '';
+            document.getElementById('ai-report-modal').classList.remove('hidden');
+        }
+
+        window.closeAiReport = function closeAiReport() {
+            document.getElementById('ai-report-modal').classList.add('hidden');
+        }
+
+        window.reportAiPreview = function reportAiPreview() {
+            const content = document.getElementById('ai-preview-result-container').innerText;
+            openAiReport(content, 'tool: ' + (lastAiToolCall.tool || '') + (lastAiToolCall.style ? ' (' + lastAiToolCall.style + ')' : ''));
+        }
+
+        function buildAiReport() {
+            let content = document.getElementById('ai-report-content').value.trim();
+            if (content.length > AI_REPORT_MAX_CONTENT) content = content.slice(0, AI_REPORT_MAX_CONTENT) + ' […]';
+            const reasonSelect = document.getElementById('ai-report-reason');
+            const reason = reasonSelect.options[reasonSelect.selectedIndex].text;
+            const comment = document.getElementById('ai-report-comment').value.trim();
+            const model = (projectData && projectData.settings && projectData.settings.ai_model) || 'gemma';
+            const title = `[AI report] ${reason}`;
+            // A longer fence than any run of backticks in the content keeps it one code block.
+            const fence = '`'.repeat(Math.max(3, ...(content.match(/`+/g) || []).map(run => run.length + 1)));
+            const body = [
+                `**Reason:** ${reason}`,
+                `**AI feature:** ${aiReportSource || '-'}`,
+                `**App version:** ${window.appVersion || '-'} · **Language:** ${window.activeLang || '-'} · **Model:** ${model}`,
+                '',
+                '### AI-generated content',
+                fence + 'text',
+                content || '(empty)',
+                fence,
+                '',
+                '### Comment',
+                comment || '-',
+            ].join('\n');
+            return { title, body };
+        }
+
+        function openExternal(url) {
+            if (window.openExternalUrl) {
+                window.openExternalUrl(url).catch(e => console.error("Failed to open link:", e));
+            } else {
+                window.open(url, '_blank');
+            }
+        }
+
+        window.submitAiReport = async function submitAiReport(channel) {
+            const { title, body } = buildAiReport();
+            if (channel === 'github') {
+                openExternal(`${AI_REPORT_GITHUB_URL}?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`);
+            } else {
+                try {
+                    await navigator.clipboard.writeText(`${title}\n\n${body}`);
+                    alert(formatTranslation('ai_report_copied') || "The report has been copied: paste it into the form that will open.");
+                } catch (e) {
+                    console.error("Clipboard unavailable:", e);
+                }
+                openExternal(AI_REPORT_FORM_URL);
+            }
+            closeAiReport();
         }
 
         // AI Chat history state
@@ -5359,6 +5453,7 @@ function closeGemmaInstallingModal() {
                     bubble.innerHTML = '<span class="ai-hourglass inline-block">⏳</span>';
                 } else {
                     bubble.innerText = msg.content;
+                    if (msg.ai) bubble.appendChild(createAiReportButton(() => msg.content, 'chat'));
                 }
                 container.appendChild(bubble);
             });
@@ -5387,7 +5482,7 @@ function closeGemmaInstallingModal() {
                     lang: window.activeLang,
                     ...aiRequestDefaults()
                 });
-                chatMessages[loadingIndex] = { role: "assistant", content: data.message };
+                chatMessages[loadingIndex] = { role: "assistant", content: data.message, ai: true };
             } catch (err) {
                 chatMessages[loadingIndex] = { role: "assistant", content: translations["error_network_connection"] || "Error: Network connection failed." };
             }
@@ -5527,6 +5622,7 @@ function closeGemmaInstallingModal() {
                         div.innerHTML = '<span class="ai-hourglass inline-block">⏳</span>';
                     } else {
                         div.innerText = msg.content;
+                        if (msg.ai) div.appendChild(createAiReportButton(() => msg.content, 'character interview'));
                     }
                 }
                 container.appendChild(div);
@@ -5550,7 +5646,7 @@ function closeGemmaInstallingModal() {
                     temperature: aiRequestDefaults().temperature,
                     inject_lore_context: false // the character's lore is already in the system prompt built above
                 });
-                interviewMessages[loadingIdx] = { role: "assistant", content: data.message };
+                interviewMessages[loadingIdx] = { role: "assistant", content: data.message, ai: true };
             } catch (e) {
                 interviewMessages[loadingIdx] = { role: "assistant", content: "Error." };
             }
@@ -5635,6 +5731,7 @@ function closeGemmaInstallingModal() {
                     ...aiRequestDefaults()
                 });
                 resultContainer.innerText = data.message;
+                resultContainer.appendChild(createAiReportButton(() => data.message, 'brainstorm: complications'));
             } catch (err) {
                 console.error("AI Complications error:", err);
                 resultContainer.innerText = translations["error_ai_service_connect"] || "Error: Failed to connect to AI service.";
@@ -5663,6 +5760,7 @@ function closeGemmaInstallingModal() {
                     ...aiRequestDefaults()
                 });
                 resultContainer.innerText = data.message;
+                resultContainer.appendChild(createAiReportButton(() => data.message, 'brainstorm: names'));
             } catch (err) {
                 console.error("AI Names error:", err);
                 resultContainer.innerText = translations["error_ai_service_connect"] || "Error: Failed to connect to AI service.";
