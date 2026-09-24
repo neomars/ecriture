@@ -308,6 +308,10 @@
 
                 <!-- UX Actions -->
                 <div id="ai-preview-actions" class="flex items-center justify-end space-x-2">
+                    <button id="ai-btn-report" onclick="reportAiPreview()" data-i18n-title="ai_report_title" title="Signaler un contenu généré par l'IA" class="mr-auto px-2 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all flex items-center space-x-1">
+                        <span>🚩</span>
+                        <span data-i18n="ai_report_btn">Signaler</span>
+                    </button>
                     <button id="ai-btn-cancel" onclick="closeAiPreview()" class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all">
                         <span data-i18n="btn_cancel">Annuler</span>
                     </button>
@@ -886,6 +890,11 @@
                 <!-- Update info will be injected here -->
             </div>
 
+            <button onclick="openAiReport('', 'about')" class="mb-4 text-xs font-semibold text-slate-500 hover:text-red-600 flex items-center space-x-1">
+                <span>🚩</span>
+                <span data-i18n="ai_report_title">Signaler un contenu généré par l'IA</span>
+            </button>
+
             <button onclick="closeAboutModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-semibold shadow-sm transition-all w-full" data-i18n="cancel">Fermer</button>
         </div>
     </div>
@@ -1231,6 +1240,46 @@
         </div>
     </div>
 
+
+    <!-- MODAL: REPORT AI-GENERATED CONTENT -->
+    <div id="ai-report-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-[10050]">
+        <div class="bg-white w-[32rem] max-w-[95vw] max-h-[90vh] overflow-y-auto rounded-xl shadow-xl p-6 border border-slate-200">
+            <h3 class="text-lg font-bold text-slate-800 mb-2 flex items-center space-x-2">
+                <span>🚩</span>
+                <span data-i18n="ai_report_title">Signaler un contenu généré par l'IA</span>
+            </h3>
+            <p class="text-xs text-slate-500 mb-4" data-i18n="ai_report_intro">Ce texte a été généré par l'IA. S'il est offensant, dangereux, inapproprié ou faux, signalez-le : cela aide à améliorer Écriture.</p>
+
+            <div class="space-y-3 mb-4">
+                <div>
+                    <label for="ai-report-content" class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1" data-i18n="ai_report_content_label">Contenu signalé</label>
+                    <textarea id="ai-report-content" rows="6" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-700 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                </div>
+                <div>
+                    <label for="ai-report-reason" class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1" data-i18n="ai_report_reason_label">Motif</label>
+                    <select id="ai-report-reason" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="offensive" data-i18n="ai_report_reason_offensive">Offensant, haineux ou discriminatoire</option>
+                        <option value="sexual" data-i18n="ai_report_reason_sexual">Contenu sexuel ou inapproprié</option>
+                        <option value="dangerous" data-i18n="ai_report_reason_dangerous">Dangereux, violent ou illégal</option>
+                        <option value="false" data-i18n="ai_report_reason_false">Faux ou trompeur</option>
+                        <option value="other" data-i18n="ai_report_reason_other">Autre</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="ai-report-comment" class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1" data-i18n="ai_report_comment_label">Commentaire (facultatif)</label>
+                    <textarea id="ai-report-comment" rows="2" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                </div>
+            </div>
+
+            <p class="text-[11px] text-slate-400 mb-4" data-i18n="ai_report_privacy">Seuls le contenu ci-dessus (que vous pouvez modifier) et votre commentaire sont transmis, jamais votre roman. Rien n'est envoyé sans votre validation.</p>
+
+            <div class="flex flex-wrap justify-end gap-2">
+                <button onclick="closeAiReport()" class="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-700 transition-colors" data-i18n="cancel">Annuler</button>
+                <button onclick="submitAiReport('form')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-sm font-semibold text-slate-700 transition-all" data-i18n="ai_report_send_form">Envoyer via le formulaire (sans compte)</button>
+                <button onclick="submitAiReport('github')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-all" data-i18n="ai_report_send_github">Envoyer sur GitHub</button>
+            </div>
+        </div>
+    </div>
 
     <!-- MODAL: GEMMA INSTALLING MODEL -->
     <div id="gemma-installing-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[9999] flex items-center justify-center">

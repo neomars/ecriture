@@ -243,5 +243,20 @@
   "import_result_imported": "{count} roman(s) importé(s).",
   "import_result_already": "{count} roman(s) déjà présent(s), non dupliqué(s).",
   "import_result_failed": "Impossible d'importer : {files} (ce n'est pas un fichier de roman Écriture valide).",
-  "legacy_import_notice": "{count} roman(s) de l'ancienne version d'Écriture ont été récupérés : {titles}. Retrouvez-les dans la liste des romans."
+  "legacy_import_notice": "{count} roman(s) de l'ancienne version d'Écriture ont été récupérés : {titles}. Retrouvez-les dans la liste des romans.",
+  "ai_report_btn": "Signaler",
+  "ai_report_title": "Signaler un contenu généré par l'IA",
+  "ai_report_intro": "Ce texte a été généré par l'IA. S'il est offensant, dangereux, inapproprié ou faux, signalez-le : cela aide à améliorer Écriture.",
+  "ai_report_content_label": "Contenu signalé",
+  "ai_report_reason_label": "Motif",
+  "ai_report_reason_offensive": "Offensant, haineux ou discriminatoire",
+  "ai_report_reason_sexual": "Contenu sexuel ou inapproprié",
+  "ai_report_reason_dangerous": "Dangereux, violent ou illégal",
+  "ai_report_reason_false": "Faux ou trompeur",
+  "ai_report_reason_other": "Autre",
+  "ai_report_comment_label": "Commentaire (facultatif)",
+  "ai_report_privacy": "Seuls le contenu ci-dessus (que vous pouvez modifier) et votre commentaire sont transmis, jamais votre roman. Rien n'est envoyé sans votre validation.",
+  "ai_report_send_form": "Envoyer via le formulaire (sans compte)",
+  "ai_report_send_github": "Envoyer sur GitHub",
+  "ai_report_copied": "Le signalement a été copié : collez-le dans le formulaire qui va s'ouvrir."
 }

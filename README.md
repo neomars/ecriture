@@ -42,6 +42,7 @@ L'IA fonctionne entièrement sur votre machine grâce au modèle **Gemma 2 (2B)*
 - **Brainstorming** : génération de complications pour relancer une scène, générateur de noms (personnages, lieux, tavernes, planètes…).
 - **Discussion** avec un assistant qui connaît vos personnages et vos notes (injection automatique du contexte).
 - **Extraction automatique des personnages** à partir de votre texte.
+- **Signalement** : chaque texte généré par l'IA a un bouton **🚩 Signaler** pour rapporter un contenu offensant, dangereux, inapproprié ou faux, via GitHub ou un formulaire sans compte (aussi accessible depuis « À propos »).
 - Le modèle (~2,7 Go) est **téléchargé automatiquement** à la première utilisation. Le **GPU** est utilisé s'il est disponible (Vulkan sous Windows/Linux, Metal sous macOS), sinon le processeur prend le relais.
 
 #### 💾 Export et sauvegarde
@@ -143,6 +144,7 @@ The AI runs entirely on your machine using the **Gemma 2 (2B)** model and the **
 - **Brainstorming**: plot complications to get a stalled scene moving, name generator (characters, places, taverns, planets…).
 - **Chat** with an assistant that knows your characters and notes (automatic context injection).
 - **Automatic character extraction** from your text.
+- **Reporting**: every piece of AI-generated text has a **🚩 Report** button to flag offensive, dangerous, inappropriate or false content, via GitHub or a form that needs no account (also available from "About").
 - The model (~2.7 GB) is **downloaded automatically** on first use. The **GPU** is used when available (Vulkan on Windows/Linux, Metal on macOS); otherwise the CPU takes over.
 
 #### 💾 Export and backup
