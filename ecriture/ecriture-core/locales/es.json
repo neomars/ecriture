@@ -256,7 +256,6 @@
   "ai_report_reason_other": "Otro",
   "ai_report_comment_label": "Comentario (opcional)",
   "ai_report_privacy": "Solo se envían el contenido anterior (que puede editar) y su comentario, nunca su novela. No se envía nada sin su confirmación.",
-  "ai_report_send_form": "Enviar mediante el formulario (sin cuenta)",
-  "ai_report_send_github": "Enviar en GitHub",
-  "ai_report_copied": "La denuncia se ha copiado: péguela en el formulario que se abrirá."
+  "ai_report_send_email": "Enviar por correo (sin cuenta)",
+  "ai_report_send_github": "Enviar en GitHub"
 }
