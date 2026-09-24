@@ -27,6 +27,7 @@ use llama_cpp_2::llama_batch::LlamaBatch;
 use llama_cpp_2::model::params::LlamaModelParams;
 use llama_cpp_2::model::{AddBos, LlamaChatMessage, LlamaModel};
 use llama_cpp_2::sampling::LlamaSampler;
+use llama_cpp_2::token::LlamaToken;
 use std::num::NonZeroU32;
 use std::path::{Path, PathBuf};
 use std::sync::mpsc::{Receiver, Sender};
@@ -241,31 +242,44 @@ fn generate_once(
         .new_context(backend, ctx_params)
         .map_err(|e| InferenceError::ContextInit(e.to_string()))?;
 
-    let prompt = render_chat_prompt(model, messages)?;
-
-    let tokens = model
-        .str_to_token(&prompt, AddBos::Always)
-        .map_err(|e| InferenceError::Tokenize(e.to_string()))?;
+    // The prompt plus the answer must fit in the context window: shorten
+    // the longest texts (a whole chapter, a long chat history...) until it
+    // does. Without this, llama.cpp aborts the whole process.
+    let prompt_budget = prompt_token_budget(n_ctx, max_tokens);
+    let tokenize = |messages: &[ChatMessage]| -> Result<Vec<LlamaToken>, InferenceError> {
+        let prompt = render_chat_prompt(model, messages)?;
+        model
+            .str_to_token(&prompt, AddBos::Always)
+            .map_err(|e| InferenceError::Tokenize(e.to_string()))
+    };
+    let tokens = fit_to_budget(messages, prompt_budget, tokenize)?;
     if tokens.is_empty() {
         return Ok(String::new());
     }
 
-    let mut batch = LlamaBatch::new(tokens.len().max(512), 1);
+    // llama.cpp also aborts if a single decode call gets more than n_batch
+    // tokens, so feed the prompt in n_batch-sized chunks.
+    let n_batch = ctx.n_batch().max(1) as usize;
+    let mut batch = LlamaBatch::new(n_batch.max(1), 1);
     let last_index = (tokens.len() - 1) as i32;
-    for (i, token) in (0_i32..).zip(tokens.iter().copied()) {
-        batch
-            .add(token, i, &[0], i == last_index)
+    for (chunk_index, chunk) in tokens.chunks(n_batch).enumerate() {
+        batch.clear();
+        let start = (chunk_index * n_batch) as i32;
+        for (i, token) in (start..).zip(chunk.iter().copied()) {
+            batch
+                .add(token, i, &[0], i == last_index)
+                .map_err(|e| InferenceError::Decode(e.to_string()))?;
+        }
+        ctx.decode(&mut batch)
             .map_err(|e| InferenceError::Decode(e.to_string()))?;
     }
-    ctx.decode(&mut batch)
-        .map_err(|e| InferenceError::Decode(e.to_string()))?;
 
     let mut sampler = LlamaSampler::chain_simple([
         LlamaSampler::temp(temperature.max(0.01)),
         LlamaSampler::dist(rand::random()),
     ]);
 
-    let mut n_cur = batch.n_tokens();
+    let mut n_cur = tokens.len() as i32;
     let end = n_cur + max_tokens;
     let mut decoder = encoding_rs::UTF_8.new_decoder();
     let mut output = String::new();
@@ -315,4 +329,116 @@ fn render_chat_prompt(model: &LlamaModel, messages: &[ChatMessage]) -> Result<St
     model
         .apply_chat_template(&template, &llama_messages, true)
         .map_err(|e| InferenceError::ChatTemplate(e.to_string()))
+}
+
+/// Tokens left for the prompt once the answer (`max_tokens`) and a small
+/// safety margin are reserved in the `n_ctx` context window.
+fn prompt_token_budget(n_ctx: u32, max_tokens: i32) -> usize {
+    (n_ctx as usize).saturating_sub(max_tokens.max(0) as usize + 32).max(64)
+}
+
+/// Marks the place where text was cut to fit the context window.
+const ELISION: &str = "\n[…]\n";
+
+/// Tokenizes `messages` with `tokenize`, shortening them until the result
+/// fits in `budget` tokens: each round cuts the middle out of the longest
+/// message (keeping its beginning and end, which usually carry the most
+/// context - a scene's setup and its latest lines). Gives up shortening
+/// after a few rounds and hard-truncates, so this always terminates with at
+/// most `budget` tokens.
+fn fit_to_budget<T, E>(
+    messages: &[ChatMessage],
+    budget: usize,
+    tokenize: impl Fn(&[ChatMessage]) -> Result<Vec<T>, E>,
+) -> Result<Vec<T>, E> {
+    let mut messages = messages.to_vec();
+    let mut tokens = tokenize(&messages)?;
+    for _ in 0..8 {
+        if tokens.len() <= budget {
+            return Ok(tokens);
+        }
+        let total_chars: usize = messages.iter().map(|m| m.content.chars().count()).sum();
+        let Some(longest) = messages.iter_mut().max_by_key(|m| m.content.chars().count()) else {
+            break;
+        };
+        let len = longest.content.chars().count();
+        // Estimate characters per token over the whole prompt and keep 5%
+        // less than the estimate allows, so one or two rounds are usually
+        // enough.
+        let chars_per_token = total_chars.max(1) as f64 / tokens.len().max(1) as f64;
+        let excess_chars = ((tokens.len() - budget) as f64 * chars_per_token).ceil() as usize + ELISION.len();
+        if excess_chars >= len {
+            longest.content = String::new();
+        } else {
+            let keep = ((len - excess_chars) as f64 * 0.95) as usize;
+            let head: String = longest.content.chars().take(keep / 2).collect();
+            let tail: String = longest.content.chars().skip(len - (keep - keep / 2)).collect();
+            longest.content = format!("{head}{ELISION}{tail}");
+        }
+        tokens = tokenize(&messages)?;
+    }
+    if tokens.len() > budget {
+        tokens.truncate(budget);
+    }
+    Ok(tokens)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn msg(role: &str, content: &str) -> ChatMessage {
+        ChatMessage { role: role.into(), content: content.into() }
+    }
+
+    /// A stand-in tokenizer: one token per 4 characters, plus a few for
+    /// the chat template around each message.
+    fn fake_tokenize(messages: &[ChatMessage]) -> Result<Vec<u32>, ()> {
+        let n: usize = messages.iter().map(|m| m.content.chars().count().div_ceil(4) + 5).sum();
+        Ok(vec![0; n])
+    }
+
+    #[test]
+    fn short_prompts_are_left_untouched() {
+        let messages = [msg("system", "Be helpful."), msg("user", "Hello")];
+        assert_eq!(fit_to_budget(&messages, 100, fake_tokenize).unwrap().len(), fake_tokenize(&messages).unwrap().len());
+    }
+
+    #[test]
+    fn a_whole_novel_is_shortened_to_fit_the_budget() {
+        let novel = "Il était une fois. ".repeat(200_000); // ~3.8 M characters
+        let messages = [msg("system", "Propose three complications."), msg("user", &novel)];
+        let budget = prompt_token_budget(8192, 512);
+        let tokens = fit_to_budget(&messages, budget, fake_tokenize).unwrap();
+        assert!(tokens.len() <= budget, "{} > {budget}", tokens.len());
+        assert!(tokens.len() > budget / 2, "should keep as much text as fits, kept {}", tokens.len());
+    }
+
+    #[test]
+    fn shortening_keeps_the_beginning_and_end_and_the_small_messages() {
+        let text = format!("START {} END", "x".repeat(10_000));
+        let seen = std::cell::RefCell::new(Vec::new());
+        let tokenize = |m: &[ChatMessage]| {
+            seen.borrow_mut().push(m.to_vec());
+            fake_tokenize(m)
+        };
+        fit_to_budget(&[msg("system", "Keep me intact."), msg("user", &text)], 500, tokenize).unwrap();
+        let last = seen.borrow().last().unwrap().clone();
+        assert_eq!(last[0].content, "Keep me intact.");
+        assert!(last[1].content.starts_with("START ") && last[1].content.ends_with(" END"));
+        assert!(last[1].content.contains("[…]"));
+    }
+
+    #[test]
+    fn multibyte_text_is_cut_on_character_boundaries() {
+        let text = "é€🙂".repeat(5_000);
+        let tokens = fit_to_budget(&[msg("user", &text)], 300, fake_tokenize).unwrap();
+        assert!(tokens.len() <= 300);
+    }
+
+    #[test]
+    fn budget_reserves_room_for_the_answer() {
+        assert_eq!(prompt_token_budget(8192, 512), 8192 - 512 - 32);
+        assert_eq!(prompt_token_budget(100, 512), 64);
+    }
 }

@@ -3481,6 +3481,38 @@ function renderStatisticsDashboard() {
             if (!chapter || !chapter.children) return "";
             return chapter.children.map(scene => scene.content || "").join("\n\n");
         }
+
+        // Text of the scene being worked on, for the AI tools and scene
+        // statistics. Careful: until a scene is focused, #editor-content is
+        // the wrapper around the WHOLE manuscript (all chapters of a novel
+        // like Monte-Cristo), not a scene - sending that to the AI used to
+        // overflow it and crash the app.
+        function getCurrentSceneText() {
+            const focused = document.getElementById('editor-content');
+            if (focused && focused.hasAttribute('data-scene-id')) return focused.innerText;
+
+            const manuscript = (projectData && projectData.manuscript) || [];
+            let sceneId = null;
+            if (activeNodeType === 'scene') {
+                sceneId = activeNodeId;
+            } else {
+                const chapter = manuscript.find(c => c.id === activeNodeId) || manuscript[0];
+                sceneId = chapter && chapter.children && chapter.children[0] ? chapter.children[0].id : null;
+            }
+            if (!sceneId) return "";
+
+            const sceneEl = document.querySelector(`.editor-scene-contenteditable[data-scene-id="${CSS.escape(sceneId)}"]`);
+            if (sceneEl) return sceneEl.innerText;
+            for (const chapter of manuscript) {
+                const scene = (chapter.children || []).find(sc => sc.id === sceneId);
+                if (scene) {
+                    const tmp = document.createElement('div');
+                    tmp.innerHTML = (scene.content || "").replace(/\n/g, '<br>');
+                    return tmp.innerText;
+                }
+            }
+            return "";
+        }
         // POMODORO TIMER MANAGEMENT
         function onTimerSlider(val) {
             timerDurationMinutes = val;
@@ -5046,8 +5078,7 @@ function closeGemmaInstallingModal() {
         function updateRelectureStatsAndPanes() {
             let text = "";
             if (activeRelectureScope === "scene") {
-                const editor = document.getElementById('editor-content');
-                text = editor ? editor.innerText : "";
+                text = getCurrentSceneText();
             } else {
                 text = getChapterText();
             }
@@ -5284,8 +5315,7 @@ function closeGemmaInstallingModal() {
 
             let text = "";
             if (activeRelectureScope === "scene") {
-                const editor = document.getElementById('editor-content');
-                text = editor ? editor.innerText : "";
+                text = getCurrentSceneText();
             } else {
                 text = getChapterText();
             }
@@ -5487,8 +5517,7 @@ function closeGemmaInstallingModal() {
 
         // LORE EXTRACTION
         async function extractLoreFromScene() {
-            const editor = document.getElementById('editor-content');
-            const text = editor ? editor.innerText : "";
+            const text = getCurrentSceneText();
             if (!text || !text.trim()) {
                 alert(translations["text_is_empty"] || "Text is empty.");
                 return;
@@ -5704,8 +5733,7 @@ function closeGemmaInstallingModal() {
         window.selectBrainstormTab = selectBrainstormTab;
 
         async function generateComplications() {
-            const editor = document.getElementById('editor-content');
-            const text = editor ? editor.innerText.trim() : "";
+            const text = getCurrentSceneText().trim();
 
             if (!text) {
                 alert(formatTranslation("error_empty_scene") || "The current scene is empty. Add text to generate complications.");
