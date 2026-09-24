@@ -256,7 +256,6 @@
   "ai_report_reason_other": "Autre",
   "ai_report_comment_label": "Commentaire (facultatif)",
   "ai_report_privacy": "Seuls le contenu ci-dessus (que vous pouvez modifier) et votre commentaire sont transmis, jamais votre roman. Rien n'est envoyé sans votre validation.",
-  "ai_report_send_form": "Envoyer via le formulaire (sans compte)",
-  "ai_report_send_github": "Envoyer sur GitHub",
-  "ai_report_copied": "Le signalement a été copié : collez-le dans le formulaire qui va s'ouvrir."
+  "ai_report_send_email": "Envoyer par e-mail (sans compte)",
+  "ai_report_send_github": "Envoyer sur GitHub"
 }

@@ -5328,12 +5328,12 @@ function closeGemmaInstallingModal() {
         // --- REPORT AI-GENERATED CONTENT ---
         // Every piece of AI output gets a "Report" button (Microsoft Store
         // policy 11.16). The AI runs locally and the app has no server, so a
-        // report is sent by the user from their browser: as a pre-filled
-        // GitHub issue, or - without any account - copied to the clipboard
-        // before opening the project's feedback form.
+        // report is sent by the user: as a pre-filled GitHub issue (the main
+        // channel), or - without any account - as a pre-filled e-mail.
         const AI_REPORT_GITHUB_URL = 'https://github.com/neomars/ecriture/issues/new';
-        const AI_REPORT_FORM_URL = 'https://forms.gle/FQ8TtmzaCinQPExb9';
+        const AI_REPORT_EMAIL = 'ecriture.app@gmail.com';
         const AI_REPORT_MAX_CONTENT = 3000; // keeps the GitHub URL well under its length limit
+        const AI_REPORT_MAX_CONTENT_EMAIL = 800; // some mail clients truncate long mailto: links
         let aiReportSource = '';
 
         function createAiReportButton(getContent, source) {
@@ -5366,9 +5366,9 @@ function closeGemmaInstallingModal() {
             openAiReport(content, 'tool: ' + (lastAiToolCall.tool || '') + (lastAiToolCall.style ? ' (' + lastAiToolCall.style + ')' : ''));
         }
 
-        function buildAiReport() {
+        function buildAiReport(maxContent) {
             let content = document.getElementById('ai-report-content').value.trim();
-            if (content.length > AI_REPORT_MAX_CONTENT) content = content.slice(0, AI_REPORT_MAX_CONTENT) + ' […]';
+            if (content.length > maxContent) content = content.slice(0, maxContent) + ' […]';
             const reasonSelect = document.getElementById('ai-report-reason');
             const reason = reasonSelect.options[reasonSelect.selectedIndex].text;
             const comment = document.getElementById('ai-report-comment').value.trim();
@@ -5400,18 +5400,13 @@ function closeGemmaInstallingModal() {
             }
         }
 
-        window.submitAiReport = async function submitAiReport(channel) {
-            const { title, body } = buildAiReport();
+        window.submitAiReport = function submitAiReport(channel) {
             if (channel === 'github') {
+                const { title, body } = buildAiReport(AI_REPORT_MAX_CONTENT);
                 openExternal(`${AI_REPORT_GITHUB_URL}?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`);
             } else {
-                try {
-                    await navigator.clipboard.writeText(`${title}\n\n${body}`);
-                    alert(formatTranslation('ai_report_copied') || "The report has been copied: paste it into the form that will open.");
-                } catch (e) {
-                    console.error("Clipboard unavailable:", e);
-                }
-                openExternal(AI_REPORT_FORM_URL);
+                const { title, body } = buildAiReport(AI_REPORT_MAX_CONTENT_EMAIL);
+                openExternal(`mailto:${AI_REPORT_EMAIL}?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`);
             }
             closeAiReport();
         }
