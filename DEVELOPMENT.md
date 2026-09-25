@@ -123,7 +123,11 @@ enough *free* memory for the model plus its context: the model file size
 about 3.5 GiB for Gemma-2-2b with the 4096-token context. Running out of
 GPU memory mid-generation makes the GPU driver abort the whole app, so a
 GPU below that is skipped and every layer stays on CPU instead (slower,
-but no crash). The `[ai]` lines on stderr list each device's free/total
+but no crash). The model runs on a single GPU: a dedicated one beats an
+integrated one (laptops expose both, and the integrated one reports shared
+system RAM as its memory), then the one with the most free memory wins -
+given several GPUs, llama.cpp would otherwise split the layers across all
+of them. The `[ai]` lines on stderr list each device's free/total
 memory and which one was picked; each request also logs its prompt size
 and generation time. Whether any of
 this actually happens at all further depends on which GPU backend was

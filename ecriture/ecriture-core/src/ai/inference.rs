@@ -143,23 +143,34 @@ fn available_memory(device: &llama_cpp_2::LlamaBackendDevice) -> usize {
     }
 }
 
-/// ggml device indices of the GPUs with at least `needed` bytes available,
-/// to be passed to [`LlamaModelParams::with_devices`].
-fn qualifying_gpus(devices: &[llama_cpp_2::LlamaBackendDevice], needed: usize) -> Vec<usize> {
+/// The single GPU to run the model on, as a ggml device index for
+/// [`LlamaModelParams::with_devices`]: among the GPUs with at least `needed`
+/// bytes available, a dedicated GPU beats an integrated one, then the most
+/// available memory wins.
+///
+/// Only one: laptops often expose both an integrated GPU (sharing system
+/// RAM, so it reports lots of "memory") and a dedicated one. Given both,
+/// llama.cpp splits the layers across them in proportion to their free
+/// memory - most of the model then ran on the slow integrated GPU while the
+/// dedicated one sat idle, and the integrated GPU's driver crashed the app.
+fn pick_gpu(devices: &[llama_cpp_2::LlamaBackendDevice], needed: usize) -> Option<usize> {
     devices
         .iter()
         .filter(|d| is_gpu(d.device_type) && available_memory(d) >= needed)
+        .max_by_key(|d| {
+            let dedicated = matches!(d.device_type, llama_cpp_2::LlamaBackendDeviceType::Gpu);
+            (dedicated, available_memory(d))
+        })
         .map(|d| d.index)
-        .collect()
 }
 
 /// Logs every ggml backend device found (see the README's GPU
-/// acceleration section) and returns the GPUs to offload the model to (see
-/// [`qualifying_gpus`]). An empty list leaves the model on CPU.
-fn log_backend_devices_and_pick_gpus(needed: usize) -> Vec<usize> {
+/// acceleration section) and returns the GPU to run the model on (see
+/// [`pick_gpu`]); `None` leaves the model on CPU.
+fn log_backend_devices_and_pick_gpu(needed: usize) -> Option<usize> {
     let devices = llama_cpp_2::list_llama_ggml_backend_devices();
     let gpu_count = devices.iter().filter(|d| is_gpu(d.device_type)).count();
-    let qualifying = qualifying_gpus(&devices, needed);
+    let picked = pick_gpu(&devices, needed);
 
     eprintln!(
         "[ai] ggml backend devices ({} found, {gpu_count} GPU); the model needs {} MiB of GPU memory:",
@@ -185,12 +196,13 @@ fn log_backend_devices_and_pick_gpus(needed: usize) -> Vec<usize> {
             "[ai] no GPU backend compiled in (or no GPU detected) - running on CPU. \
              See README for how to enable GPU acceleration for your hardware."
         );
-    } else if qualifying.is_empty() {
-        eprintln!("[ai] no GPU has enough free memory for the model and its context - running on CPU instead.");
+    } else if let Some(index) = picked {
+        let name = devices.iter().find(|d| d.index == index).map(|d| d.description.as_str()).unwrap_or("");
+        eprintln!("[ai] running on GPU device [{index}] {name}");
     } else {
-        eprintln!("[ai] running on GPU device(s) {qualifying:?}");
+        eprintln!("[ai] no GPU has enough free memory for the model and its context - running on CPU instead.");
     }
-    qualifying
+    picked
 }
 
 fn run_engine_thread(
@@ -203,16 +215,15 @@ fn run_engine_thread(
         .map_err(|e| InferenceError::Backend(e.to_string()))
         .and_then(|backend| {
             let model_bytes = std::fs::metadata(&model_path).map(|m| m.len()).unwrap_or(0);
-            let qualifying_gpus = log_backend_devices_and_pick_gpus(gpu_memory_needed(model_bytes, n_ctx));
-            let n_gpu_layers = if qualifying_gpus.is_empty() { 0 } else { GPU_LAYERS_ALL };
+            let gpu = log_backend_devices_and_pick_gpu(gpu_memory_needed(model_bytes, n_ctx));
+            let n_gpu_layers = if gpu.is_some() { GPU_LAYERS_ALL } else { 0 };
             let mut model_params = LlamaModelParams::default().with_n_gpu_layers(n_gpu_layers);
-            if !qualifying_gpus.is_empty() {
-                // Restrict offload to the GPUs that actually passed the
-                // memory check - without this, llama.cpp would still be
-                // free to also try splitting across any GPU present
-                // (including ones we just excluded for being too small).
+            if let Some(index) = gpu {
+                // Restrict the model to that one GPU - without this,
+                // llama.cpp splits it across every GPU present, including
+                // an integrated one (see `pick_gpu`).
                 model_params = model_params
-                    .with_devices(&qualifying_gpus)
+                    .with_devices(&[index])
                     .map_err(|e| InferenceError::Backend(e.to_string()))?;
             }
             let model = LlamaModel::load_from_file(&backend, &model_path, &model_params).map_err(|e| {
@@ -486,16 +497,29 @@ mod tests {
     }
 
     #[test]
-    fn only_gpus_with_enough_free_memory_are_used() {
+    fn a_gpu_needs_enough_free_memory() {
         use llama_cpp_2::LlamaBackendDeviceType::{Cpu, Gpu, IntegratedGpu};
         let needed = gpu_memory_needed(2_700_000_000, 4096); // ~3.5 GiB
+        // 4 GB card with the desktop already using 1 GB: too tight -> CPU.
+        assert_eq!(pick_gpu(&[device(0, Cpu, 16_000, 16_000), device(1, Gpu, 3_000, 4_096)], needed), None);
+        // Free memory not reported: the total is used instead.
+        assert_eq!(pick_gpu(&[device(0, Cpu, 16_000, 16_000), device(1, IntegratedGpu, 0, 6_000)], needed), Some(1));
+    }
+
+    #[test]
+    fn a_dedicated_gpu_beats_an_integrated_one_with_more_shared_memory() {
+        use llama_cpp_2::LlamaBackendDeviceType::{Cpu, Gpu, IntegratedGpu};
+        let needed = gpu_memory_needed(2_700_000_000, 4096);
+        // The reporter's laptop: Intel iGPU sharing 32 GB of RAM + RTX 4000 Ada 12 GB.
         let devices = [
-            device(0, Cpu, 16_000, 16_000),
-            device(1, Gpu, 3_000, 4_096),         // 4 GB card, desktop using 1 GB: too tight
-            device(2, Gpu, 7_500, 8_192),         // 8 GB card: fine
-            device(3, IntegratedGpu, 0, 6_000),   // free memory not reported: use the total
+            device(0, Cpu, 32_000, 32_000),
+            device(1, IntegratedGpu, 24_000, 32_000),
+            device(2, Gpu, 11_500, 12_282),
         ];
-        assert_eq!(qualifying_gpus(&devices, needed), vec![2, 3]);
+        assert_eq!(pick_gpu(&devices, needed), Some(2));
+        // Two dedicated GPUs: the one with more free memory.
+        let devices = [device(0, Gpu, 7_500, 8_192), device(1, Gpu, 11_000, 12_288)];
+        assert_eq!(pick_gpu(&devices, needed), Some(1));
     }
 
     #[test]
