@@ -109,19 +109,21 @@ impl AiBackend for LlamaEngine {
 /// no GPU device to offload to and silently runs entirely on CPU regardless
 /// of this value. Gemma-2-2b has far fewer than 1000 layers, so this
 /// offloads the whole model whenever a big-enough GPU *is* available (see
-/// [`MIN_GPU_MEMORY_BYTES`]).
+/// [`gpu_memory_needed`]).
 const GPU_LAYERS_ALL: u32 = 1000;
 
-/// Minimum total GPU memory, in bytes, before a device is considered for
-/// offload at all. The bundled Gemma-2-2b checkpoint is ~2.7 GB on disk,
-/// and the KV cache + compute buffers add real overhead on top of that at
-/// runtime (a real CPU-only run logged ~416 MiB of KV cache for 13 of the
-/// model's 26 layers alone, plus ~509 MiB of compute buffers, for the full
-/// 8192-token context) - a GPU with less than this is far more likely to
-/// fail to allocate, or barely help by offloading only a handful of
-/// layers, than to give the speedup GPU offload is for. Below this
-/// threshold every layer stays on CPU instead, on that device.
-const MIN_GPU_MEMORY_BYTES: usize = 3 * 1024 * 1024 * 1024; // 3 GiB
+const MIB: usize = 1024 * 1024;
+
+/// GPU memory, in bytes, needed to run the whole model on a GPU: the model
+/// weights plus the context - KV cache (Gemma-2-2b: 26 layers x 4 KV heads
+/// x 256 dims x K+V x f16 = ~104 KiB per token, rounded up to 128 KiB) and
+/// ~512 MiB of compute buffers and driver overhead. Running out of GPU
+/// memory mid-generation makes the GPU driver abort the whole process, so
+/// a GPU that can't fit all of this is not used at all (CPU is slower but
+/// doesn't crash).
+fn gpu_memory_needed(model_bytes: u64, n_ctx: u32) -> usize {
+    model_bytes as usize + n_ctx as usize * 128 * 1024 + 512 * MIB
+}
 
 fn is_gpu(device_type: llama_cpp_2::LlamaBackendDeviceType) -> bool {
     matches!(
@@ -130,25 +132,42 @@ fn is_gpu(device_type: llama_cpp_2::LlamaBackendDeviceType) -> bool {
     )
 }
 
+/// Memory actually available on a device: what's free right now (the
+/// desktop and other apps already use part of it), or the total if the
+/// driver doesn't report free memory.
+fn available_memory(device: &llama_cpp_2::LlamaBackendDevice) -> usize {
+    if device.memory_free > 0 {
+        device.memory_free
+    } else {
+        device.memory_total
+    }
+}
+
+/// ggml device indices of the GPUs with at least `needed` bytes available,
+/// to be passed to [`LlamaModelParams::with_devices`].
+fn qualifying_gpus(devices: &[llama_cpp_2::LlamaBackendDevice], needed: usize) -> Vec<usize> {
+    devices
+        .iter()
+        .filter(|d| is_gpu(d.device_type) && available_memory(d) >= needed)
+        .map(|d| d.index)
+        .collect()
+}
+
 /// Logs every ggml backend device found (see the README's GPU
-/// acceleration section) and returns the ggml device indices of GPUs with
-/// at least [`MIN_GPU_MEMORY_BYTES`] of total memory - the ones actually
-/// worth offloading to, to be passed to
-/// [`LlamaModelParams::with_devices`]. Devices below that (or a machine
-/// with no GPU device at all) are excluded, leaving them - and the
-/// model - on CPU.
-fn log_backend_devices_and_pick_gpus() -> Vec<usize> {
+/// acceleration section) and returns the GPUs to offload the model to (see
+/// [`qualifying_gpus`]). An empty list leaves the model on CPU.
+fn log_backend_devices_and_pick_gpus(needed: usize) -> Vec<usize> {
     let devices = llama_cpp_2::list_llama_ggml_backend_devices();
     let gpu_count = devices.iter().filter(|d| is_gpu(d.device_type)).count();
-    let qualifying_gpus: Vec<usize> = devices
-        .iter()
-        .filter(|d| is_gpu(d.device_type) && d.memory_total >= MIN_GPU_MEMORY_BYTES)
-        .map(|d| d.index)
-        .collect();
+    let qualifying = qualifying_gpus(&devices, needed);
 
-    eprintln!("[ai] ggml backend devices ({} found, {gpu_count} GPU):", devices.len());
+    eprintln!(
+        "[ai] ggml backend devices ({} found, {gpu_count} GPU); the model needs {} MiB of GPU memory:",
+        devices.len(),
+        needed / MIB
+    );
     for d in &devices {
-        let below_minimum = is_gpu(d.device_type) && d.memory_total < MIN_GPU_MEMORY_BYTES;
+        let too_small = is_gpu(d.device_type) && available_memory(d) < needed;
         eprintln!(
             "[ai]   [{}] {} ({}) via {} - {:?}, {} MiB free / {} MiB total{}",
             d.index,
@@ -156,9 +175,9 @@ fn log_backend_devices_and_pick_gpus() -> Vec<usize> {
             d.description,
             d.backend,
             d.device_type,
-            d.memory_free / 1024 / 1024,
-            d.memory_total / 1024 / 1024,
-            if below_minimum { " (below the 3 GiB minimum - will not be used)" } else { "" },
+            d.memory_free / MIB,
+            d.memory_total / MIB,
+            if too_small { " (not enough free memory - will not be used)" } else { "" },
         );
     }
     if gpu_count == 0 {
@@ -166,13 +185,12 @@ fn log_backend_devices_and_pick_gpus() -> Vec<usize> {
             "[ai] no GPU backend compiled in (or no GPU detected) - running on CPU. \
              See README for how to enable GPU acceleration for your hardware."
         );
-    } else if qualifying_gpus.is_empty() {
-        eprintln!(
-            "[ai] {gpu_count} GPU device(s) found, but none has at least 3 GiB of memory \
-             (needed for this ~2.7 GB model plus its KV cache/compute buffers) - running on CPU instead."
-        );
+    } else if qualifying.is_empty() {
+        eprintln!("[ai] no GPU has enough free memory for the model and its context - running on CPU instead.");
+    } else {
+        eprintln!("[ai] running on GPU device(s) {qualifying:?}");
     }
-    qualifying_gpus
+    qualifying
 }
 
 fn run_engine_thread(
@@ -184,7 +202,8 @@ fn run_engine_thread(
     let loaded = LlamaBackend::init()
         .map_err(|e| InferenceError::Backend(e.to_string()))
         .and_then(|backend| {
-            let qualifying_gpus = log_backend_devices_and_pick_gpus();
+            let model_bytes = std::fs::metadata(&model_path).map(|m| m.len()).unwrap_or(0);
+            let qualifying_gpus = log_backend_devices_and_pick_gpus(gpu_memory_needed(model_bytes, n_ctx));
             let n_gpu_layers = if qualifying_gpus.is_empty() { 0 } else { GPU_LAYERS_ALL };
             let mut model_params = LlamaModelParams::default().with_n_gpu_layers(n_gpu_layers);
             if !qualifying_gpus.is_empty() {
@@ -252,10 +271,15 @@ fn generate_once(
             .str_to_token(&prompt, AddBos::Always)
             .map_err(|e| InferenceError::Tokenize(e.to_string()))
     };
+    let started = std::time::Instant::now();
     let tokens = fit_to_budget(messages, prompt_budget, tokenize)?;
     if tokens.is_empty() {
         return Ok(String::new());
     }
+    eprintln!(
+        "[ai] prompt: {} tokens (limit {prompt_budget}), answer: up to {max_tokens} tokens",
+        tokens.len()
+    );
 
     // llama.cpp also aborts if a single decode call gets more than n_batch
     // tokens, so feed the prompt in n_batch-sized chunks.
@@ -306,6 +330,11 @@ fn generate_once(
             .map_err(|e| InferenceError::Decode(e.to_string()))?;
     }
 
+    eprintln!(
+        "[ai] generated {} tokens in {:.1} s",
+        n_cur - tokens.len() as i32,
+        started.elapsed().as_secs_f32()
+    );
     Ok(output.trim().to_string())
 }
 
@@ -408,7 +437,7 @@ mod tests {
     fn a_whole_novel_is_shortened_to_fit_the_budget() {
         let novel = "Il était une fois. ".repeat(200_000); // ~3.8 M characters
         let messages = [msg("system", "Propose three complications."), msg("user", &novel)];
-        let budget = prompt_token_budget(8192, 512);
+        let budget = prompt_token_budget(crate::ai::model_store::N_CTX, 512);
         let tokens = fit_to_budget(&messages, budget, fake_tokenize).unwrap();
         assert!(tokens.len() <= budget, "{} > {budget}", tokens.len());
         assert!(tokens.len() > budget / 2, "should keep as much text as fits, kept {}", tokens.len());
@@ -434,6 +463,39 @@ mod tests {
         let text = "é€🙂".repeat(5_000);
         let tokens = fit_to_budget(&[msg("user", &text)], 300, fake_tokenize).unwrap();
         assert!(tokens.len() <= 300);
+    }
+
+    fn device(index: usize, device_type: llama_cpp_2::LlamaBackendDeviceType, free_mib: usize, total_mib: usize) -> llama_cpp_2::LlamaBackendDevice {
+        llama_cpp_2::LlamaBackendDevice {
+            index,
+            name: format!("dev{index}"),
+            description: String::new(),
+            backend: "Vulkan".into(),
+            memory_total: total_mib * MIB,
+            memory_free: free_mib * MIB,
+            device_type,
+        }
+    }
+
+    #[test]
+    fn gemma_needs_about_a_gigabyte_on_top_of_the_model_at_4096_tokens() {
+        let model = 2_700_000_000u64; // gemma-2-2b-it-Q8_0.gguf
+        let needed = gpu_memory_needed(model, 4096);
+        assert_eq!(needed - model as usize, 1024 * MIB);
+        assert_eq!(gpu_memory_needed(model, 8192) - model as usize, 1536 * MIB);
+    }
+
+    #[test]
+    fn only_gpus_with_enough_free_memory_are_used() {
+        use llama_cpp_2::LlamaBackendDeviceType::{Cpu, Gpu, IntegratedGpu};
+        let needed = gpu_memory_needed(2_700_000_000, 4096); // ~3.5 GiB
+        let devices = [
+            device(0, Cpu, 16_000, 16_000),
+            device(1, Gpu, 3_000, 4_096),         // 4 GB card, desktop using 1 GB: too tight
+            device(2, Gpu, 7_500, 8_192),         // 8 GB card: fine
+            device(3, IntegratedGpu, 0, 6_000),   // free memory not reported: use the total
+        ];
+        assert_eq!(qualifying_gpus(&devices, needed), vec![2, 3]);
     }
 
     #[test]
