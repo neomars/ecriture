@@ -36,9 +36,10 @@ function update(relativePath, edit) {
 const jsonVersion = (text) => text.replace(/("version"\s*:\s*)"[^"]*"/, `$1"${version}"`);
 // First `version = "..."` of the file, i.e. the [package] one.
 const cargoTomlVersion = (text) => text.replace(/^version = "[^"]*"/m, `version = "${version}"`);
-// This workspace's own packages in a Cargo.lock.
+// This workspace's own packages in a Cargo.lock. Line endings may be CRLF:
+// Git converts them on Windows checkouts (the Windows release build).
 const cargoLockVersion = (text) =>
-  text.replace(/(\[\[package\]\]\nname = "(?:ecriture|ecriture-core)"\nversion = )"[^"]*"/g, `$1"${version}"`);
+  text.replace(/(\[\[package\]\]\r?\nname = "(?:ecriture|ecriture-core)"\r?\nversion = )"[^"]*"/g, `$1"${version}"`);
 
 update("package.json", jsonVersion);
 update("package-lock.json", (text) => {
@@ -46,7 +47,8 @@ update("package-lock.json", (text) => {
   const data = JSON.parse(text);
   data.version = version;
   if (data.packages && data.packages[""]) data.packages[""].version = version;
-  return JSON.stringify(data, null, 2) + "\n";
+  const eol = text.includes("\r\n") ? "\r\n" : "\n";
+  return JSON.stringify(data, null, 2).replace(/\n/g, eol) + eol;
 });
 update("src-tauri/tauri.conf.json", jsonVersion);
 update("src-tauri/Cargo.toml", cargoTomlVersion);
