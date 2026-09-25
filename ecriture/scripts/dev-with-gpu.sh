@@ -16,12 +16,21 @@ script_dir="$(cd "$(dirname "$0")" && pwd)"
 project_root="$(dirname "$script_dir")"
 cd "$project_root"
 
+# The Tauri CLI comes from this folder's npm dependencies. Without them,
+# `npx tauri` would download an unrelated old "tauri" package from the npm
+# registry and fail with "could not determine executable to run".
+tauri_cli="$project_root/node_modules/.bin/tauri"
+if [ ! -x "$tauri_cli" ]; then
+    echo "[start] npm dependencies missing - running npm install first"
+    npm install
+fi
+
 feature="$("$script_dir/detect-gpu.sh" --feature)"
 
 if [ -n "$feature" ]; then
     echo "[start] GPU detected - launching with --features $feature"
-    exec npx tauri dev --features "$feature" "$@"
+    exec "$tauri_cli" dev --features "$feature" "$@"
 else
     echo "[start] No usable GPU detected - launching CPU-only"
-    exec npx tauri dev "$@"
+    exec "$tauri_cli" dev "$@"
 fi
