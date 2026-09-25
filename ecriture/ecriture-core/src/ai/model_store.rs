@@ -12,9 +12,12 @@ pub const MODEL_URL: &str =
 
 use std::path::{Path, PathBuf};
 
-/// The context window size the model is loaded with
-/// (matches the Python app's `Llama(..., n_ctx=8192, ...)`).
-pub const N_CTX: u32 = 8192;
+/// The context window size the model is loaded with, in tokens (prompt +
+/// answer). The Python app used 8192, but the context's memory (KV cache +
+/// compute buffers, ~1.4 GB at 8192 for Gemma-2-2b) comes on top of the
+/// 2.7 GB model and made mid-range GPUs run out of memory, which aborts the
+/// whole app. 4096 halves that and still fits a long scene (~2500 words).
+pub const N_CTX: u32 = 4096;
 
 /// Environment variable that overrides the cache directory.
 const ENV_OVERRIDE: &str = "ECRITURE_MODEL_DIR";

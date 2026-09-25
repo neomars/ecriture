@@ -5732,8 +5732,17 @@ function closeGemmaInstallingModal() {
         }
         window.selectBrainstormTab = selectBrainstormTab;
 
+        // Complications only need where the scene stands now: its last
+        // ~1000 words. Keeps the AI request small and fast.
+        const COMPLICATIONS_MAX_CHARS = 6000;
+
         async function generateComplications() {
-            const text = getCurrentSceneText().trim();
+            let text = getCurrentSceneText().trim();
+            if (text.length > COMPLICATIONS_MAX_CHARS) {
+                const cut = text.slice(-COMPLICATIONS_MAX_CHARS);
+                // Start on a word boundary rather than mid-word.
+                text = cut.slice(Math.max(0, cut.search(/\s/)) + 1);
+            }
 
             if (!text) {
                 alert(formatTranslation("error_empty_scene") || "The current scene is empty. Add text to generate complications.");

@@ -117,13 +117,15 @@ llama.cpp — the same engine the Python app drives through
 #### GPU acceleration
 
 The engine always *asks* to offload every layer to a GPU (`n_gpu_layers`
-is set to a large value unconditionally) - but only on a GPU device
-reporting at least 3 GiB of total memory. The bundled Gemma-2-2b
-checkpoint is ~2.7 GB on disk, and its KV cache + compute buffers add
-real overhead on top at runtime, so a smaller GPU is more likely to fail
-to allocate (or barely help, offloading only a handful of layers) than
-to give the speedup GPU offload is for - below that threshold, that
-device is skipped and every layer stays on CPU instead. Whether any of
+is set to a large value unconditionally) - but only on a GPU device with
+enough *free* memory for the model plus its context: the model file size
++ 128 KiB per context token (KV cache) + 512 MiB (compute buffers), i.e.
+about 3.5 GiB for Gemma-2-2b with the 4096-token context. Running out of
+GPU memory mid-generation makes the GPU driver abort the whole app, so a
+GPU below that is skipped and every layer stays on CPU instead (slower,
+but no crash). The `[ai]` lines on stderr list each device's free/total
+memory and which one was picked; each request also logs its prompt size
+and generation time. Whether any of
 this actually happens at all further depends on which GPU backend was
 compiled in.
 
@@ -214,7 +216,7 @@ npm run package:linux      # produces the Linux app
 npm run package:windows    # produces the Windows .exe
 ```
 
-- On a machine with a Vulkan-capable GPU with at least 3 GiB of memory
+- On a machine with a Vulkan-capable GPU with enough free memory (~3.5 GiB)
   (NVIDIA/AMD/Intel - the overwhelming majority of PCs), it's used
   automatically: `n_gpu_layers` is always requested (see above), and
   llama.cpp's own device enumeration at startup decides whether there's
