@@ -27,6 +27,19 @@ fi
 
 feature="$("$script_dir/detect-gpu.sh" --feature)"
 
+# llama.cpp compiles its CUDA kernels for ~8 GPU generations by default,
+# which makes the first gpu-cuda build take a very long time. This is a
+# local dev build, so only compile for the GPU in this machine ("native",
+# needs CMake >= 3.24) unless CMAKE_CUDA_ARCHITECTURES is already set.
+# llama-cpp-sys-2 forwards CMAKE_* environment variables to CMake.
+if [ "$feature" = "gpu-cuda" ] && [ -z "${CMAKE_CUDA_ARCHITECTURES:-}" ]; then
+    cmake_version="$(cmake --version 2>/dev/null | head -n1 | grep -oE '[0-9]+\.[0-9]+' | head -n1)"
+    if [ -n "$cmake_version" ] && printf '3.24\n%s\n' "$cmake_version" | sort -V -C; then
+        export CMAKE_CUDA_ARCHITECTURES=native
+        echo "[start] Compiling CUDA kernels for this machine's GPU only (CMAKE_CUDA_ARCHITECTURES=native)"
+    fi
+fi
+
 if [ -n "$feature" ]; then
     echo "[start] GPU detected - launching with --features $feature"
     exec "$tauri_cli" dev --features "$feature" "$@"
