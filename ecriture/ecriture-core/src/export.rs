@@ -242,42 +242,52 @@ fn apply_token(token: &str, state: &mut RunState) {
 }
 
 fn export_pdf(data: &NovelData) -> Result<Vec<u8>> {
-    use printpdf::*;
+    use lopdf::content::{Content, Operation};
+    use lopdf::{dictionary, Document, Encoding, Object, Stream, StringFormat};
 
-    let title = &data.settings.title;
-    let (doc, page1, layer1) = PdfDocument::new(title, Mm(210.0), Mm(297.0), "Layer 1");
-    let font = doc
-        .add_builtin_font(BuiltinFont::TimesRoman)
-        .map_err(|e| ExportError::Pdf(e.to_string()))?;
+    // A4 page, positions in millimetres converted to PDF points.
+    const PAGE_W: f32 = 210.0;
+    const PAGE_H: f32 = 297.0;
+    const TOP: f32 = 280.0;
+    const BOTTOM: f32 = 15.0;
+    const LEFT: f32 = 20.0;
+    const LINE_HEIGHT: f32 = 6.0;
+    fn pt(mm: f32) -> f32 {
+        mm * 72.0 / 25.4
+    }
 
-    let mut current_layer = doc.get_page(page1).get_layer(layer1);
-    let mut y = 280.0;
-    let line_height = 6.0;
-    let mut page = page1;
-
-    let write_line = |doc: &PdfDocumentReference,
-                           layer: &mut PdfLayerReference,
-                           page: &mut PdfPageIndex,
-                           y: &mut f32,
-                           text: &str,
-                           size: f32| {
-        if *y < 15.0 {
-            let (new_page, new_layer) = doc.add_page(Mm(210.0), Mm(297.0), "Layer 1");
-            *page = new_page;
-            *layer = doc.get_page(new_page).get_layer(new_layer);
-            *y = 280.0;
+    // Times-Roman is one of the 14 standard PDF fonts: nothing to embed.
+    // WinAnsiEncoding covers French accents, œ, « », etc.
+    let encoding = Encoding::SimpleEncoding(b"WinAnsiEncoding");
+    let mut pages: Vec<Vec<Operation>> = vec![Vec::new()];
+    let mut y = TOP;
+    // `gap_after` adds extra space below the line (after the book title).
+    let mut write_line = |text: &str, size: f32, gap_after: f32| {
+        if y < BOTTOM {
+            pages.push(Vec::new());
+            y = TOP;
         }
-        layer.use_text(text, size, Mm(20.0), Mm(*y), &font);
-        *y -= line_height * (size / 11.0).max(1.0);
+        let ops = pages.last_mut().expect("at least one page");
+        ops.extend([
+            Operation::new("BT", vec![]),
+            Operation::new("Tf", vec!["F1".into(), size.into()]),
+            Operation::new("Td", vec![pt(LEFT).into(), pt(y).into()]),
+            Operation::new(
+                "Tj",
+                vec![Object::String(Document::encode_text(&encoding, text), StringFormat::Literal)],
+            ),
+            Operation::new("ET", vec![]),
+        ]);
+        y -= LINE_HEIGHT * (size / 11.0).max(1.0) + gap_after;
     };
 
-    write_line(&doc, &mut current_layer, &mut page, &mut y, title, 20.0);
-    y -= 4.0;
+    let title = &data.settings.title;
+    write_line(title, 20.0, 4.0);
 
     for chap in &data.manuscript {
-        write_line(&doc, &mut current_layer, &mut page, &mut y, &chap.title, 14.0);
+        write_line(&chap.title, 14.0, 0.0);
         for scene in &chap.children {
-            write_line(&doc, &mut current_layer, &mut page, &mut y, &scene.title, 12.0);
+            write_line(&scene.title, 12.0, 0.0);
             let clean = clean_annotations(&scene.content);
             let plain = strip_html(&clean);
             for raw_line in plain.lines() {
@@ -286,18 +296,62 @@ fn export_pdf(data: &NovelData) -> Result<Vec<u8>> {
                     continue;
                 }
                 for wrapped in wrap_text(trimmed, 95) {
-                    write_line(&doc, &mut current_layer, &mut page, &mut y, &wrapped, 11.0);
+                    write_line(&wrapped, 11.0, 0.0);
                 }
             }
         }
     }
 
-    let mut buf = Vec::new();
-    {
-        let mut writer = std::io::BufWriter::new(&mut buf);
-        doc.save(&mut writer)
+    let mut doc = Document::with_version("1.5");
+    let pages_id = doc.new_object_id();
+    let font_id = doc.add_object(dictionary! {
+        "Type" => "Font",
+        "Subtype" => "Type1",
+        "BaseFont" => "Times-Roman",
+        "Encoding" => "WinAnsiEncoding",
+    });
+    let resources_id = doc.add_object(dictionary! {
+        "Font" => dictionary! { "F1" => font_id },
+    });
+    let mut kids = Vec::with_capacity(pages.len());
+    for operations in pages {
+        let content = Content { operations }
+            .encode()
             .map_err(|e| ExportError::Pdf(e.to_string()))?;
+        let content_id = doc.add_object(Stream::new(dictionary! {}, content));
+        let page_id = doc.add_object(dictionary! {
+            "Type" => "Page",
+            "Parent" => pages_id,
+            "Contents" => content_id,
+        });
+        kids.push(Object::from(page_id));
     }
+    let page_count = kids.len() as i64;
+    doc.objects.insert(
+        pages_id,
+        Object::Dictionary(dictionary! {
+            "Type" => "Pages",
+            "Kids" => kids,
+            "Count" => page_count,
+            "Resources" => resources_id,
+            "MediaBox" => vec![0.into(), 0.into(), pt(PAGE_W).into(), pt(PAGE_H).into()],
+        }),
+    );
+    let catalog_id = doc.add_object(dictionary! {
+        "Type" => "Catalog",
+        "Pages" => pages_id,
+    });
+    doc.trailer.set("Root", catalog_id);
+    let info_id = doc.add_object(dictionary! {
+        "Title" => lopdf::text_string(title),
+        "Producer" => lopdf::text_string("Écriture"),
+    });
+    doc.trailer.set("Info", info_id);
+    doc.compress();
+
+    let mut buf = Vec::new();
+    doc.save_to(&mut buf)
+        .map_err(|e| ExportError::Pdf(e.to_string()))?;
     Ok(buf)
 }
 
@@ -641,6 +695,21 @@ mod tests {
         let data = NovelData::default();
         let bytes = export(&data, ExportFormat::Pdf).unwrap();
         assert!(bytes.starts_with(b"%PDF"));
+    }
+
+    #[test]
+    fn pdf_export_is_readable_with_accents_across_pages() {
+        let path = concat!(env!("CARGO_MANIFEST_DIR"), "/resources/default_projects/le_comte_de_monte_cristo.json");
+        let data: NovelData = serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap();
+        let bytes = export(&data, ExportFormat::Pdf).unwrap();
+
+        let doc = lopdf::Document::load_mem(&bytes).unwrap();
+        let pages = doc.get_pages();
+        assert!(pages.len() > 1, "the sample novel spans several pages");
+        let first_page = doc.extract_text(&[1]).unwrap();
+        assert!(first_page.contains(&data.settings.title), "{first_page}");
+        let all_text = doc.extract_text(&pages.keys().copied().collect::<Vec<_>>()).unwrap();
+        assert!(all_text.contains('é') && all_text.contains('à'), "accents survive WinAnsi encoding");
     }
 
     #[test]
