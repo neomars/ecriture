@@ -100,6 +100,10 @@ Un roman déjà présent n'est jamais dupliqué ni écrasé. Le modèle IA déj�
 
 Pour les développeurs : prérequis, compilation, architecture du code et accélération GPU sont décrits dans **[DEVELOPMENT.md](DEVELOPMENT.md)** (en anglais).
 
+### Confidentialité
+
+Aucun compte, aucune télémétrie : vos textes et l'IA restent sur votre ordinateur. Voir la **[politique de confidentialité](PRIVACY.md)**.
+
 ### Licence
 
 Écriture est créé par Martial Limousin et distribué sous licence libre [CeCILL V2.1](http://www.cecill.info/licences/Licence_CeCILL_V2.1-fr.html).
@@ -201,6 +205,10 @@ A novel that is already present is never duplicated or overwritten. The AI model
 ### Building from source
 
 For developers: prerequisites, build steps, code architecture and GPU acceleration are covered in **[DEVELOPMENT.md](DEVELOPMENT.md)**.
+
+### Privacy
+
+No account, no telemetry: your writing and the AI stay on your computer. See the **[privacy policy](PRIVACY.md)**.
 
 ### License
 
