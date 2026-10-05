@@ -682,6 +682,11 @@ window.showConfirm = function(message) {
                 // Check and run automated backup on launch if due
                 runAutoBackup();
 
+                // First launch: show the tutorial once
+                try {
+                    if (!localStorage.getItem('tutorial-seen')) openTutorialModal();
+                } catch (e) { /* storage unavailable */ }
+
             } catch (err) {
                 console.error("Error loading project state:", err);
             }
@@ -764,7 +769,14 @@ window.showConfirm = function(message) {
         async function persistProject() {
             if (!projectData || isSavingDisabled) return; // Prevent ghost saves if project is being unloaded
             try {
-                projectData = await window.api_invoke('update_project', { data: projectData });
+                // Do NOT reassign projectData with the returned copy: the
+                // backend only echoes back what we sent, and swapping the
+                // object leaves open forms (e.g. the character sheet) holding
+                // a stale reference, so later edits were silently lost.
+                const saved = await window.api_invoke('update_project', { data: projectData });
+                if (saved && saved.settings && projectData.settings) {
+                    projectData.settings.overall_written = saved.settings.overall_written;
+                }
                 updateRightSidebar();
                 // Silently trigger auto-backup check
                 runAutoBackup();
@@ -3237,6 +3249,14 @@ function renderStatisticsDashboard() {
         }
         function closeAboutModal() {
             document.getElementById('about-modal').classList.add('hidden');
+        }
+
+        function openTutorialModal() {
+            document.getElementById('tutorial-modal').classList.remove('hidden');
+        }
+        function closeTutorialModal() {
+            document.getElementById('tutorial-modal').classList.add('hidden');
+            try { localStorage.setItem('tutorial-seen', '1'); } catch (e) { /* storage unavailable */ }
         }
 
         window.checkUpdatesOnStartup = async function checkUpdatesOnStartup() {
