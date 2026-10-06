@@ -176,6 +176,11 @@
                 </script>
             </div>
 
+            <!-- Tutorial Button -->
+            <button onclick="openTutorialModal()" class="bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all flex items-center space-x-1">
+                📘 <span data-i18n="tutorial_btn">Tutoriel</span>
+            </button>
+
             <!-- About Button -->
             <button onclick="openAboutModal()" class="text-slate-400 hover:text-slate-600 transition-colors text-lg">
                 ❓
@@ -875,6 +880,49 @@
 
             <div class="flex justify-end pt-4 border-t border-slate-100 mt-4 shrink-0">
                 <button onclick="closeChapterTypeModal()" class="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-700 transition-colors" data-i18n="cancel">Annuler</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: TUTORIAL -->
+    <div id="tutorial-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-[9999]">
+        <div class="bg-white w-[40rem] max-w-[92vw] max-h-[88vh] rounded-xl shadow-xl border border-slate-200 flex flex-col">
+            <div class="px-6 pt-6 pb-3 border-b border-slate-100">
+                <h3 class="text-lg font-bold text-slate-800 mb-1">📘 <span data-i18n="tutorial_title">Bien démarrer avec Écriture</span></h3>
+                <p class="text-xs text-slate-500" data-i18n="tutorial_intro"></p>
+            </div>
+            <div class="px-6 py-4 space-y-4 overflow-y-auto">
+            <section>
+                <h4 class="text-sm font-bold text-slate-800 mb-1" data-i18n="tutorial_s1_title"></h4>
+                <p class="text-sm text-slate-600 leading-relaxed" data-i18n="tutorial_s1_text"></p>
+            </section>
+            <section>
+                <h4 class="text-sm font-bold text-slate-800 mb-1" data-i18n="tutorial_s2_title"></h4>
+                <p class="text-sm text-slate-600 leading-relaxed" data-i18n="tutorial_s2_text"></p>
+            </section>
+            <section>
+                <h4 class="text-sm font-bold text-slate-800 mb-1" data-i18n="tutorial_s3_title"></h4>
+                <p class="text-sm text-slate-600 leading-relaxed" data-i18n="tutorial_s3_text"></p>
+            </section>
+            <section>
+                <h4 class="text-sm font-bold text-slate-800 mb-1" data-i18n="tutorial_s4_title"></h4>
+                <p class="text-sm text-slate-600 leading-relaxed" data-i18n="tutorial_s4_text"></p>
+            </section>
+            <section>
+                <h4 class="text-sm font-bold text-slate-800 mb-1" data-i18n="tutorial_s5_title"></h4>
+                <p class="text-sm text-slate-600 leading-relaxed" data-i18n="tutorial_s5_text"></p>
+            </section>
+            <section>
+                <h4 class="text-sm font-bold text-slate-800 mb-1" data-i18n="tutorial_s6_title"></h4>
+                <p class="text-sm text-slate-600 leading-relaxed" data-i18n="tutorial_s6_text"></p>
+            </section>
+            <section>
+                <h4 class="text-sm font-bold text-slate-800 mb-1" data-i18n="tutorial_s7_title"></h4>
+                <p class="text-sm text-slate-600 leading-relaxed" data-i18n="tutorial_s7_text"></p>
+            </section>
+            </div>
+            <div class="px-6 py-4 border-t border-slate-100">
+                <button onclick="closeTutorialModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-semibold shadow-sm transition-all w-full" data-i18n="tutorial_close">J'ai compris, fermer</button>
             </div>
         </div>
     </div>
